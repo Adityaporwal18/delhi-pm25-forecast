@@ -6,12 +6,17 @@ WHERE THE DATA COMES FROM
   (data.opencity.in, public-domain licence) republishes those same files as
   "Delhi Hourly Air Quality Reports" for 39 Delhi stations. We download from there.
 
-TWO KINDS OF FILE PER STATION
-  conc_15min   15-minute pollutant CONCENTRATIONS (PM2.5, PM10, NO2, ...) plus the
-               station's own weather sensors, 2024-01-01 to 2025-12-31.
-               29 columns, ~9-14 MB per station.  <- the core dataset (default)
-  aqi_hourly   Hourly AQI values only (no concentrations), 2017-2023, laid out in
-               month blocks. ~0.1-0.3 MB per station.  <- optional (--kinds aqi_hourly)
+WHAT WE DOWNLOAD
+  One file per station: 15-minute pollutant CONCENTRATIONS (PM2.5, PM10, NO2, ...)
+  plus the station's own weather sensors, 2024-01-01 to 2025-12-31.
+  29 columns, ~9-14 MB per station.
+
+WHAT WE DELIBERATELY DO NOT DOWNLOAD
+  The mirror also has "AQI Data 2017-2023" files. They are rejected: their hourly
+  values jump e.g. 188 -> 465 within one hour, which is impossible for an AQI built
+  on 24-hour averages, so they are mislabelled (probably raw concentrations or a
+  sub-index). Mixing them in would silently change what we forecast partway through
+  the dataset.
 
 WHAT THIS SCRIPT DELIBERATELY DOES NOT DO
   No cleaning, no timezone fixes, no resampling. Files are saved byte-for-byte as
@@ -20,13 +25,11 @@ WHAT THIS SCRIPT DELIBERATELY DOES NOT DO
 
 OUTPUT
   data/raw/cpcb/conc_15min_2024_2025/<slug>.csv
-  data/raw/cpcb/aqi_hourly_2017_2023/<slug>.csv     (only with --kinds aqi_hourly)
-  data/raw/cpcb/manifest.csv                         one row per downloaded file
+  data/raw/cpcb/manifest.csv                  one row per downloaded file
 
 USAGE (run from the project root)
   .venv/bin/python scripts/01_fetch_cpcb.py                      # all 39 stations
   .venv/bin/python scripts/01_fetch_cpcb.py --only r_k_puram_dpcc anand_vihar_dpcc
-  .venv/bin/python scripts/01_fetch_cpcb.py --kinds conc_15min aqi_hourly
   .venv/bin/python scripts/01_fetch_cpcb.py --force              # re-download
 """
 
@@ -34,7 +37,6 @@ import argparse
 import csv
 import difflib
 import hashlib
-import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -45,17 +47,13 @@ import requests
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATIONS_CSV = PROJECT_ROOT / "config" / "stations.csv"
 OUT_DIR = PROJECT_ROOT / "data" / "raw" / "cpcb"
+FILES_DIR = OUT_DIR / "conc_15min_2024_2025"
 MANIFEST_CSV = OUT_DIR / "manifest.csv"
 
 CKAN_API = "https://data.opencity.in/api/3/action/package_show"
 DATASET_ID = "0dc7b9fe-9fd4-46ee-a37e-88f0bd6f6362"
 USER_AGENT = "delhi-aqi-forecast-student-project/0.1"
-
-# kind -> (column of stations.csv holding the OpenCity resource name, output sub-folder)
-KINDS = {
-    "conc_15min": ("opencity_15min_resource", "conc_15min_2024_2025"),
-    "aqi_hourly": ("opencity_aqi_resource", "aqi_hourly_2017_2023"),
-}
+RESOURCE_COLUMN = "opencity_15min_resource"  # column of stations.csv with the file's name on OpenCity
 
 # Exact header shared by all 39 15-minute files. The units use the micro sign (U+00B5)
 # and superscript three (U+00B3); a look-alike character would make columns "missing".
@@ -67,10 +65,9 @@ EXPECTED_15MIN_HEADER = [
     "MP-Xylene (µg/m³)", "AT (°C)", "RH (%)", "WS (m/s)", "WD (deg)", "RF (mm)",
     "TOT-RF (mm)", "SR (W/mt2)", "BP (mmHg)", "VWS (m/s)",
 ]
-MONTH_LABEL = re.compile(r"[A-Za-z]+-\d{4}")  # "January-2017" in the aqi_hourly layout
 
 MANIFEST_FIELDS = [
-    "slug", "kind", "file", "url", "bytes", "sha256", "header_ok", "n_rows",
+    "slug", "file", "url", "bytes", "sha256", "header_ok", "n_rows",
     "n_blank_rows", "n_bad_width_rows", "first_ts", "last_ts", "file_station_ids",
     "file_station_names", "station_id_matches_config", "downloaded_at_utc",
 ]
@@ -171,42 +168,19 @@ def inspect_conc_15min(path: Path) -> dict:
     return facts
 
 
-def inspect_aqi_hourly(path: Path) -> dict:
-    """Facts from the month-block layout: 'Year,2017' / 'January-2017,00:00:00,...' / day rows."""
-    facts = {"header_ok": False, "n_rows": 0, "n_blank_rows": 0, "n_bad_width_rows": 0,
-             "first_ts": "", "last_ts": "", "ids": set(), "names": set()}
-    months: list[str] = []
-    with path.open(newline="", encoding="utf-8-sig") as fh:
-        for row in csv.reader(fh):
-            first = row[0].strip() if row else ""
-            if not any(cell.strip() for cell in row):
-                facts["n_blank_rows"] += 1
-            elif first == "Year":
-                continue
-            elif MONTH_LABEL.fullmatch(first):
-                months.append(first)
-            elif first.isdigit() and len(row) == 25:  # day number + 24 hourly values
-                facts["n_rows"] += 1
-            else:
-                facts["n_bad_width_rows"] += 1
-    if months:
-        facts.update(header_ok=True, first_ts=months[0], last_ts=months[-1])
-    return facts
-
-
-def load_manifest() -> dict[tuple[str, str], dict]:
+def load_manifest() -> dict[str, dict]:
     if not MANIFEST_CSV.exists():
         return {}
     with MANIFEST_CSV.open(newline="", encoding="utf-8") as fh:
-        return {(r["slug"], r["kind"]): r for r in csv.DictReader(fh)}
+        return {r["slug"]: r for r in csv.DictReader(fh)}
 
 
-def write_manifest(rows: dict[tuple[str, str], dict]) -> None:
+def write_manifest(rows: dict[str, dict]) -> None:
     with MANIFEST_CSV.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=MANIFEST_FIELDS)
         writer.writeheader()
-        for key in sorted(rows, key=lambda k: (k[1], k[0])):
-            writer.writerow(rows[key])
+        for slug in sorted(rows):
+            writer.writerow(rows[slug])
 
 
 def main() -> int:
@@ -214,8 +188,6 @@ def main() -> int:
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--only", nargs="+", metavar="SLUG",
                         help="station slugs from config/stations.csv (default: all 39)")
-    parser.add_argument("--kinds", nargs="+", choices=sorted(KINDS), default=["conc_15min"],
-                        help="file kinds to fetch (default: conc_15min)")
     parser.add_argument("--force", action="store_true", help="re-download existing files")
     args = parser.parse_args()
 
@@ -224,63 +196,55 @@ def main() -> int:
     session.headers["User-Agent"] = USER_AGENT
     print(f"Fetching file list of OpenCity dataset {DATASET_ID} ...")
     urls = resource_urls(session)
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    FILES_DIR.mkdir(parents=True, exist_ok=True)
     manifest = load_manifest()
     problems: list[str] = []
 
-    for kind in args.kinds:
-        name_column, subdir = KINDS[kind]
-        (OUT_DIR / subdir).mkdir(exist_ok=True)
-        for i, st in enumerate(stations, 1):
-            slug, label = st["slug"], f"[{kind} {i:>2}/{len(stations)}] {st['slug']}"
-            dest = OUT_DIR / subdir / f"{slug}.csv"
-            url = urls.get(st[name_column])
-            if url is None:
-                close = difflib.get_close_matches(st[name_column], list(urls), n=2)
-                problems.append(f"{slug}/{kind}: '{st[name_column]}' not on OpenCity (close: {close})")
-                print(f"{label}: NOT FOUND")
+    for i, st in enumerate(stations, 1):
+        slug, label = st["slug"], f"[{i:>2}/{len(stations)}] {st['slug']}"
+        dest = FILES_DIR / f"{slug}.csv"
+        url = urls.get(st[RESOURCE_COLUMN])
+        if url is None:
+            close = difflib.get_close_matches(st[RESOURCE_COLUMN], list(urls), n=2)
+            problems.append(f"{slug}: '{st[RESOURCE_COLUMN]}' not on OpenCity (close: {close})")
+            print(f"{label}: NOT FOUND")
+            continue
+        if dest.exists() and not args.force:
+            size, digest = dest.stat().st_size, sha256_of(dest)
+            fetched_at = manifest.get(slug, {}).get("downloaded_at_utc", "")
+            print(f"{label}: already present ({size / 1e6:.1f} MB), not re-downloading")
+        else:
+            print(f"{label}: downloading ...", end=" ", flush=True)
+            started = time.monotonic()
+            try:
+                size, digest = download(session, url, dest)
+            except (requests.RequestException, OSError, DownloadError) as exc:
+                problems.append(f"{slug}: download failed ({exc})")
+                print(f"FAILED ({exc})")
                 continue
-            previous = manifest.get((slug, kind), {})
-            if dest.exists() and not args.force:
-                size, digest = dest.stat().st_size, sha256_of(dest)
-                fetched_at = previous.get("downloaded_at_utc", "")
-                print(f"{label}: already present ({size / 1e6:.1f} MB), not re-downloading")
-            else:
-                print(f"{label}: downloading ...", end=" ", flush=True)
-                started = time.monotonic()
-                try:
-                    size, digest = download(session, url, dest)
-                except (requests.RequestException, OSError, DownloadError) as exc:
-                    problems.append(f"{slug}/{kind}: download failed ({exc})")
-                    print(f"FAILED ({exc})")
-                    continue
-                fetched_at = utc_now()
-                print(f"{size / 1e6:.1f} MB in {time.monotonic() - started:.0f}s")
+            fetched_at = utc_now()
+            print(f"{size / 1e6:.1f} MB in {time.monotonic() - started:.0f}s")
 
-            facts = inspect_conc_15min(dest) if kind == "conc_15min" else inspect_aqi_hourly(dest)
-            if kind == "conc_15min":
-                ids_match = facts["ids"] == {st["station_id"]}
-                id_match = str(ids_match)
-                if not ids_match:
-                    problems.append(f"{slug}: file station IDs {sorted(facts['ids'])} != config {st['station_id']}")
-                odd_names = sorted(n for n in facts["names"] if n != st["station_name"])
-                if odd_names:
-                    print(f"    note: the file names this station {odd_names!r}; "
-                          f"config says {st['station_name']!r} (Stage 2: naming)")
-            else:
-                id_match = "n/a (no IDs in this layout)"
-            if not facts["header_ok"]:
-                problems.append(f"{slug}/{kind}: unexpected header/layout - inspect {dest}")
+        facts = inspect_conc_15min(dest)
+        ids_match = facts["ids"] == {st["station_id"]}
+        if not ids_match:
+            problems.append(f"{slug}: file station IDs {sorted(facts['ids'])} != config {st['station_id']}")
+        if not facts["header_ok"]:
+            problems.append(f"{slug}: unexpected header - inspect {dest}")
+        odd_names = sorted(n for n in facts["names"] if n != st["station_name"])
+        if odd_names:
+            print(f"    note: the file names this station {odd_names!r}; "
+                  f"config says {st['station_name']!r} (Stage 2: naming)")
 
-            manifest[(slug, kind)] = {
-                "slug": slug, "kind": kind, "file": str(dest.relative_to(PROJECT_ROOT)),
-                "url": url, "bytes": size, "sha256": digest, "header_ok": facts["header_ok"],
-                "n_rows": facts["n_rows"], "n_blank_rows": facts["n_blank_rows"],
-                "n_bad_width_rows": facts["n_bad_width_rows"], "first_ts": facts["first_ts"],
-                "last_ts": facts["last_ts"], "file_station_ids": ";".join(sorted(facts["ids"])),
-                "file_station_names": ";".join(sorted(facts["names"])),
-                "station_id_matches_config": id_match, "downloaded_at_utc": fetched_at,
-            }
+        manifest[slug] = {
+            "slug": slug, "file": str(dest.relative_to(PROJECT_ROOT)),
+            "url": url, "bytes": size, "sha256": digest, "header_ok": facts["header_ok"],
+            "n_rows": facts["n_rows"], "n_blank_rows": facts["n_blank_rows"],
+            "n_bad_width_rows": facts["n_bad_width_rows"], "first_ts": facts["first_ts"],
+            "last_ts": facts["last_ts"], "file_station_ids": ";".join(sorted(facts["ids"])),
+            "file_station_names": ";".join(sorted(facts["names"])),
+            "station_id_matches_config": ids_match, "downloaded_at_utc": fetched_at,
+        }
 
     write_manifest(manifest)
     print(f"\nManifest: {MANIFEST_CSV.relative_to(PROJECT_ROOT)} ({len(manifest)} files listed)")

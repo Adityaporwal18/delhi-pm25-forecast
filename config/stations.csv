@@ -1,40 +1,40 @@
-slug,station_id,station_name,agency,latitude,longitude,opencity_15min_resource,opencity_aqi_resource
-alipur_dpcc,site_5024,"Alipur, Delhi - DPCC",DPCC,28.815329,77.153010,Alipur DPCC 15 minute AQI Data for 2024-25,Alipur DPCC AQI Data 2017-2023
-anand_vihar_dpcc,site_301,"Anand Vihar, Delhi - DPCC",DPCC,28.647622,77.315809,Anand Vihar DPCC 15 minute AQI Data for 2024-25,Anand Vihar DPCC AQI Data 2017-2023
-ashok_vihar_dpcc,site_1420,"Ashok Vihar, Delhi - DPCC",DPCC,28.695381,77.181665,Ashok Vihar DPCC 15 minute AQI Data for 2024-25,Ashok Vihar DPCC AQI Data 2017-2023
-aya_nagar_imd,site_108,"Aya Nagar, Delhi - IMD",IMD,28.4706914,77.1099364,Aya Nagar IMD 15 minute AQI Data for 2024-25,Aya Nagar IMD AQI Data 2017-2023
-bawana_dpcc,site_1560,"Bawana, Delhi - DPCC",DPCC,28.776200,77.051074,Bawana DPCC 15 minute AQI Data for 2024-25,Bawana DPCC AQI Data 2017-2023
-burari_crossing_imd,site_104,"Burari Crossing, Delhi - IMD",IMD,28.7256504,77.2011573,Burari Crossing IMD 15 minute AQI Data for 2024-25,Burari Crossing IMD AQI Data 2017-2023
-chandni_chowk_iitm,site_5393,"Chandni Chowk, Delhi - IITM",IITM,28.656756,77.227234,Chandni Chowk IITM 15 minute AQI Data for 2024-25,Chandni Chowk IITM AQI Data 2017-2023
-crri_mathura_road_imd,site_103,"CRRI Mathura Road, Delhi - IMD",IMD,28.5512005,77.2735737,CRRI Mathura Road IMD 15 minute AQI Data for 2024-25,CRRI Mathura Road IMD AQI Data 2017-2023
-dr_karni_singh_shooting_range_dpcc,site_1421,"Dr. Karni Singh Shooting Range, Delhi - DPCC",DPCC,28.498571,77.264840,Dr. Karni Singh Shooting Range DPCC 15 minute AQI Data for 2024-25,Dr. Karni Singh Shooting Range DPCC AQI Data 2017-2023
-dtu_cpcb,site_118,"DTU, Delhi - CPCB",CPCB,28.7500499,77.1112615,DTU CPCB 15 minute AQI Data for 2024-25,DTU CPCB AQI Data 2017-2023
-dwarka_sector_8_dpcc,site_1422,"Dwarka-Sector 8, Delhi - DPCC",DPCC,28.5710274,77.0719006,Dwarka Sector 8 15 minute AQI Data for 2024-25,Dwarka Sector 8 DPCC AQI Data 2017-2023
-igi_airport_t3_imd,site_106,"IGI Airport (T3), Delhi - IMD",IMD,28.5627763,77.1180053,IGI Airport (T3) IMD 15 minute AQI Data for 2024-25,IGI Airport T3 IMD AQI Data 2017-2023
-ihbas_dilshad_garden_cpcb,site_114,"IHBAS, Dilshad Garden, Delhi - CPCB",CPCB,28.6811736,77.3025234,IHBAS CPCB 15 minute AQI Data for 2024-25,IHBAS Dilshad Garden CPCB AQI Data 2017-2023
-ito_cpcb,site_117,"ITO, Delhi - CPCB",CPCB,28.628624,77.241060,ITO CPCB 15 minute AQI Data for 2024-25,ITO CPCB AQI Data 2017-2023
-jahangirpuri_dpcc,site_1423,"Jahangirpuri, Delhi - DPCC",DPCC,28.732820,77.170633,Jahangirpuri DPCC 15 minute AQI Data for 2024-25,Jahangirpuri DPCC AQI Data 2017-2023
-jawaharlal_nehru_stadium_dpcc,site_1424,"Jawaharlal Nehru Stadium, Delhi - DPCC",DPCC,28.580280,77.233829,Jawaharlal Nehru Stadium DPCC 15 minute AQI Data for 2024-25,Jawaharlal Nehru Stadium DPCC AQI Data 2017-2023
-lodhi_road_iitm,site_5395,"Lodhi Road, Delhi - IITM",IITM,28.588333,77.221667,Lodhi Road IITM 15 minute AQI Data for 2024-25,Lodhi Road IITM AQI Data 2017-2023
-lodhi_road_imd,site_109,"Lodhi Road, Delhi - IMD",IMD,28.5918245,77.2273074,Lodhi Road IMD 15 minute AQI Data for 2024-25,Lodhi Road IMD AQI Data 2017-2023
-major_dhyan_chand_national_stadium_dpcc,site_1425,"Major Dhyan Chand National Stadium, Delhi - DPCC",DPCC,28.611281,77.237738,Major Dhyan Chand National Stadium DPCC 15 minute AQI Data for 2024-25,Major Dhyan Chand National Stadium DPCC AQI Data 2017-2023
-mandir_marg_dpcc,site_122,"Mandir Marg, Delhi - DPCC",DPCC,28.636429,77.201067,Mandir Marg DPCC 15 minute AQI Data for 2024-25,Mandir Marg DPCC AQI Data 2017-2023
-mundka_dpcc,site_1561,"Mundka, Delhi - DPCC",DPCC,28.684678,77.076574,Mundka DPCC 15 minute AQI Data for 2024-25,Mundka DPCC AQI Data 2017-2023
-najafgarh_dpcc,site_1427,"Najafgarh, Delhi - DPCC",DPCC,28.570173,76.933762,Najafgarh DPCC 15 minute AQI Data for 2024-25,Najafgarh DPCC AQI Data 2017-2023
-narela_dpcc,site_1426,"Narela, Delhi - DPCC",DPCC,28.822836,77.101981,Narela DPCC 15 minute AQI Data for 2024-25,Narela DPCC AQI Data 2017-2023
-nehru_nagar_dpcc,site_1429,"Nehru Nagar, Delhi - DPCC",DPCC,28.567890,77.250515,Nehru Nagar DPCC 15 minute AQI Data for 2024-25,Nehru Nagar DPCC AQI Data 2017-2023
-north_campus_du_imd,site_105,"North Campus, DU, Delhi - IMD",IMD,28.6573814,77.1585447,North Campus IMD 15 minute AQI Data for 2024-25,North Campus DU IMD AQI Data 2017-2023
-nsit_dwarka_cpcb,site_115,"NSIT Dwarka, Delhi - CPCB",CPCB,28.60909,77.0325413,NSIT Dwarka CPCB 15 minute AQI Data for 2024-25,NSIT Dwarka CPCB AQI Data 2017-2023
-okhla_phase_2_dpcc,site_1428,"Okhla Phase-2, Delhi - DPCC",DPCC,28.530785,77.271255,Okhla Phase 2 15 minute AQI Data for 2024-25,Okhla Phase-2 DPCC AQI Data 2017-2023
-patparganj_dpcc,site_1431,"Patparganj, Delhi - DPCC",DPCC,28.623763,77.287209,Patparganj DPCC 15 minute AQI Data for 2024-25,Patparganj DPCC AQI Data 2017-2023
-punjabi_bagh_dpcc,site_125,"Punjabi Bagh, Delhi - DPCC",DPCC,28.674045,77.131023,Punjabi Bagh DPCC 15 minute AQI Data for 2024-25,Punjabi Bagh DPCC AQI Data 2017-2023
-pusa_dpcc,site_1563,"Pusa, Delhi - DPCC",DPCC,28.639652,77.146275,Pusa DPCC 15 minute AQI Data for 2024-25,Pusa DPCC AQI Data 2017-2023
-pusa_imd,site_107,"Pusa, Delhi - IMD",IMD,28.636110,77.173332,Pusa IMD 15 minute AQI Data for 2024-25,Pusa IMD AQI Data 2017-2023
-r_k_puram_dpcc,site_124,"R K Puram, Delhi - DPCC",DPCC,28.563262,77.186937,R K Puram DPCC 15 minute AQI Data for 2024-25,R K Puram DPCC AQI Data 2017-2023
-rohini_dpcc,site_1430,"Rohini, Delhi - DPCC",DPCC,28.732528,77.119920,Rohini DPCC 15 minute AQI Data for 2024-25,Rohini DPCC AQI Data 2017-2023
-shadipur_cpcb,site_113,"Shadipur, Delhi - CPCB",CPCB,28.6514781,77.1473105,Shadipur CPCB 15 minute AQI Data for 2024-25,Shadipur CPCB AQI Data 2017-2023
-sirifort_cpcb,site_119,"Sirifort, Delhi - CPCB",CPCB,28.5504249,77.2159377,Sirifort CPCB 15 minute AQI Data for 2024-25,Sirifort CPCB AQI Data 2017-2023
-sonia_vihar_dpcc,site_1432,"Sonia Vihar, Delhi - DPCC",DPCC,28.710508,77.249485,Sonia Vihar DPCC 15 minute AQI Data for 2024-25,Sonia Vihar DPCC AQI Data 2017-2023
-sri_aurobindo_marg_dpcc,site_1562,"Sri Aurobindo Marg, Delhi - DPCC",DPCC,28.531346,77.190156,Sri Aurobindo Marg DPCC 15 minute AQI Data for 2024-25,Sri Aurobindo Marg DPCC AQI Data 2017-2023
-vivek_vihar_dpcc,site_1435,"Vivek Vihar, Delhi - DPCC",DPCC,28.672342,77.315260,Vivek Vihar DPCC 15 minute AQI Data for 2024-25,Vivek Vihar DPCC AQI Data 2017-2023
-wazirpur_dpcc,site_1434,"Wazirpur, Delhi - DPCC",DPCC,28.699793,77.165453,Wazirpur DPCC 15 minute AQI Data for 2024-25,Wazirpur DPCC AQI Data 2017-2023
+slug,station_id,station_name,agency,latitude,longitude,opencity_15min_resource
+alipur_dpcc,site_5024,"Alipur, Delhi - DPCC",DPCC,28.815329,77.153010,Alipur DPCC 15 minute AQI Data for 2024-25
+anand_vihar_dpcc,site_301,"Anand Vihar, Delhi - DPCC",DPCC,28.647622,77.315809,Anand Vihar DPCC 15 minute AQI Data for 2024-25
+ashok_vihar_dpcc,site_1420,"Ashok Vihar, Delhi - DPCC",DPCC,28.695381,77.181665,Ashok Vihar DPCC 15 minute AQI Data for 2024-25
+aya_nagar_imd,site_108,"Aya Nagar, Delhi - IMD",IMD,28.4706914,77.1099364,Aya Nagar IMD 15 minute AQI Data for 2024-25
+bawana_dpcc,site_1560,"Bawana, Delhi - DPCC",DPCC,28.776200,77.051074,Bawana DPCC 15 minute AQI Data for 2024-25
+burari_crossing_imd,site_104,"Burari Crossing, Delhi - IMD",IMD,28.7256504,77.2011573,Burari Crossing IMD 15 minute AQI Data for 2024-25
+chandni_chowk_iitm,site_5393,"Chandni Chowk, Delhi - IITM",IITM,28.656756,77.227234,Chandni Chowk IITM 15 minute AQI Data for 2024-25
+crri_mathura_road_imd,site_103,"CRRI Mathura Road, Delhi - IMD",IMD,28.5512005,77.2735737,CRRI Mathura Road IMD 15 minute AQI Data for 2024-25
+dr_karni_singh_shooting_range_dpcc,site_1421,"Dr. Karni Singh Shooting Range, Delhi - DPCC",DPCC,28.498571,77.264840,Dr. Karni Singh Shooting Range DPCC 15 minute AQI Data for 2024-25
+dtu_cpcb,site_118,"DTU, Delhi - CPCB",CPCB,28.7500499,77.1112615,DTU CPCB 15 minute AQI Data for 2024-25
+dwarka_sector_8_dpcc,site_1422,"Dwarka-Sector 8, Delhi - DPCC",DPCC,28.5710274,77.0719006,Dwarka Sector 8 15 minute AQI Data for 2024-25
+igi_airport_t3_imd,site_106,"IGI Airport (T3), Delhi - IMD",IMD,28.5627763,77.1180053,IGI Airport (T3) IMD 15 minute AQI Data for 2024-25
+ihbas_dilshad_garden_cpcb,site_114,"IHBAS, Dilshad Garden, Delhi - CPCB",CPCB,28.6811736,77.3025234,IHBAS CPCB 15 minute AQI Data for 2024-25
+ito_cpcb,site_117,"ITO, Delhi - CPCB",CPCB,28.628624,77.241060,ITO CPCB 15 minute AQI Data for 2024-25
+jahangirpuri_dpcc,site_1423,"Jahangirpuri, Delhi - DPCC",DPCC,28.732820,77.170633,Jahangirpuri DPCC 15 minute AQI Data for 2024-25
+jawaharlal_nehru_stadium_dpcc,site_1424,"Jawaharlal Nehru Stadium, Delhi - DPCC",DPCC,28.580280,77.233829,Jawaharlal Nehru Stadium DPCC 15 minute AQI Data for 2024-25
+lodhi_road_iitm,site_5395,"Lodhi Road, Delhi - IITM",IITM,28.588333,77.221667,Lodhi Road IITM 15 minute AQI Data for 2024-25
+lodhi_road_imd,site_109,"Lodhi Road, Delhi - IMD",IMD,28.5918245,77.2273074,Lodhi Road IMD 15 minute AQI Data for 2024-25
+major_dhyan_chand_national_stadium_dpcc,site_1425,"Major Dhyan Chand National Stadium, Delhi - DPCC",DPCC,28.611281,77.237738,Major Dhyan Chand National Stadium DPCC 15 minute AQI Data for 2024-25
+mandir_marg_dpcc,site_122,"Mandir Marg, Delhi - DPCC",DPCC,28.636429,77.201067,Mandir Marg DPCC 15 minute AQI Data for 2024-25
+mundka_dpcc,site_1561,"Mundka, Delhi - DPCC",DPCC,28.684678,77.076574,Mundka DPCC 15 minute AQI Data for 2024-25
+najafgarh_dpcc,site_1427,"Najafgarh, Delhi - DPCC",DPCC,28.570173,76.933762,Najafgarh DPCC 15 minute AQI Data for 2024-25
+narela_dpcc,site_1426,"Narela, Delhi - DPCC",DPCC,28.822836,77.101981,Narela DPCC 15 minute AQI Data for 2024-25
+nehru_nagar_dpcc,site_1429,"Nehru Nagar, Delhi - DPCC",DPCC,28.567890,77.250515,Nehru Nagar DPCC 15 minute AQI Data for 2024-25
+north_campus_du_imd,site_105,"North Campus, DU, Delhi - IMD",IMD,28.6573814,77.1585447,North Campus IMD 15 minute AQI Data for 2024-25
+nsit_dwarka_cpcb,site_115,"NSIT Dwarka, Delhi - CPCB",CPCB,28.60909,77.0325413,NSIT Dwarka CPCB 15 minute AQI Data for 2024-25
+okhla_phase_2_dpcc,site_1428,"Okhla Phase-2, Delhi - DPCC",DPCC,28.530785,77.271255,Okhla Phase 2 15 minute AQI Data for 2024-25
+patparganj_dpcc,site_1431,"Patparganj, Delhi - DPCC",DPCC,28.623763,77.287209,Patparganj DPCC 15 minute AQI Data for 2024-25
+punjabi_bagh_dpcc,site_125,"Punjabi Bagh, Delhi - DPCC",DPCC,28.674045,77.131023,Punjabi Bagh DPCC 15 minute AQI Data for 2024-25
+pusa_dpcc,site_1563,"Pusa, Delhi - DPCC",DPCC,28.639652,77.146275,Pusa DPCC 15 minute AQI Data for 2024-25
+pusa_imd,site_107,"Pusa, Delhi - IMD",IMD,28.636110,77.173332,Pusa IMD 15 minute AQI Data for 2024-25
+r_k_puram_dpcc,site_124,"R K Puram, Delhi - DPCC",DPCC,28.563262,77.186937,R K Puram DPCC 15 minute AQI Data for 2024-25
+rohini_dpcc,site_1430,"Rohini, Delhi - DPCC",DPCC,28.732528,77.119920,Rohini DPCC 15 minute AQI Data for 2024-25
+shadipur_cpcb,site_113,"Shadipur, Delhi - CPCB",CPCB,28.6514781,77.1473105,Shadipur CPCB 15 minute AQI Data for 2024-25
+sirifort_cpcb,site_119,"Sirifort, Delhi - CPCB",CPCB,28.5504249,77.2159377,Sirifort CPCB 15 minute AQI Data for 2024-25
+sonia_vihar_dpcc,site_1432,"Sonia Vihar, Delhi - DPCC",DPCC,28.710508,77.249485,Sonia Vihar DPCC 15 minute AQI Data for 2024-25
+sri_aurobindo_marg_dpcc,site_1562,"Sri Aurobindo Marg, Delhi - DPCC",DPCC,28.531346,77.190156,Sri Aurobindo Marg DPCC 15 minute AQI Data for 2024-25
+vivek_vihar_dpcc,site_1435,"Vivek Vihar, Delhi - DPCC",DPCC,28.672342,77.315260,Vivek Vihar DPCC 15 minute AQI Data for 2024-25
+wazirpur_dpcc,site_1434,"Wazirpur, Delhi - DPCC",DPCC,28.699793,77.165453,Wazirpur DPCC 15 minute AQI Data for 2024-25
