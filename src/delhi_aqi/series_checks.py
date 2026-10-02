@@ -39,6 +39,16 @@ def flat_runs(values: pd.Series, min_hours: int) -> pd.Series:
     return runs.loc[long_runs, "length"].reset_index(drop=True)
 
 
+def flat_mask(values: pd.Series, min_hours: int) -> pd.Series:
+    """True for EVERY reading inside a run of identical values lasting `min_hours` or more.
+
+    Same test as flat_runs, but marks the hours themselves so cleaning can blank them.
+    """
+    run_id = values.ne(values.shift()).cumsum()
+    length = values.groupby(run_id).transform("size")
+    return values.notna() & (length >= min_hours)
+
+
 def isolated_spikes(values: pd.Series, jump: float) -> pd.Series:
     """True where a reading is more than `jump` above BOTH its neighbours.
 

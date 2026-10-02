@@ -40,6 +40,8 @@ SHORT_NAMES: Final[dict[str, str]] = {
     "BP (mmHg)": "bp", "VWS (m/s)": "vws",
 }
 MEASUREMENTS: Final = list(SHORT_NAMES.values())
+# The 7 pollutants with CPCB AQI breakpoints; the only measurements kept after cleaning.
+POLLUTANTS: Final = ["pm25", "pm10", "no2", "so2", "co", "o3", "nh3"]
 EXPECTED_HEADER: Final = ID_COLUMNS + list(SHORT_NAMES)
 LABEL_SUFFIX: Final = "+0000"
 LABEL_FORMAT: Final = "%Y-%m-%dT%H:%M:%S.%f"

@@ -1,0 +1,9 @@
+period,hours,n_hours,city_median_from_ug_m3,blank_pct,partial_pct
+train,all hours,17544,3.5,5.4,6.5
+train,smoggiest 10.0%,1755,224.9,2.7,6.0
+train,smoggiest 1.0%,176,395.5,6.1,7.5
+train,smoggiest 0.1%,18,622.1,9.3,6.8
+test,all hours,8760,4.0,4.6,6.3
+test,smoggiest 10.0%,879,223.0,3.1,6.1
+test,smoggiest 1.0%,88,379.0,8.7,7.1
+test,smoggiest 0.1%,9,488.0,27.3,10.5

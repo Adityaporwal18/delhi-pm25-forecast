@@ -10,9 +10,9 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
+from delhi_aqi.raw_cpcb import POLLUTANTS
 from delhi_aqi.series_checks import gap_lengths
 
-POLLUTANTS: Final = ["pm25", "pm10", "no2", "so2", "co", "o3", "nh3"]
 STATION_MET: Final = ["at", "rh", "ws", "wd", "sr", "bp"]
 HOURLY_COLUMNS: Final = [*POLLUTANTS, "at"]
 SLOT: Final = pd.Timedelta(minutes=15)

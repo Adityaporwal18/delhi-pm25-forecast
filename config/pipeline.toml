@@ -1,0 +1,41 @@
+# Pipeline settings. Every choice made in Stage 2 lives here, not in code:
+# change a value, re-run the scripts, and git history shows what changed and why.
+
+# D0: what we forecast. "pm25" = hourly PM2.5 in ug/m3 (chosen 2 Oct 2026).
+# "pm10" re-runs the whole pipeline for PM10 (planned later; needs its own spike rule).
+target = "pm25"
+
+[split]
+# Everything from this moment on is the TEST period; the model never trains on it.
+# Fixed BEFORE any model, because station selection (below) looks only at training data.
+# Proposal: calendar 2025 (Delhi time) as test = one full year incl. a winter and Diwali.
+test_start = 2025-01-01T00:00:00+05:30
+
+[hourly]
+# D2: an hourly value is the mean of the 15-min readings present; at least this many (1-4).
+min_readings = 1
+# D1 (sub-decision): which hours to average over. Labels become true UTC either way.
+# "ist" = Delhi clock hours, exactly the hourly values CPCB publishes (10:00-11:00 IST).
+# "utc" = whole UTC hours (aligned with weather data, but blends two CPCB hours).
+clock = "ist"
+
+[ceiling]
+# Analysers stop at 1000 ug/m3. Hours with a reading at the limit get a flag (value kept).
+ug_m3 = 1000.0
+pollutants = ["pm25", "pm10"]
+
+# D4.1 (c): remove a one-hour spike only if the rest of the city is calm that hour.
+# One table per pollutant; PM10 needs its own evidence before adding [spikes.pm10].
+[spikes.pm25]
+jump_ug_m3 = 200.0
+calm_city_median_ug_m3 = 300.0
+
+[flat_runs]
+# D4.2 (b): blank a value repeated unchanged for this many hours or more (stuck instrument).
+min_hours = 6
+pollutants = ["pm25", "pm10"]
+
+[stations]
+# D3 (b): keep a station only if it reported the target in at least this % of its
+# 15-min slots during TRAINING. Fixed on 2 Oct 2026, before any model was trained.
+min_train_coverage_pct = 75.0
