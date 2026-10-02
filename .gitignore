@@ -2,6 +2,8 @@
 .venv/
 __pycache__/
 *.pyc
+*.egg-info/
+.pytest_cache/
 
 # Data is downloaded by scripts/ -- never commit it (hundreds of MB).
 # Anyone can rebuild it with scripts/01_fetch_cpcb.py and scripts/02_fetch_weather.py.

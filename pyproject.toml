@@ -1,0 +1,18 @@
+# Makes src/delhi_aqi importable from scripts/ and tests/ after `pip install -e .`
+# (pip's "editable" install: edits to src/ take effect without reinstalling).
+# Dependency versions are pinned in requirements.txt, not here.
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "delhi-aqi"
+version = "0.1.0"
+description = "48-hour air-quality forecasts for Delhi monitoring stations"
+requires-python = ">=3.12"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

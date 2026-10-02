@@ -1,0 +1,40 @@
+file,station_id,names_in_file,n_readings,n_dropped_rows,first_label,last_label
+conc_15min_2024_2025/alipur_dpcc.csv,site_5024,"'Alipur, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/anand_vihar_dpcc.csv,site_301,"'Anand Vihar, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/ashok_vihar_dpcc.csv,site_1420,"'Ashok Vihar, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/aya_nagar_imd.csv,site_108,"'Aya Nagar, Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/bawana_dpcc.csv,site_1560,"'Bawana, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/burari_crossing_imd.csv,site_104,"'Burari Crossing, Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/chandni_chowk_iitm.csv,site_5393,"'Chandni Chowk, Delhi - IITM'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/crri_mathura_road_imd.csv,site_103,"'CRRI Mathura Road, Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/dr_karni_singh_shooting_range_dpcc.csv,site_1421,"'Dr. Karni Singh Shooting Range, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/dtu_cpcb.csv,site_118,"'DTU, Delhi - CPCB'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/dwarka_sector_8_dpcc.csv,site_1422,"'Dwarka-Sector 8, Delhi - DPCC '",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/igi_airport_t3_imd.csv,site_106,"'IGI Airport (T3), Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/ihbas_dilshad_garden_cpcb.csv,site_114,"'IHBAS, Dilshad Garden, Delhi - CPCB'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/ito_cpcb.csv,site_117,"'ITO, Delhi - CPCB'",68984,1,2024-01-01,2025-12-31 23:30:00
+conc_15min_2024_2025/jahangirpuri_dpcc.csv,site_1423,"'Jahangirpuri, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/jawaharlal_nehru_stadium_dpcc.csv,site_1424,"'Jawaharlal Nehru Stadium, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/lodhi_road_iitm.csv,site_5395,"'Lodhi Road, Delhi - IITM'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/lodhi_road_imd.csv,site_109,"'Lodhi Road, Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/major_dhyan_chand_national_stadium_dpcc.csv,site_1425,"'Major Dhyan Chand National Stadium, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/mandir_marg_dpcc.csv,site_122,"'Mandir Marg, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/mundka_dpcc.csv,site_1561,"'Mundka, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/najafgarh_dpcc.csv,site_1427,"'Najafgarh, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/narela_dpcc.csv,site_1426,"'Narela, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/nehru_nagar_dpcc.csv,site_1429,"'Nehru Nagar, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/north_campus_du_imd.csv,site_105,"'North Campus, DU, Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/nsit_dwarka_cpcb.csv,site_115,"'NSIT Dwarka, Delhi - CPCB'",69023,1,2024-01-01,2025-12-31 23:30:00
+conc_15min_2024_2025/okhla_phase_2_dpcc.csv,site_1428,"'Okhla Phase-2, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/patparganj_dpcc.csv,site_1431,"'Patparganj, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/punjabi_bagh_dpcc.csv,site_125,"'Punjabi Bagh, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/pusa_dpcc.csv,site_1563,"'Pusa, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/pusa_imd.csv,site_107,"'Pusa, Delhi - IMD'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/r_k_puram_dpcc.csv,site_124,"'R K Puram, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/rohini_dpcc.csv,site_1430,"'Rohini, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/shadipur_cpcb.csv,site_113,"'Shadipur, Delhi - CPCB'",67950,1,2024-01-01,2025-12-31 23:30:00
+conc_15min_2024_2025/sirifort_cpcb.csv,site_119,"'Sirifort, Delhi - CPCB'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/sonia_vihar_dpcc.csv,site_1432,"'Sonia Vihar, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/sri_aurobindo_marg_dpcc.csv,site_1562,"'Sri Aurobindo Marg, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/vivek_vihar_dpcc.csv,site_1435,"'Vivek Vihar, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
+conc_15min_2024_2025/wazirpur_dpcc.csv,site_1434,"'Wazirpur, Delhi - DPCC'",70176,1,2024-01-01,2025-12-31 23:45:00
