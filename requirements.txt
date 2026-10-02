@@ -1,0 +1,6 @@
+# Pinned so results are reproducible. Python 3.14.
+# Stage 1 (fetching) only needs `requests`; pandas/pyarrow are for Stage 2 onwards.
+requests==2.34.2
+pandas==3.0.6
+pyarrow==25.0.1
+numpy==2.5.3

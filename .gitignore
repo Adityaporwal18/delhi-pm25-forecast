@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Data is downloaded by scripts/ -- never commit it (hundreds of MB).
+# Anyone can rebuild it with scripts/01_fetch_cpcb.py and scripts/02_fetch_weather.py.
+# Exception: the small manifests ARE committed. Their SHA-256 fingerprints record
+# exactly which raw files every result in this history was computed from.
+data/**
+!data/**/
+!data/raw/cpcb/manifest.csv
+!data/raw/weather/manifest.csv
+!data/raw/weather/station_cells.csv
+*.part
+
+# OS / editor / local tooling
+.DS_Store
+.idea/
+.vscode/
+.codegraph
+.omo/

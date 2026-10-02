@@ -1,0 +1,118 @@
+source,slug,station_name,station_lat,station_lon,cell_id,grid_lat,grid_lon
+actual_ecmwf_ifs,alipur_dpcc,"Alipur, Delhi - DPCC",28.815329,77.153010,28.7873N_77.1429E,28.787346,77.14286
+actual_ecmwf_ifs,anand_vihar_dpcc,"Anand Vihar, Delhi - DPCC",28.647622,77.315809,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,ashok_vihar_dpcc,"Ashok Vihar, Delhi - DPCC",28.695381,77.181665,28.7170N_77.1575E,28.717047,77.15754
+actual_ecmwf_ifs,aya_nagar_imd,"Aya Nagar, Delhi - IMD",28.4706914,77.1099364,28.4359N_77.1136E,28.435852,77.11363
+actual_ecmwf_ifs,bawana_dpcc,"Bawana, Delhi - DPCC",28.776200,77.051074,28.7873N_77.0400E,28.787346,77.04
+actual_ecmwf_ifs,burari_crossing_imd,"Burari Crossing, Delhi - IMD",28.7256504,77.2011573,28.7170N_77.1575E,28.717047,77.15754
+actual_ecmwf_ifs,chandni_chowk_iitm,"Chandni Chowk, Delhi - IITM",28.656756,77.227234,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,crri_mathura_road_imd,"CRRI Mathura Road, Delhi - IMD",28.5512005,77.2735737,28.5764N_77.2893E,28.576448,77.28929
+actual_ecmwf_ifs,dr_karni_singh_shooting_range_dpcc,"Dr. Karni Singh Shooting Range, Delhi - DPCC",28.498571,77.264840,28.5062N_77.3037E,28.50615,77.30375
+actual_ecmwf_ifs,dtu_cpcb,"DTU, Delhi - CPCB",28.7500499,77.1112615,28.7873N_77.1429E,28.787346,77.14286
+actual_ecmwf_ifs,dwarka_sector_8_dpcc,"Dwarka-Sector 8, Delhi - DPCC",28.5710274,77.0719006,28.5764N_77.0843E,28.576448,77.08428
+actual_ecmwf_ifs,igi_airport_t3_imd,"IGI Airport (T3), Delhi - IMD",28.5627763,77.1180053,28.5764N_77.0843E,28.576448,77.08428
+actual_ecmwf_ifs,ihbas_dilshad_garden_cpcb,"IHBAS, Dilshad Garden, Delhi - CPCB",28.6811736,77.3025234,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,ito_cpcb,"ITO, Delhi - CPCB",28.628624,77.241060,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,jahangirpuri_dpcc,"Jahangirpuri, Delhi - DPCC",28.732820,77.170633,28.7170N_77.1575E,28.717047,77.15754
+actual_ecmwf_ifs,jawaharlal_nehru_stadium_dpcc,"Jawaharlal Nehru Stadium, Delhi - DPCC",28.580280,77.233829,28.5764N_77.1868E,28.576448,77.18678
+actual_ecmwf_ifs,lodhi_road_iitm,"Lodhi Road, Delhi - IITM",28.588333,77.221667,28.5764N_77.1868E,28.576448,77.18678
+actual_ecmwf_ifs,lodhi_road_imd,"Lodhi Road, Delhi - IMD",28.5918245,77.2273074,28.5764N_77.1868E,28.576448,77.18678
+actual_ecmwf_ifs,major_dhyan_chand_national_stadium_dpcc,"Major Dhyan Chand National Stadium, Delhi - DPCC",28.611281,77.237738,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,mandir_marg_dpcc,"Mandir Marg, Delhi - DPCC",28.636429,77.201067,28.6467N_77.1722E,28.646748,77.17218
+actual_ecmwf_ifs,mundka_dpcc,"Mundka, Delhi - DPCC",28.684678,77.076574,28.6467N_77.0696E,28.646748,77.06956
+actual_ecmwf_ifs,najafgarh_dpcc,"Najafgarh, Delhi - DPCC",28.570173,76.933762,28.5764N_76.9818E,28.576448,76.98177
+actual_ecmwf_ifs,narela_dpcc,"Narela, Delhi - DPCC",28.822836,77.101981,28.8576N_77.1282E,28.857643,77.12815
+actual_ecmwf_ifs,nehru_nagar_dpcc,"Nehru Nagar, Delhi - DPCC",28.567890,77.250515,28.5764N_77.2893E,28.576448,77.28929
+actual_ecmwf_ifs,north_campus_du_imd,"North Campus, DU, Delhi - IMD",28.6573814,77.1585447,28.6467N_77.1722E,28.646748,77.17218
+actual_ecmwf_ifs,nsit_dwarka_cpcb,"NSIT Dwarka, Delhi - CPCB",28.60909,77.0325413,28.6467N_77.0696E,28.646748,77.06956
+actual_ecmwf_ifs,okhla_phase_2_dpcc,"Okhla Phase-2, Delhi - DPCC",28.530785,77.271255,28.5062N_77.3037E,28.50615,77.30375
+actual_ecmwf_ifs,patparganj_dpcc,"Patparganj, Delhi - DPCC",28.623763,77.287209,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,punjabi_bagh_dpcc,"Punjabi Bagh, Delhi - DPCC",28.674045,77.131023,28.6467N_77.1722E,28.646748,77.17218
+actual_ecmwf_ifs,pusa_dpcc,"Pusa, Delhi - DPCC",28.639652,77.146275,28.6467N_77.1722E,28.646748,77.17218
+actual_ecmwf_ifs,pusa_imd,"Pusa, Delhi - IMD",28.636110,77.173332,28.6467N_77.1722E,28.646748,77.17218
+actual_ecmwf_ifs,r_k_puram_dpcc,"R K Puram, Delhi - DPCC",28.563262,77.186937,28.5764N_77.1868E,28.576448,77.18678
+actual_ecmwf_ifs,rohini_dpcc,"Rohini, Delhi - DPCC",28.732528,77.119920,28.7170N_77.1575E,28.717047,77.15754
+actual_ecmwf_ifs,shadipur_cpcb,"Shadipur, Delhi - CPCB",28.6514781,77.1473105,28.6467N_77.1722E,28.646748,77.17218
+actual_ecmwf_ifs,sirifort_cpcb,"Sirifort, Delhi - CPCB",28.5504249,77.2159377,28.5764N_77.1868E,28.576448,77.18678
+actual_ecmwf_ifs,sonia_vihar_dpcc,"Sonia Vihar, Delhi - DPCC",28.710508,77.249485,28.7170N_77.2603E,28.717047,77.26028
+actual_ecmwf_ifs,sri_aurobindo_marg_dpcc,"Sri Aurobindo Marg, Delhi - DPCC",28.531346,77.190156,28.5062N_77.2014E,28.50615,77.20136
+actual_ecmwf_ifs,vivek_vihar_dpcc,"Vivek Vihar, Delhi - DPCC",28.672342,77.315260,28.6467N_77.2748E,28.646748,77.2748
+actual_ecmwf_ifs,wazirpur_dpcc,"Wazirpur, Delhi - DPCC",28.699793,77.165453,28.7170N_77.1575E,28.717047,77.15754
+actual_era5_blh,alipur_dpcc,"Alipur, Delhi - DPCC",28.815329,77.153010,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,anand_vihar_dpcc,"Anand Vihar, Delhi - DPCC",28.647622,77.315809,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,ashok_vihar_dpcc,"Ashok Vihar, Delhi - DPCC",28.695381,77.181665,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,aya_nagar_imd,"Aya Nagar, Delhi - IMD",28.4706914,77.1099364,28.5000N_77.0000E,28.5,77.0
+actual_era5_blh,bawana_dpcc,"Bawana, Delhi - DPCC",28.776200,77.051074,28.7500N_77.0000E,28.75,77.0
+actual_era5_blh,burari_crossing_imd,"Burari Crossing, Delhi - IMD",28.7256504,77.2011573,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,chandni_chowk_iitm,"Chandni Chowk, Delhi - IITM",28.656756,77.227234,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,crri_mathura_road_imd,"CRRI Mathura Road, Delhi - IMD",28.5512005,77.2735737,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,dr_karni_singh_shooting_range_dpcc,"Dr. Karni Singh Shooting Range, Delhi - DPCC",28.498571,77.264840,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,dtu_cpcb,"DTU, Delhi - CPCB",28.7500499,77.1112615,28.7500N_77.0000E,28.75,77.0
+actual_era5_blh,dwarka_sector_8_dpcc,"Dwarka-Sector 8, Delhi - DPCC",28.5710274,77.0719006,28.5000N_77.0000E,28.5,77.0
+actual_era5_blh,igi_airport_t3_imd,"IGI Airport (T3), Delhi - IMD",28.5627763,77.1180053,28.5000N_77.0000E,28.5,77.0
+actual_era5_blh,ihbas_dilshad_garden_cpcb,"IHBAS, Dilshad Garden, Delhi - CPCB",28.6811736,77.3025234,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,ito_cpcb,"ITO, Delhi - CPCB",28.628624,77.241060,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,jahangirpuri_dpcc,"Jahangirpuri, Delhi - DPCC",28.732820,77.170633,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,jawaharlal_nehru_stadium_dpcc,"Jawaharlal Nehru Stadium, Delhi - DPCC",28.580280,77.233829,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,lodhi_road_iitm,"Lodhi Road, Delhi - IITM",28.588333,77.221667,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,lodhi_road_imd,"Lodhi Road, Delhi - IMD",28.5918245,77.2273074,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,major_dhyan_chand_national_stadium_dpcc,"Major Dhyan Chand National Stadium, Delhi - DPCC",28.611281,77.237738,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,mandir_marg_dpcc,"Mandir Marg, Delhi - DPCC",28.636429,77.201067,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,mundka_dpcc,"Mundka, Delhi - DPCC",28.684678,77.076574,28.7500N_77.0000E,28.75,77.0
+actual_era5_blh,najafgarh_dpcc,"Najafgarh, Delhi - DPCC",28.570173,76.933762,28.5000N_77.0000E,28.5,77.0
+actual_era5_blh,narela_dpcc,"Narela, Delhi - DPCC",28.822836,77.101981,28.7500N_77.0000E,28.75,77.0
+actual_era5_blh,nehru_nagar_dpcc,"Nehru Nagar, Delhi - DPCC",28.567890,77.250515,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,north_campus_du_imd,"North Campus, DU, Delhi - IMD",28.6573814,77.1585447,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,nsit_dwarka_cpcb,"NSIT Dwarka, Delhi - CPCB",28.60909,77.0325413,28.5000N_77.0000E,28.5,77.0
+actual_era5_blh,okhla_phase_2_dpcc,"Okhla Phase-2, Delhi - DPCC",28.530785,77.271255,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,patparganj_dpcc,"Patparganj, Delhi - DPCC",28.623763,77.287209,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,punjabi_bagh_dpcc,"Punjabi Bagh, Delhi - DPCC",28.674045,77.131023,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,pusa_dpcc,"Pusa, Delhi - DPCC",28.639652,77.146275,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,pusa_imd,"Pusa, Delhi - IMD",28.636110,77.173332,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,r_k_puram_dpcc,"R K Puram, Delhi - DPCC",28.563262,77.186937,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,rohini_dpcc,"Rohini, Delhi - DPCC",28.732528,77.119920,28.7500N_77.0000E,28.75,77.0
+actual_era5_blh,shadipur_cpcb,"Shadipur, Delhi - CPCB",28.6514781,77.1473105,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,sirifort_cpcb,"Sirifort, Delhi - CPCB",28.5504249,77.2159377,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,sonia_vihar_dpcc,"Sonia Vihar, Delhi - DPCC",28.710508,77.249485,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,sri_aurobindo_marg_dpcc,"Sri Aurobindo Marg, Delhi - DPCC",28.531346,77.190156,28.5000N_77.2500E,28.5,77.25
+actual_era5_blh,vivek_vihar_dpcc,"Vivek Vihar, Delhi - DPCC",28.672342,77.315260,28.7500N_77.2500E,28.75,77.25
+actual_era5_blh,wazirpur_dpcc,"Wazirpur, Delhi - DPCC",28.699793,77.165453,28.7500N_77.2500E,28.75,77.25
+forecast_day2_icon,alipur_dpcc,"Alipur, Delhi - DPCC",28.815329,77.153010,28.8750N_77.1250E,28.875,77.125
+forecast_day2_icon,anand_vihar_dpcc,"Anand Vihar, Delhi - DPCC",28.647622,77.315809,28.6250N_77.3750E,28.625,77.375
+forecast_day2_icon,ashok_vihar_dpcc,"Ashok Vihar, Delhi - DPCC",28.695381,77.181665,28.7500N_77.1250E,28.75,77.125
+forecast_day2_icon,aya_nagar_imd,"Aya Nagar, Delhi - IMD",28.4706914,77.1099364,28.5000N_77.1250E,28.5,77.125
+forecast_day2_icon,bawana_dpcc,"Bawana, Delhi - DPCC",28.776200,77.051074,28.7500N_77.0000E,28.75,77.0
+forecast_day2_icon,burari_crossing_imd,"Burari Crossing, Delhi - IMD",28.7256504,77.2011573,28.7500N_77.2500E,28.75,77.25
+forecast_day2_icon,chandni_chowk_iitm,"Chandni Chowk, Delhi - IITM",28.656756,77.227234,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,crri_mathura_road_imd,"CRRI Mathura Road, Delhi - IMD",28.5512005,77.2735737,28.5000N_77.2500E,28.5,77.25
+forecast_day2_icon,dr_karni_singh_shooting_range_dpcc,"Dr. Karni Singh Shooting Range, Delhi - DPCC",28.498571,77.264840,28.5000N_77.2500E,28.5,77.25
+forecast_day2_icon,dtu_cpcb,"DTU, Delhi - CPCB",28.7500499,77.1112615,28.7500N_77.1250E,28.75,77.125
+forecast_day2_icon,dwarka_sector_8_dpcc,"Dwarka-Sector 8, Delhi - DPCC",28.5710274,77.0719006,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,igi_airport_t3_imd,"IGI Airport (T3), Delhi - IMD",28.5627763,77.1180053,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,ihbas_dilshad_garden_cpcb,"IHBAS, Dilshad Garden, Delhi - CPCB",28.6811736,77.3025234,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,ito_cpcb,"ITO, Delhi - CPCB",28.628624,77.241060,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,jahangirpuri_dpcc,"Jahangirpuri, Delhi - DPCC",28.732820,77.170633,28.7500N_77.1250E,28.75,77.125
+forecast_day2_icon,jawaharlal_nehru_stadium_dpcc,"Jawaharlal Nehru Stadium, Delhi - DPCC",28.580280,77.233829,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,lodhi_road_iitm,"Lodhi Road, Delhi - IITM",28.588333,77.221667,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,lodhi_road_imd,"Lodhi Road, Delhi - IMD",28.5918245,77.2273074,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,major_dhyan_chand_national_stadium_dpcc,"Major Dhyan Chand National Stadium, Delhi - DPCC",28.611281,77.237738,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,mandir_marg_dpcc,"Mandir Marg, Delhi - DPCC",28.636429,77.201067,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,mundka_dpcc,"Mundka, Delhi - DPCC",28.684678,77.076574,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,najafgarh_dpcc,"Najafgarh, Delhi - DPCC",28.570173,76.933762,28.6250N_76.8750E,28.625,76.875
+forecast_day2_icon,narela_dpcc,"Narela, Delhi - DPCC",28.822836,77.101981,28.8750N_77.1250E,28.875,77.125
+forecast_day2_icon,nehru_nagar_dpcc,"Nehru Nagar, Delhi - DPCC",28.567890,77.250515,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,north_campus_du_imd,"North Campus, DU, Delhi - IMD",28.6573814,77.1585447,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,nsit_dwarka_cpcb,"NSIT Dwarka, Delhi - CPCB",28.60909,77.0325413,28.6250N_77.0000E,28.625,77.0
+forecast_day2_icon,okhla_phase_2_dpcc,"Okhla Phase-2, Delhi - DPCC",28.530785,77.271255,28.5000N_77.2500E,28.5,77.25
+forecast_day2_icon,patparganj_dpcc,"Patparganj, Delhi - DPCC",28.623763,77.287209,28.6250N_77.2500E,28.625,77.25
+forecast_day2_icon,punjabi_bagh_dpcc,"Punjabi Bagh, Delhi - DPCC",28.674045,77.131023,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,pusa_dpcc,"Pusa, Delhi - DPCC",28.639652,77.146275,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,pusa_imd,"Pusa, Delhi - IMD",28.636110,77.173332,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,r_k_puram_dpcc,"R K Puram, Delhi - DPCC",28.563262,77.186937,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,rohini_dpcc,"Rohini, Delhi - DPCC",28.732528,77.119920,28.7500N_77.1250E,28.75,77.125
+forecast_day2_icon,shadipur_cpcb,"Shadipur, Delhi - CPCB",28.6514781,77.1473105,28.6250N_77.1250E,28.625,77.125
+forecast_day2_icon,sirifort_cpcb,"Sirifort, Delhi - CPCB",28.5504249,77.2159377,28.5000N_77.2500E,28.5,77.25
+forecast_day2_icon,sonia_vihar_dpcc,"Sonia Vihar, Delhi - DPCC",28.710508,77.249485,28.7500N_77.2500E,28.75,77.25
+forecast_day2_icon,sri_aurobindo_marg_dpcc,"Sri Aurobindo Marg, Delhi - DPCC",28.531346,77.190156,28.5000N_77.2500E,28.5,77.25
+forecast_day2_icon,vivek_vihar_dpcc,"Vivek Vihar, Delhi - DPCC",28.672342,77.315260,28.6250N_77.3750E,28.625,77.375
+forecast_day2_icon,wazirpur_dpcc,"Wazirpur, Delhi - DPCC",28.699793,77.165453,28.7500N_77.1250E,28.75,77.125
