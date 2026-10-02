@@ -3,8 +3,10 @@
 WHERE THE DATA COMES FROM
   CPCB's Central Control Room portal (airquality.cpcb.gov.in/ccr) publishes per-station
   files, but it sits behind a captcha, so it cannot be scripted. OpenCity
-  (data.opencity.in, public-domain licence) republishes those same files as
-  "Delhi Hourly Air Quality Reports" for 39 Delhi stations. We download from there.
+  (data.opencity.in) republishes those same files as "Delhi Hourly Air Quality
+  Reports" for 39 Delhi stations. We download from there. OpenCity labels them
+  public domain, but they are copies of Vonter/india-cpcb-aqi (ODbL-1.0; see
+  01b_fetch_cpcb_vonter.py), so we follow ODbL: credit CPCB, Vonter and OpenCity.
 
 WHAT WE DOWNLOAD
   One file per station: 15-minute pollutant CONCENTRATIONS (PM2.5, PM10, NO2, ...)
@@ -36,13 +38,14 @@ USAGE (run from the project root)
 import argparse
 import csv
 import difflib
-import hashlib
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
+
+from delhi_aqi.download import DownloadError, download, sha256_of
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATIONS_CSV = PROJECT_ROOT / "config" / "stations.csv"
@@ -73,10 +76,6 @@ MANIFEST_FIELDS = [
 ]
 
 
-class DownloadError(Exception):
-    """The server refused the file (e.g. HTTP 404): retrying will not help."""
-
-
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -100,50 +99,6 @@ def resource_urls(session: requests.Session) -> dict[str, str]:
     if not payload.get("success"):
         sys.exit(f"OpenCity API error: {payload.get('error')}")
     return {r["name"].strip(): r["url"] for r in payload["result"]["resources"]}
-
-
-def download(session: requests.Session, url: str, dest: Path) -> tuple[int, str]:
-    """Stream `url` into `dest`, returning (bytes, sha256).
-
-    Writes to `<dest>.part` first and renames only when complete, so an interrupted
-    run never leaves a half-written CSV that looks valid. Retries network errors.
-    """
-    tmp = dest.with_name(dest.name + ".part")
-    attempts = 4
-    for attempt in range(1, attempts + 1):
-        try:
-            sha, size = hashlib.sha256(), 0
-            # identity = no gzip, so Content-Length is the true file size we can check
-            with session.get(url, stream=True, timeout=(15, 120),
-                             headers={"Accept-Encoding": "identity"}) as resp:
-                if 400 <= resp.status_code < 500:  # 404 etc.: not retried (see except below)
-                    raise DownloadError(f"HTTP {resp.status_code} for {url}")
-                resp.raise_for_status()
-                expected = resp.headers.get("Content-Length")
-                with tmp.open("wb") as fh:
-                    for chunk in resp.iter_content(chunk_size=1 << 16):
-                        fh.write(chunk)
-                        sha.update(chunk)
-                        size += len(chunk)
-            if expected is not None and int(expected) != size:
-                raise OSError(f"truncated: got {size} of {expected} bytes")
-            tmp.replace(dest)
-            return size, sha.hexdigest()
-        except (requests.RequestException, OSError) as exc:
-            tmp.unlink(missing_ok=True)
-            if attempt == attempts:
-                raise
-            print(f"    attempt {attempt} failed ({exc}); retrying in {2 ** attempt}s")
-            time.sleep(2 ** attempt)
-    raise AssertionError("unreachable")
-
-
-def sha256_of(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def inspect_conc_15min(path: Path) -> dict:

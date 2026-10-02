@@ -6,12 +6,14 @@ __pycache__/
 .pytest_cache/
 
 # Data is downloaded by scripts/ -- never commit it (hundreds of MB).
-# Anyone can rebuild it with scripts/01_fetch_cpcb.py and scripts/02_fetch_weather.py.
+# Anyone can rebuild it with the fetch scripts 01_fetch_cpcb.py, 01b_fetch_cpcb_vonter.py
+# and 02_fetch_weather.py.
 # Exception: the small manifests ARE committed. Their SHA-256 fingerprints record
 # exactly which raw files every result in this history was computed from.
 data/**
 !data/**/
 !data/raw/cpcb/manifest.csv
+!data/raw/cpcb/manifest_vonter.csv
 !data/raw/weather/manifest.csv
 !data/raw/weather/station_cells.csv
 *.part

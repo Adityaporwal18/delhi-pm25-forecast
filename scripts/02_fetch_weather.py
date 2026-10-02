@@ -5,17 +5,18 @@ TWO KINDS OF WEATHER - AND WHY YOU NEED BOTH
             in, i.e. the best estimate of what the weather WAS at each hour.
   forecast  What a weather model PREDICTED for each hour, issued two days earlier
             (Open-Meteo "previous runs"; variable names end in _previous_day2).
-  A live 48-hour AQI forecast only ever has a FORECAST of the coming weather. Training on
-  the actual future weather is leakage: great test scores that collapse in production.
+  A live 48-hour PM2.5 forecast only ever has a FORECAST of the coming weather. Training
+  on the actual future weather is leakage: great test scores that collapse in production.
   Both are downloaded now so that Stage 3 can make (and justify) that choice.
 
 SOURCES - each pinned to ONE model, because Open-Meteo's default "best_match" silently
 switches models over time (2024 and 2025 rows would come from different models).
   actual_ecmwf_ifs    archive API, ECMWF IFS (~9 km grid), 9 surface variables
-  actual_era5_blh     archive API, ERA5 (~25 km grid), boundary-layer height only. No
-                      archive model has it for Jan-Jun 2024; ERA5 is complete after that.
+  actual_era5_blh     archive API, ERA5 (~25 km grid), boundary-layer height only. ERA5
+                      has it for 2023 and from Jul 2024; NO archive model has Jan-Jun 2024.
   forecast_day2_icon  previous-runs API, DWD ICON, the same 9 variables as forecast two
-                      days ahead. Empty before ~2024-01-20, when that archive starts.
+                      days ahead. Empty before ~2024-01-20 (all of 2023): the archive of
+                      past forecasts starts then.
 
 ONE DOWNLOAD PER GRID CELL, NOT PER STATION
   A weather model sees Delhi as a few grid boxes; stations in the same box get identical
@@ -29,8 +30,8 @@ OUTPUT (times in UTC, values exactly as returned, empty field = missing)
   data/raw/weather/manifest.csv               per file: model, grid point, units, nulls
 
 Data: Open-Meteo.com, licence CC BY 4.0 (credit it in your README). The free tier is
-non-commercial and limited to 600 calls/min, 5,000/hour, 10,000/day; a 2-year request
-counts as ~53 calls. A full run is ~1,500 calls and 5-10 minutes. Finished files are
+non-commercial and limited to 600 calls/min, 5,000/hour, 10,000/day; a 3-year request
+counts as ~79 calls. A full run is ~2,500 calls and ~8 minutes. Finished files are
 skipped on re-runs, so an interrupted run can simply be started again.
 
 USAGE (from the project root)
@@ -279,13 +280,13 @@ def parse_args() -> Options:
     parser.add_argument("--only", nargs="+", metavar="SLUG", default=[],
                         help="station slugs from config/stations.csv (default: all 39)")
     parser.add_argument("--sources", nargs="+", choices=list(SOURCES), default=list(SOURCES))
-    parser.add_argument("--start", type=date.fromisoformat, default=date(2023, 12, 25),
-                        help="first UTC day (default 2023-12-25: a week of history before the "
-                             "CPCB data starts, for lag features)")
+    parser.add_argument("--start", type=date.fromisoformat, default=date(2022, 12, 25),
+                        help="first UTC day (default 2022-12-25: a week of history before the "
+                             "CPCB data starts on 2023-01-01, for lag features)")
     parser.add_argument("--end", type=date.fromisoformat, default=date(2026, 1, 1),
                         help="last UTC day (default 2026-01-01: CPCB data ends 2025-12-31)")
-    parser.add_argument("--pause", type=float, default=8.0,
-                        help="seconds between API calls (default 8; keeps under 600 calls/min)")
+    parser.add_argument("--pause", type=float, default=12.0,
+                        help="seconds between API calls (default 12; keeps under 600 calls/min)")
     parser.add_argument("--force", action="store_true",
                         help="re-fetch existing files and redo the station->cell mapping")
     args = parser.parse_args()
