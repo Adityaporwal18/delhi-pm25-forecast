@@ -10,9 +10,9 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.clean import HOUR
-from delhi_aqi.config import FlatRule, PipelineConfig, SpikeRule
-from delhi_aqi.series_checks import flat_mask, isolated_spikes
+from delhi_pm25.clean import HOUR
+from delhi_pm25.config import FlatRule, PipelineConfig, SpikeRule
+from delhi_pm25.series_checks import flat_mask, isolated_spikes
 
 SLOTS_PER_HOUR: Final = 4
 DELHI: Final = "Asia/Kolkata"

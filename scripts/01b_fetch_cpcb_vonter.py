@@ -45,9 +45,9 @@ import pandas as pd
 import pyarrow.parquet as pq
 import requests
 
-from delhi_aqi.download import DownloadError, download, sha256_of
-from delhi_aqi.paths import PROJECT_ROOT, RAW_CPCB_DIR, STATIONS_CSV
-from delhi_aqi.raw_cpcb import EXPECTED_HEADER
+from delhi_pm25.download import DownloadError, download, sha256_of
+from delhi_pm25.paths import PROJECT_ROOT, RAW_CPCB_DIR, STATIONS_CSV
+from delhi_pm25.raw_cpcb import EXPECTED_HEADER
 
 RELEASE_API: Final = "https://api.github.com/repos/Vonter/india-cpcb-aqi/releases/tags/{year}"
 VONTER_DIR: Final = PROJECT_ROOT / "data" / "raw" / "vonter"

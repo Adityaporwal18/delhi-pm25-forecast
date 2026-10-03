@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from delhi_aqi.inspect_coverage import POLLUTANTS
-from delhi_aqi.inspect_values import (
+from delhi_pm25.inspect_coverage import POLLUTANTS
+from delhi_pm25.inspect_values import (
     bp_units,
     distance_km,
     hourly_checks,

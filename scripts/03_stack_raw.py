@@ -19,8 +19,8 @@ import sys
 
 import pandas as pd
 
-from delhi_aqi.paths import INTERIM_DIR, REPORTS_DIR, STATIONS_CSV
-from delhi_aqi.raw_cpcb import RawFormatError, load_raw, station_files
+from delhi_pm25.paths import INTERIM_DIR, REPORTS_DIR, STATIONS_CSV
+from delhi_pm25.raw_cpcb import RawFormatError, load_raw, station_files
 
 OUT_PARQUET = INTERIM_DIR / "cpcb_15min_raw.parquet"
 OUT_FILES = REPORTS_DIR / "stage2" / "files.csv"

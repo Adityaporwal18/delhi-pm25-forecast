@@ -1,9 +1,9 @@
-"""Tests for the time-series checks used in the Stage 2 inspection (src/delhi_aqi/series_checks.py)."""
+"""Tests for the time-series checks used in the Stage 2 inspection (src/delhi_pm25/series_checks.py)."""
 
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.series_checks import flat_mask, flat_runs, gap_lengths, isolated_spikes
+from delhi_pm25.series_checks import flat_mask, flat_runs, gap_lengths, isolated_spikes
 
 
 def test_gap_lengths_counts_each_run_of_missing_hours() -> None:

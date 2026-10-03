@@ -11,9 +11,9 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.aqi import aqi_from_hourly
-from delhi_aqi.inspect_coverage import POLLUTANTS
-from delhi_aqi.series_checks import flat_runs, isolated_spikes
+from delhi_pm25.aqi import aqi_from_hourly
+from delhi_pm25.inspect_coverage import POLLUTANTS
+from delhi_pm25.series_checks import flat_runs, isolated_spikes
 
 EARTH_RADIUS_KM: Final = 6371.0
 # India Meteorological Department seasons, by calendar month.
@@ -174,7 +174,7 @@ def neighbour_lags(stations: pd.DataFrame, hourly: pd.DataFrame, reference: list
 
 
 def station_aqi(hourly: pd.DataFrame) -> pd.DataFrame:
-    """CPCB-style AQI (see delhi_aqi.aqi) for every station hour, indexed (slug, hour)."""
+    """CPCB-style AQI (see delhi_pm25.aqi) for every station hour, indexed (slug, hour)."""
     parts = {
         slug: aqi_from_hourly(station.droplevel("slug"))
         for slug, station in hourly[POLLUTANTS].groupby(level="slug", observed=True)

@@ -34,12 +34,12 @@ from typing import Final
 
 import pandas as pd
 
-from delhi_aqi.clean import GridError, check_complete_grid, to_hourly
-from delhi_aqi.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
-from delhi_aqi.config import ConfigError, PipelineConfig, load_config
-from delhi_aqi.guards import InputsOutOfDate, check_up_to_date, check_weather_covers
-from delhi_aqi.paths import INTERIM_DIR, PIPELINE_TOML, RAW_WEATHER_DIR, REPORTS_DIR, STATIONS_CSV
-from delhi_aqi.raw_cpcb import POLLUTANTS, station_files
+from delhi_pm25.clean import GridError, check_complete_grid, to_hourly
+from delhi_pm25.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
+from delhi_pm25.config import ConfigError, PipelineConfig, load_config
+from delhi_pm25.guards import InputsOutOfDate, check_up_to_date, check_weather_covers
+from delhi_pm25.paths import INTERIM_DIR, PIPELINE_TOML, RAW_WEATHER_DIR, REPORTS_DIR, STATIONS_CSV
+from delhi_pm25.raw_cpcb import POLLUTANTS, station_files
 
 RAW_PARQUET: Final = INTERIM_DIR / "cpcb_15min_raw.parquet"
 WEATHER_MANIFEST: Final = RAW_WEATHER_DIR / "manifest.csv"

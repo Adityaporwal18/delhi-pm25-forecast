@@ -204,7 +204,7 @@ python3 -m venv .venv
 config/stations.csv    the 39 stations: CPCB ID, name, agency, coordinates
 config/pipeline.toml   every target, split and cleaning decision (change here, re-run)
 scripts/               01-05: fetch -> stack -> inspect -> clean (run in order)
-src/delhi_aqi/         the tested code the scripts use
+src/delhi_pm25/         the tested code the scripts use
 tests/                 pytest tests
 reports/stage2/        data-quality evidence and cleaning logs (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)

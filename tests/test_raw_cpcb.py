@@ -1,11 +1,11 @@
-"""Tests for reading raw CPCB station files (src/delhi_aqi/raw_cpcb.py)."""
+"""Tests for reading raw CPCB station files (src/delhi_pm25/raw_cpcb.py)."""
 
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from delhi_aqi.raw_cpcb import EXPECTED_HEADER, RawFormatError, load_raw, read_station_file
+from delhi_pm25.raw_cpcb import EXPECTED_HEADER, RawFormatError, load_raw, read_station_file
 
 STATIONS = pd.DataFrame({"slug": ["r_k_puram_dpcc"], "station_id": ["site_124"]})
 

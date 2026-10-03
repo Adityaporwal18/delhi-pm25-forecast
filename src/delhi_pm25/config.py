@@ -15,7 +15,7 @@ from typing import Literal
 
 import pandas as pd
 
-from delhi_aqi.raw_cpcb import POLLUTANTS
+from delhi_pm25.raw_cpcb import POLLUTANTS
 
 Target = Literal["pm25", "pm10"]
 Clock = Literal["ist", "utc"]

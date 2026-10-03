@@ -1,4 +1,4 @@
-"""Tests for the CPCB National AQI calculation (src/delhi_aqi/aqi.py)."""
+"""Tests for the CPCB National AQI calculation (src/delhi_pm25/aqi.py)."""
 
 import math
 
@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from delhi_aqi.aqi import aqi_from_hourly, sub_index
+from delhi_pm25.aqi import aqi_from_hourly, sub_index
 
 
 @pytest.mark.parametrize(("pollutant", "concentration", "expected"), [

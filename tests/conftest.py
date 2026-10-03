@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from delhi_aqi.config import CeilingRule, FlatRule, HourlyRules, PipelineConfig, SpikeRule
+from delhi_pm25.config import CeilingRule, FlatRule, HourlyRules, PipelineConfig, SpikeRule
 
 
 @pytest.fixture

@@ -1,12 +1,12 @@
-"""Tests for the Stage 2 cleaning rules and station selection (src/delhi_aqi/clean_rules.py)."""
+"""Tests for the Stage 2 cleaning rules and station selection (src/delhi_pm25/clean_rules.py)."""
 
 import dataclasses
 
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
-from delhi_aqi.config import PipelineConfig
+from delhi_pm25.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
+from delhi_pm25.config import PipelineConfig
 
 START = pd.Timestamp("2024-11-01 00:30", tz="UTC")
 HOUR = pd.Timedelta(hours=1)

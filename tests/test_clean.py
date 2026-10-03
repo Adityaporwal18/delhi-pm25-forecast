@@ -1,12 +1,12 @@
-"""Tests for turning 15-minute readings into a complete hourly grid (src/delhi_aqi/clean.py)."""
+"""Tests for turning 15-minute readings into a complete hourly grid (src/delhi_pm25/clean.py)."""
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from delhi_aqi.clean import GridError, check_complete_grid, to_hourly
-from delhi_aqi.config import CeilingRule, HourlyRules
-from delhi_aqi.raw_cpcb import POLLUTANTS
+from delhi_pm25.clean import GridError, check_complete_grid, to_hourly
+from delhi_pm25.config import CeilingRule, HourlyRules
+from delhi_pm25.raw_cpcb import POLLUTANTS
 
 DELHI_HOURS = HourlyRules(min_readings=1, clock="ist")
 CEILING = CeilingRule(ug_m3=1000.0, pollutants=("pm25",))

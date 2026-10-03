@@ -17,8 +17,8 @@ from typing import Final, assert_never
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.config import CeilingRule, Clock, HourlyRules
-from delhi_aqi.raw_cpcb import POLLUTANTS
+from delhi_pm25.config import CeilingRule, Clock, HourlyRules
+from delhi_pm25.raw_cpcb import POLLUTANTS
 
 IST_OFFSET: Final = pd.Timedelta(hours=5, minutes=30)
 HOUR: Final = pd.Timedelta(hours=1)

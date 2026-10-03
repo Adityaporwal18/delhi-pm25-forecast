@@ -56,7 +56,7 @@ STATIONS_CSV: Final = PROJECT_ROOT / "config" / "stations.csv"
 OUT_DIR: Final = PROJECT_ROOT / "data" / "raw" / "weather"
 CELLS_CSV: Final = OUT_DIR / "station_cells.csv"
 MANIFEST_CSV: Final = OUT_DIR / "manifest.csv"
-USER_AGENT: Final = "delhi-aqi-forecast-student-project/0.1"
+USER_AGENT: Final = "delhi-pm25-forecast-student-project/0.1"
 
 ARCHIVE_API: Final = "https://archive-api.open-meteo.com/v1/archive"
 PREVIOUS_RUNS_API: Final = "https://previous-runs-api.open-meteo.com/v1/forecast"

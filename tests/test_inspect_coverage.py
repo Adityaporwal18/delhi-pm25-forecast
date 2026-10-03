@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.inspect_coverage import (
+from delhi_pm25.inspect_coverage import (
     HOURLY_COLUMNS,
     hourly_by_label,
     missing_after_level,

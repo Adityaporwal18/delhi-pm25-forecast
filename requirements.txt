@@ -6,5 +6,5 @@ pyarrow==25.0.1
 numpy==2.5.3
 matplotlib==3.11.2
 pytest==9.1.1
-# Installs our own code in src/delhi_aqi/ so scripts and tests can `import delhi_aqi`.
+# Installs our own code in src/delhi_pm25/ so scripts and tests can `import delhi_pm25`.
 -e .

@@ -1,12 +1,12 @@
-"""Tests for reading the cleaning decisions in config/pipeline.toml (src/delhi_aqi/config.py)."""
+"""Tests for reading the cleaning decisions in config/pipeline.toml (src/delhi_pm25/config.py)."""
 
 from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from delhi_aqi.config import ConfigError, load_config
-from delhi_aqi.paths import PIPELINE_TOML
+from delhi_pm25.config import ConfigError, load_config
+from delhi_pm25.paths import PIPELINE_TOML
 
 VALID = """
 target = "pm25"

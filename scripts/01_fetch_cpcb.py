@@ -45,7 +45,7 @@ from pathlib import Path
 
 import requests
 
-from delhi_aqi.download import DownloadError, download, sha256_of
+from delhi_pm25.download import DownloadError, download, sha256_of
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 STATIONS_CSV = PROJECT_ROOT / "config" / "stations.csv"
@@ -55,7 +55,7 @@ MANIFEST_CSV = OUT_DIR / "manifest.csv"
 
 CKAN_API = "https://data.opencity.in/api/3/action/package_show"
 DATASET_ID = "0dc7b9fe-9fd4-46ee-a37e-88f0bd6f6362"
-USER_AGENT = "delhi-aqi-forecast-student-project/0.1"
+USER_AGENT = "delhi-pm25-forecast-student-project/0.1"
 RESOURCE_COLUMN = "opencity_15min_resource"  # column of stations.csv with the file's name on OpenCity
 
 # Exact header shared by all 39 15-minute files. The units use the micro sign (U+00B5)

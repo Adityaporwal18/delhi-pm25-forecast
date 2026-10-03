@@ -23,9 +23,9 @@ matplotlib.use("Agg")  # draw straight to PNG files, no window
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from delhi_aqi import inspect_coverage as cov
-from delhi_aqi import inspect_values as val
-from delhi_aqi.paths import INTERIM_DIR, RAW_WEATHER_DIR, REPORTS_DIR, STATIONS_CSV
+from delhi_pm25 import inspect_coverage as cov
+from delhi_pm25 import inspect_values as val
+from delhi_pm25.paths import INTERIM_DIR, RAW_WEATHER_DIR, REPORTS_DIR, STATIONS_CSV
 
 OUT: Final = REPORTS_DIR / "stage2"
 RAW_PARQUET: Final = INTERIM_DIR / "cpcb_15min_raw.parquet"

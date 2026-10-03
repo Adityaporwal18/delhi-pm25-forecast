@@ -10,8 +10,8 @@ from typing import Final
 import numpy as np
 import pandas as pd
 
-from delhi_aqi.raw_cpcb import POLLUTANTS
-from delhi_aqi.series_checks import gap_lengths
+from delhi_pm25.raw_cpcb import POLLUTANTS
+from delhi_pm25.series_checks import gap_lengths
 
 STATION_MET: Final = ["at", "rh", "ws", "wd", "sr", "bp"]
 HOURLY_COLUMNS: Final = [*POLLUTANTS, "at"]

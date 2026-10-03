@@ -1,4 +1,4 @@
-"""Tests for the checks that stop the pipeline when its inputs are out of date (src/delhi_aqi/guards.py)."""
+"""Tests for the checks that stop the pipeline when its inputs are out of date (src/delhi_pm25/guards.py)."""
 
 import os
 from datetime import date
@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from delhi_aqi.guards import InputsOutOfDate, check_up_to_date, check_weather_covers
+from delhi_pm25.guards import InputsOutOfDate, check_up_to_date, check_weather_covers
 
 FIRST_DAY, LAST_DAY = date(2023, 1, 1), date(2025, 12, 31)
 STACK_COMMAND = ".venv/bin/python scripts/03_stack_raw.py"

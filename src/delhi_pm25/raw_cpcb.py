@@ -22,7 +22,7 @@ from typing import Final
 
 import pandas as pd
 
-from delhi_aqi.paths import RAW_CPCB_DIR
+from delhi_pm25.paths import RAW_CPCB_DIR
 
 ID_COLUMNS: Final = ["Station ID", "State", "City", "Station Name", "Timestamp"]
 
