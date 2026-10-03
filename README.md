@@ -4,7 +4,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (2 Oct 2026): stages 1–2 of 7 done — data collected and cleaned.**
+> **Status (2 Oct 2026): stages 1–3 of 7 done — data collected, cleaned and turned into features.**
 > No model has been trained yet, so the results table below is empty on purpose.
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -71,21 +71,29 @@ What this means for the results:
 - Hours where an analyser hit its 1000 µg/m³ limit carry a flag (`pm25_at_ceiling`).
 - The error on the smoggiest 10% and 1% of test hours is a **headline result**, reported
   next to the overall error together with the share of those hours that cannot be scored.
+- The city-wide median (a feature) is taken over the stations that reported, so in heavy
+  smog it rests on fewer stations and may come out too low. A feature counts those
+  stations (`city_pm25_n_stations`). Over training hours it averages 35.0 of 37 stations,
+  36.0 in the smoggiest 10%, 34.7 in the smoggiest 1% and 33.6 in the smoggiest 0.1%
+  (minimum 22): `reports/stage3/city_median_stations.csv`.
 
 ## Results
 
 Mean absolute error (MAE, average size of the miss in µg/m³; lower is better) of the
-48-hour-ahead PM2.5 forecast on the test period, calendar 2025 (Delhi time). The baseline
-is persistence: "PM2.5 in 48 hours = PM2.5 now".
+48-hour-ahead PM2.5 forecast on the test period, calendar 2025 (Delhi time). Two baselines:
+persistence, "PM2.5 in 48 hours = PM2.5 now", and climatology, "PM2.5 in 48 hours = the
+training-period average for this station at that time of year and day" (how much to
+smooth it is decided in stage 4).
 
-| Test hours    | Cannot be scored (blank) | Persistence baseline MAE | Model MAE             |
-|---------------|--------------------------|--------------------------|-----------------------|
-| All hours     | 4.6%                     | not run yet (stage 4)    | not run yet (stage 5) |
-| Smoggiest 10% | 3.1%                     | —                        | —                     |
-| Smoggiest 1%  | 8.7%                     | —                        | —                     |
+| Test hours    | Cannot be scored (blank) | Persistence MAE       | Climatology MAE       | Model MAE             |
+|---------------|--------------------------|-----------------------|-----------------------|-----------------------|
+| All hours     | 4.6%                     | not run yet (stage 4) | not run yet (stage 4) | not run yet (stage 5) |
+| Smoggiest 10% | 3.1%                     | —                     | —                     | —                     |
+| Smoggiest 1%  | 8.7%                     | —                     | —                     | —                     |
 
 Where the model is weak (winter vs summer, spikes vs steady periods, station by station)
-will be reported in stage 6.
+will be reported in stage 6. Diwali 2025 is reported there separately and labelled n = 1:
+one night, where a good result is luck as much as skill.
 
 ## Weather: what the model may know, and two planned comparisons
 
@@ -111,6 +119,7 @@ Planned comparisons (results go here, whichever way they come out):
 |---|---|---|
 | Does BLH earn its place? | Stage 5: the same model with and without the BLH features | If it adds little, drop it rather than carry the mismatch risk |
 | Does knowing the weather forecast help predict PM2.5 two days out? | After the main pipeline works: a 2024–2025-only variant (train 2024, test 2025) with and without the archived 2-day ICON forecasts, compared at 48 h | Reported here either way |
+| Does the stubble-season flag add anything? | Stage 5: with and without `target_in_stubble_season` (15 Oct–15 Nov) | Prior evidence is weak (training city PM2.5 in that window: 181 µg/m³ with wind from the west–north quarter vs 185 otherwise); removed if it adds nothing, the same standard as BLH |
 
 ## Stations: the selection rule was fixed before any model
 
@@ -169,6 +178,33 @@ Every choice lives in `config/pipeline.toml`; the evidence is in `reports/stage2
 Also not carried past cleaning: NO and NOx (they overlap with NO2) and benzene, toluene and
 xylene (mostly empty).
 
+## Features (stage 3)
+
+A forecast is made at hour *t* (the end of the latest complete hour) for the hour ending
+*t* + 48 h. Each row holds only what is known at *t*, plus the calendar of the hour being
+forecast. Settings: `[features]` in `config/pipeline.toml`; every feature with its reason:
+`reports/stage3/feature_list.csv` (42 features).
+
+| Group | Features | Why |
+|---|---|---|
+| Station | station ID | Local sources make some stations run higher |
+| A own history | PM2.5 now and 3, 6, 12, 24, 48, 168 h ago | Pollution persists; 24 and 48 h ago share the target's time of day |
+| B rolling means | means of the last 6, 24, 72, 168 h (blank unless half the hours have a value) | The level of the current episode, steadier than one hour |
+| C city-wide | city median now, its 24 h mean, stations behind it, station minus city | Delhi's pollution is regional; still works when this analyser is down |
+| D calendar | hour of day and day of year of the target hour (as sine and cosine) | Daily cycle and season |
+| E events | Diwali window (18:00 on Diwali to 12:00 next day), stubble season (15 Oct–15 Nov) | Known pollution events; only two Diwalis in training |
+| F weather now | temperature, humidity, dew point, pressure, cloud, sunshine, wind (speed, east–west and north–south parts, 24 h mean), rain in the last 24 h, BLH now and its 24 h minimum, BLH × wind | Weather decides how fast pollution spreads out or washes out |
+| G other | PM10, NO2, CO now; readings in the current hour, hours since the last reading, analyser hit its limit in the last 24 h | Source hints and data-quality signals |
+
+Spearman correlation with the PM2.5 value 48 h later, training rows only
+(`reports/stage3/feature_correlations.csv`): PM2.5 now 0.752, 24 h ago 0.725, mean of the
+last week 0.744, city median now 0.730. No feature is dropped on these numbers, because a
+feature can matter in combination with others; pruning waits for the stage 5 importances.
+
+`tests/test_leakage.py` checks for leakage automatically: it changes every input after a
+cut-off hour and checks that no feature at or before that hour moves, for every feature
+column, including any added later.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -216,7 +252,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/04_inspect_raw.py                     # data-quality evidence -> reports/stage2/
 .venv/bin/python scripts/05_clean.py                           # cleaning -> data/interim/hourly_clean.parquet
 
-.venv/bin/python -m pytest                                     # 82 tests
+.venv/bin/python scripts/06_features.py                        # feature table
+.venv/bin/python -m pytest                                     # 201 tests
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -235,6 +272,7 @@ scripts/               01-05: fetch -> stack -> inspect -> clean (run in order)
 src/delhi_pm25/        the tested code the scripts use
 tests/                 pytest tests
 reports/stage2/        data-quality evidence and cleaning logs (committed)
+reports/stage3/        feature list and evidence (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)
 ```
 
@@ -242,8 +280,8 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 
 1. Data — done
 2. Cleaning — done
-3. Features — next
-4. Time-based split and persistence baseline
+3. Features — done
+4. Time-based split, persistence and climatology baselines — next
 5. Model (LightGBM or XGBoost)
 6. Error analysis, with the smoggiest hours as the headline
 7. API, map frontend and deployment
