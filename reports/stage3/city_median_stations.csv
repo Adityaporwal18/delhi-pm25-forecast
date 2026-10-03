@@ -1,0 +1,5 @@
+hours,n_hours,city_median_from_ug_m3,stations_mean,stations_min
+all hours,17496,3.5,35.0,6
+smoggiest 10.0%,1751,225.0,36.0,19
+smoggiest 1.0%,175,396.0,34.7,19
+smoggiest 0.1%,18,622.1,33.6,22

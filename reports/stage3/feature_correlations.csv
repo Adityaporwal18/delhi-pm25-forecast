@@ -1,0 +1,42 @@
+feature,group,rho,n
+pm25_lag_0h,A own history,0.752,590253
+pm25_lag_3h,A own history,0.701,589740
+pm25_lag_6h,A own history,0.633,589389
+pm25_lag_12h,A own history,0.593,588760
+pm25_lag_24h,A own history,0.725,587744
+pm25_lag_48h,A own history,0.706,585749
+pm25_lag_168h,A own history,0.66,578742
+pm25_mean_6h,B rolling means,0.739,596009
+pm25_mean_24h,B rolling means,0.732,598385
+pm25_mean_72h,B rolling means,0.741,602617
+pm25_mean_168h,B rolling means,0.744,602271
+pm10_now,G other pollutants,0.642,589391
+no2_now,G other pollutants,0.34,591449
+co_now,G other pollutants,0.319,586372
+n_pm25_now,G data quality,0.033,612116
+hours_since_pm25,G data quality,-0.044,612116
+pm25_hit_limit_24h,G data quality,0.005,612116
+city_pm25_median,C city-wide,0.73,612116
+city_pm25_n_stations,C city-wide,0.335,612116
+city_pm25_median_mean_24h,C city-wide,0.705,611712
+pm25_minus_city,C city-wide,0.146,590253
+target_hour_sin,D calendar,0.138,612116
+target_hour_cos,D calendar,0.108,612116
+target_doy_sin,D calendar,0.019,612116
+target_doy_cos,D calendar,0.657,612116
+target_in_diwali_window,E events,0.058,612116
+target_in_stubble_season,E events,0.269,612116
+wx_temperature,F weather now,-0.579,612116
+wx_rh,F weather now,0.105,612116
+wx_dew_point,F weather now,-0.461,612116
+wx_pressure,F weather now,0.652,612116
+wx_cloud,F weather now,-0.364,612116
+wx_shortwave,F weather now,-0.186,612116
+wx_wind_speed,F weather now,-0.226,612116
+wx_wind_u,F weather now,0.105,612116
+wx_wind_v,F weather now,-0.109,612116
+wx_wind_speed_mean_24h,F weather now,-0.244,612116
+wx_rain_sum_24h,F weather now,-0.462,612116
+wx_blh,F weather now,-0.361,458730
+wx_blh_min_24h,F weather now,-0.381,458774
+wx_ventilation,F weather now,-0.367,458730
