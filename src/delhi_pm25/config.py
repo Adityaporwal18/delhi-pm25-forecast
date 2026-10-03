@@ -8,7 +8,7 @@ or malformed setting stops the run here, with a message naming the setting.
 import tomllib
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import MappingProxyType
 from typing import Literal
@@ -53,6 +53,24 @@ class FlatRule:
 
 
 @dataclass(frozen=True, slots=True)
+class DiwaliWindow:
+    dates: tuple[date, ...]
+    start_hour_ist: int
+    hours: int
+
+
+@dataclass(frozen=True, slots=True)
+class FeatureSettings:
+    horizon_hours: int
+    lags_hours: tuple[int, ...]
+    rolling_hours: tuple[int, ...]
+    rolling_min_share: float
+    other_pollutants: tuple[str, ...]
+    diwali: DiwaliWindow
+    stubble_season: tuple[int, int]
+
+
+@dataclass(frozen=True, slots=True)
 class PipelineConfig:
     target: Target
     test_start: pd.Timestamp
@@ -61,6 +79,7 @@ class PipelineConfig:
     ceiling: CeilingRule
     spikes: Mapping[str, SpikeRule]
     flat_runs: FlatRule
+    features: FeatureSettings
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +126,30 @@ class _Table:
         if not isinstance(value, bool):
             raise ConfigError(f"[{self.name}] {key} must be true or false, got {value!r}")
         return value
+
+    def whole_numbers(self, key: str, allowed: range) -> tuple[int, ...]:
+        value = self.get(key)
+        if not isinstance(value, list) or not value or any(type(v) is not int or v not in allowed for v in value):
+            raise ConfigError(f"[{self.name}] {key} must be a list of whole numbers from "
+                              f"{allowed.start} to {allowed.stop - 1}, got {value!r}")
+        return tuple(value)
+
+    def dates(self, key: str) -> tuple[date, ...]:
+        value = self.get(key)
+        if not isinstance(value, list) or not value or any(type(v) is not date for v in value):
+            raise ConfigError(f"[{self.name}] {key} must be a list of dates like 2024-10-31, got {value!r}")
+        return tuple(value)
+
+    def month_day(self, key: str) -> int:
+        """A day of the year written "MM-DD" (e.g. "10-15"), returned as the number 1015.
+        Checked against a leap year, so "02-29" is allowed."""
+        value = self.get(key)
+        try:
+            day = date.fromisoformat(f"2024-{value}")
+        except ValueError as error:
+            raise ConfigError(f'[{self.name}] {key} must be a day of the year written "MM-DD", '
+                              f'e.g. "10-15", got {value!r}') from error
+        return day.month * 100 + day.day
 
 
 def _target(value: object) -> Target:
@@ -164,6 +207,31 @@ def _flat_rule(flat: _Table, ceiling: CeilingRule) -> FlatRule:
     return FlatRule(flat.whole_number("min_hours", range(2, 10_000)), pollutants, exempt)
 
 
+def _feature_settings(features: _Table, target: Target, ceiling: CeilingRule) -> FeatureSettings:
+    others = features.pollutants("other_pollutants")
+    if target in others:
+        raise ConfigError(f"[{features.name}] other_pollutants must not include the target "
+                          f"{target!r}: its own history is already in the lags")
+    if target not in ceiling.pollutants:
+        raise ConfigError(f"[ceiling] pollutants must include the target {target!r}: the "
+                          "'hit the limit' feature needs its flag")
+    diwali, stubble = features.table("diwali"), features.table("stubble")
+    first, last = stubble.month_day("first_day"), stubble.month_day("last_day")
+    if first > last:
+        raise ConfigError(f"[{stubble.name}] first_day must not be after last_day "
+                          "(a season running past 31 December is not supported)")
+    return FeatureSettings(
+        horizon_hours=features.whole_number("horizon_hours", range(1, 169)),
+        lags_hours=features.whole_numbers("lags_hours", range(673)),
+        rolling_hours=features.whole_numbers("rolling_hours", range(2, 673)),
+        rolling_min_share=features.number("rolling_min_share", at_most=1.0),
+        other_pollutants=others,
+        diwali=DiwaliWindow(diwali.dates("dates"), diwali.whole_number("start_hour_ist", range(24)),
+                            diwali.whole_number("hours", range(1, 73))),
+        stubble_season=(first, last),
+    )
+
+
 def load_config(path: Path) -> PipelineConfig:
     """Read config/pipeline.toml; raise ConfigError naming the first bad setting."""
     try:
@@ -173,12 +241,14 @@ def load_config(path: Path) -> PipelineConfig:
         raise ConfigError(f"cannot read {path}: {error}") from error
     hourly, ceiling = root.table("hourly"), root.table("ceiling")
     ceiling_rule = CeilingRule(ceiling.number("ug_m3"), ceiling.pollutants("pollutants"))
+    target = _target(root.get("target"))
     return PipelineConfig(
-        target=_target(root.get("target")),
+        target=target,
         test_start=_test_start(root.table("split").get("test_start")),
         min_train_coverage_pct=root.table("stations").number("min_train_coverage_pct", at_most=100.0),
         hourly=HourlyRules(hourly.whole_number("min_readings", range(1, 5)), _clock(hourly.get("clock"))),
         ceiling=ceiling_rule,
         spikes=_spike_rules(root.table("spikes")),
         flat_runs=_flat_rule(root.table("flat_runs"), ceiling_rule),
+        features=_feature_settings(root.table("features"), target, ceiling_rule),
     )

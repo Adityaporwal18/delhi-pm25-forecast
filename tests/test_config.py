@@ -1,5 +1,6 @@
 """Tests for reading the cleaning decisions in config/pipeline.toml (src/delhi_pm25/config.py)."""
 
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
@@ -35,6 +36,22 @@ pollutants = ["pm25", "pm10"]
 
 [stations]
 min_train_coverage_pct = 75.0
+
+[features]
+horizon_hours = 48
+lags_hours = [0, 3, 6, 12, 24, 48, 168]
+rolling_hours = [6, 24, 72, 168]
+rolling_min_share = 0.5
+other_pollutants = ["pm10", "no2", "co"]
+
+[features.diwali]
+dates = [2023-11-12, 2024-10-31, 2025-10-20, 2026-11-08]
+start_hour_ist = 18
+hours = 18
+
+[features.stubble]
+first_day = "10-15"
+last_day = "11-15"
 """
 
 
@@ -74,6 +91,14 @@ def test_valid_config_gives_typed_rules(tmp_path: Path) -> None:
         ("polluted_city_median_ug_m3 = 300.0", "polluted_city_median_ug_m3 = 150.0", "polluted_city_median_ug_m3"),
         ("exempt_hours_at_ceiling = true", 'exempt_hours_at_ceiling = "yes"', "exempt_hours_at_ceiling"),
         ('ug_m3 = 1000.0\npollutants = ["pm25", "pm10"]', 'ug_m3 = 1000.0\npollutants = ["pm25"]', "exempt_hours_at_ceiling"),
+        ("horizon_hours = 48", "horizon_hours = 0", "horizon_hours"),
+        ("lags_hours = [0,", "lags_hours = [-1,", "lags_hours"),
+        ("rolling_min_share = 0.5", "rolling_min_share = 1.5", "rolling_min_share"),
+        ("start_hour_ist = 18", "start_hour_ist = 25", "start_hour_ist"),
+        ('first_day = "10-15"', 'first_day = "13-01"', "first_day"),
+        ('first_day = "10-15"', 'first_day = "11-20"', "first_day"),
+        ('other_pollutants = ["pm10", "no2", "co"]', 'other_pollutants = ["pm25", "no2"]', "other_pollutants"),
+        ("dates = [2023-11-12,", "dates = [2023-11-12T18:00:00,", "dates"),
     ],
 )
 def test_invalid_settings_are_rejected_with_a_clear_message(
@@ -92,3 +117,13 @@ def test_rule_d_and_the_ceiling_exemption_are_read_from_the_file(tmp_path: Path)
     spike = config.spikes["pm25"]
     assert (spike.calm_city_median_ug_m3, spike.polluted_city_median_ug_m3, spike.min_ratio_in_between,
             config.flat_runs.exempt_hours_at_ceiling) == (200.0, 300.0, 2.0, True)
+
+
+def test_feature_settings_are_read_from_the_file(tmp_path: Path) -> None:
+    # Given: the valid settings, including the [features] tables
+    path = write_config(tmp_path, VALID)
+    # When
+    features = load_config(path).features
+    # Then: dates stay calendar dates, the stubble season becomes month*100 + day
+    assert (features.horizon_hours, features.lags_hours[-1], features.diwali.dates[1],
+            features.stubble_season) == (48, 168, date(2024, 10, 31), (1015, 1115))

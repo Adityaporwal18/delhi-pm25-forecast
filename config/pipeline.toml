@@ -49,3 +49,28 @@ pollutants = ["pm25", "pm10"]
 # D3 (b): keep a station only if it reported the target in at least this % of its
 # 15-min slots during TRAINING. Fixed on 2 Oct 2026, before any model was trained.
 min_train_coverage_pct = 75.0
+
+[features]
+# Stage 3, chosen 2 Oct 2026. A forecast is made at hour t (the end of the latest complete
+# hour) for the hour ending t + horizon_hours. Features use only what is known at t.
+horizon_hours = 48
+# The station's own target value this many hours before t (0 = now: the persistence forecast).
+lags_hours = [0, 3, 6, 12, 24, 48, 168]
+# Trailing means over the last N hours, blank unless at least this share of hours has a value.
+rolling_hours = [6, 24, 72, 168]
+rolling_min_share = 0.5
+# Other pollutants measured at t (extra accepted 2 Oct 2026).
+other_pollutants = ["pm10", "no2", "co"]
+
+[features.diwali]
+# Option (a): the target hour starts between 18:00 on Diwali and 12:00 the next day (Delhi).
+# 2023-2024 are training, 2025 is the only test event (n = 1), 2026 is for live forecasts.
+dates = [2023-11-12, 2024-10-31, 2025-10-20, 2026-11-08]
+start_hour_ist = 18
+hours = 18
+
+[features.stubble]
+# Option (a): the target day (Delhi) falls between these days, inclusive. Kept only to test
+# whether it adds anything; stage 5 removes it if it does not (same standard as BLH).
+first_day = "10-15"
+last_day = "11-15"
