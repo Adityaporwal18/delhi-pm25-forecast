@@ -24,10 +24,13 @@ pollutants = ["pm25", "pm10"]
 
 [spikes.pm25]
 jump_ug_m3 = 200.0
-calm_city_median_ug_m3 = 300.0
+calm_city_median_ug_m3 = 200.0
+polluted_city_median_ug_m3 = 300.0
+min_ratio_in_between = 2.0
 
 [flat_runs]
 min_hours = 6
+exempt_hours_at_ceiling = true
 pollutants = ["pm25", "pm10"]
 
 [stations]
@@ -68,6 +71,9 @@ def test_valid_config_gives_typed_rules(tmp_path: Path) -> None:
         ('"pm10"]', '"pm1"]', "pm1"),
         ("min_train_coverage_pct = 75.0", "min_train_coverage_pct = 175.0", "min_train_coverage_pct"),
         ("jump_ug_m3 = 200.0", "jump_ug_m3 = -5", "jump_ug_m3"),
+        ("polluted_city_median_ug_m3 = 300.0", "polluted_city_median_ug_m3 = 150.0", "polluted_city_median_ug_m3"),
+        ("exempt_hours_at_ceiling = true", 'exempt_hours_at_ceiling = "yes"', "exempt_hours_at_ceiling"),
+        ('ug_m3 = 1000.0\npollutants = ["pm25", "pm10"]', 'ug_m3 = 1000.0\npollutants = ["pm25"]', "exempt_hours_at_ceiling"),
     ],
 )
 def test_invalid_settings_are_rejected_with_a_clear_message(
@@ -75,3 +81,14 @@ def test_invalid_settings_are_rejected_with_a_clear_message(
 ) -> None:
     with pytest.raises(ConfigError, match=message):
         load_config(write_config(tmp_path, VALID.replace(old, new)))
+
+
+def test_rule_d_and_the_ceiling_exemption_are_read_from_the_file(tmp_path: Path) -> None:
+    # Given: settings for spike rule (d) and the exemption for hours at the analyser limit
+    path = write_config(tmp_path, VALID)
+    # When
+    config = load_config(path)
+    # Then
+    spike = config.spikes["pm25"]
+    assert (spike.calm_city_median_ug_m3, spike.polluted_city_median_ug_m3, spike.min_ratio_in_between,
+            config.flat_runs.exempt_hours_at_ceiling) == (200.0, 300.0, 2.0, True)

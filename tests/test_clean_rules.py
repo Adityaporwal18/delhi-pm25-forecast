@@ -4,6 +4,7 @@ import dataclasses
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from delhi_pm25.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
 from delhi_pm25.config import PipelineConfig
@@ -21,6 +22,7 @@ def hourly_grid(pm25: dict[str, list[float]]) -> pd.DataFrame:
     hourly = pd.concat(parts, ignore_index=True)
     hourly["slug"] = pd.Categorical(hourly["slug"], categories=list(pm25))
     hourly["n_pm25"] = np.where(hourly["pm25"].notna(), 4, 0).astype("int8")
+    hourly["pm25_at_ceiling"] = hourly["pm25"] >= 1000
     return hourly
 
 
@@ -35,28 +37,40 @@ def test_station_selection_judges_coverage_on_training_hours_only(config: Pipeli
     assert selection["kept"].to_dict() == {"a": True, "b": False}
 
 
-def test_isolated_spike_is_removed_when_the_rest_of_the_city_is_calm(config: PipelineConfig) -> None:
-    # Given: a jumps 100 -> 400 -> 110 while b and c stay at 100 (city median 100 at the spike)
-    hourly = hourly_grid({"a": [100.0, 400.0, 110.0], "b": [100.0] * 3, "c": [100.0] * 3})
-    # When
-    cleaned, _ = remove_spikes(hourly, config.spikes)
-    # Then
-    assert cleaned.loc[cleaned["slug"] == "a", "pm25"].isna().tolist() == [False, True, False]
+SPIKE_CASES = {
+    "calm city": ([100.0, 400.0, 110.0], 100.0, "removed: city calm", True),
+    "glitch-sized jump in moderate smog": ([100.0, 900.0, 110.0], 250.0, "removed: >= 2x higher neighbour", True),
+    "real peak in moderate smog": ([500.0, 870.0, 600.0], 250.0, "kept: < 2x higher neighbour", False),
+    "polluted city": ([100.0, 400.0, 110.0], 320.0, "kept: city polluted", False),
+}
 
 
-def test_isolated_spike_is_kept_when_the_city_is_polluted_too(config: PipelineConfig) -> None:
-    # Given: the same spike, but b and c read 320, so the city median at the spike hour is 320 (>= 300)
-    hourly = hourly_grid({"a": [100.0, 400.0, 110.0], "b": [320.0] * 3, "c": [320.0] * 3})
+@pytest.mark.parametrize("case", SPIKE_CASES.values(), ids=SPIKE_CASES.keys())
+def test_spike_rule_d_removes_glitches_and_keeps_peaks_inside_smog(
+    config: PipelineConfig, case: tuple[list[float], float, str, bool],
+) -> None:
+    # Given: station a jumps up and straight back down; b and c set the city median at that hour
+    spiky, others, action, blanked = case
+    hourly = hourly_grid({"a": spiky, "b": [others] * 3, "c": [others] * 3})
     # When
-    _, log = remove_spikes(hourly, config.spikes)
+    cleaned, log = remove_spikes(hourly, config.spikes)
     # Then
-    assert log["action"].tolist() == ["kept: city polluted"]
+    assert (log["action"].tolist(), bool(cleaned["pm25"].isna().iloc[1])) == ([action], blanked)
 
 
 def test_six_identical_hours_are_blanked(config: PipelineConfig) -> None:
     hourly = hourly_grid({"a": [50.0] * 6 + [60.0]})
     cleaned, _ = blank_flat_runs(hourly, config.flat_runs)
     assert cleaned["pm25"].isna().tolist() == [True] * 6 + [False]
+
+
+def test_hours_at_the_analyser_limit_are_never_blanked_as_frozen(config: PipelineConfig) -> None:
+    # Given: six hours pegged at the 1000 ug/m3 limit (each flagged at_ceiling), then a normal hour
+    hourly = hourly_grid({"a": [1000.0] * 6 + [60.0]})
+    # When
+    cleaned, _ = blank_flat_runs(hourly, config.flat_runs)
+    # Then: the values and their ceiling flags both survive
+    assert (int(cleaned["pm25"].notna().sum()), int(cleaned["pm25_at_ceiling"].sum())) == (7, 6)
 
 
 def test_five_identical_hours_are_kept(config: PipelineConfig) -> None:

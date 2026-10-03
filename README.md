@@ -87,6 +87,31 @@ is persistence: "PM2.5 in 48 hours = PM2.5 now".
 Where the model is weak (winter vs summer, spikes vs steady periods, station by station)
 will be reported in stage 6.
 
+## Weather: what the model may know, and two planned comparisons
+
+- **Chosen (2 Oct 2026): only weather known when the forecast is made.** Features use
+  Open-Meteo's archive of the ECMWF IFS weather model for hour *t* and earlier, never the
+  actual weather at *t* + 48 h. The same features exist for all three years.
+- **Archived 2-day weather forecasts exist only from about 20 January 2024**, so the main
+  pipeline does not use them: 2023 rows would be structurally different from 2024–2025.
+- **Boundary-layer height (BLH) is kept, with a known hole.** BLH is the depth of air that
+  pollution mixes into (median about 45 m on winter nights vs about 1,900 m on summer
+  afternoons in ERA5), so the physical reason to use it is strong. ERA5 has no BLH for
+  January–June 2024 (about 25% of training hours); those rows have it blank.
+
+> **Warning: training/serving mismatch for BLH.** Training BLH comes from ERA5, a
+> reanalysis published about five days late. The live service in stage 7 must take BLH
+> from a different, real-time model. If the two disagree, BLH can look useful in the
+> backtest and still hurt live forecasts. Stage 7 compares the two sources over the same
+> days before BLH is used live.
+
+Planned comparisons (results go here, whichever way they come out):
+
+| Question | How | Rule |
+|---|---|---|
+| Does BLH earn its place? | Stage 5: the same model with and without the BLH features | If it adds little, drop it rather than carry the mismatch risk |
+| Does knowing the weather forecast help predict PM2.5 two days out? | After the main pipeline works: a 2024–2025-only variant (train 2024, test 2025) with and without the archived 2-day ICON forecasts, compared at 48 h | Reported here either way |
+
 ## Stations: the selection rule was fixed before any model
 
 Rule, set on 2 Oct 2026 in `config/pipeline.toml` before any model was trained: keep a
@@ -118,6 +143,9 @@ used by the rule.
 - Two cleaning rules (spikes, frozen readings) look at the following hours, so in live use
   they cannot be applied in exactly the same way to the newest hours. This is a small,
   known difference between the test setup and live forecasts.
+- A 48-hour gap before the test start: a training row whose 48-hours-ahead target falls on
+  or after the test start is dropped, so no test hour is ever a training target. A test
+  fails if any training row's target time is on or after the test start (stage 4).
 
 ## Cleaning decisions (stage 2)
 
@@ -130,8 +158,8 @@ Every choice lives in `config/pipeline.toml`; the evidence is in `reports/stage2
 | D2   | 15-minute → hourly | Mean of the readings present (at least 1 of 4); the count is stored (`n_pm25`) | Demanding all four would blank another 6.9% of station-hours, and about half the hours at Jahangirpuri and Rohini, where one slot is routinely missing. |
 | D3   | Missing values | Left blank; the target is never filled | Interpolation uses the next real reading (future information) and would draw a straight line under deleted peaks. |
 | D3   | Stations | Keep if ≥ 75% coverage in training | See "Stations" above. |
-| D4.1 | One-hour spikes (up more than 200 µg/m³ and straight back down) | Removed only when the city median that hour is below 300 µg/m³: 126 removed, 27 kept | On calm days they are glitches (DTU, 4 Mar 2024: 24 → 1000 → 15). On polluted nights they can be real (Sonia Vihar, Diwali night 2025: 514 → 923 → 713, city median 853). |
-| D4.2 | Frozen readings | Values unchanged for 6 hours or more are blanked: PM2.5 54 stretches (1,233 h), PM10 41 (775 h) | A stuck analyser (longest: Narela, 153 hours at exactly 53.0 µg/m³ in June 2023). |
+| D4.1 | One-hour spikes (up more than 200 µg/m³ and straight back down) | Rule (d): removed when the city median that hour is below 200 µg/m³, kept when it is 300 or more, and in between removed only if the spike is at least 2× its higher neighbouring hour. 111 removed (107 in a calm city, 4 glitch-sized), 42 kept (27 in a polluted city, 15 under 2×) | On calm days they are glitches (DTU, 4 Mar 2024: 24 → 1000 → 15). On polluted nights they can be real (Sonia Vihar, Diwali night 2025: 514 → 923 → 713, city median 853). Why (d): it keeps Nehru Nagar on 3 Jan 2025 and Patparganj on Diwali night 2024 (both under 2× their higher neighbour) but still removes the Burari glitch of 6 Aug 2024 (city median 15), which the 2× test alone would have kept. |
+| D4.2 | Frozen readings | Values unchanged for 6 hours or more are blanked: PM2.5 54 stretches (1,233 h), PM10 39 (718 h). Hours where the analyser hit its 1000 µg/m³ limit are exempt and keep their "hit the limit" flag (DTU PM10 sat at exactly 1000 for 49 h in Jan 2023 and 8 h in Jun 2024) | A stuck analyser (longest: Narela, 153 hours at exactly 53.0 µg/m³ in June 2023). A value pinned at the limit may be real smog above it, so it is flagged, not deleted. |
 | D4.3 | PM2.5 above PM10 (physically odd) | Kept | Rare: a median of 0% of hours per station. |
 | D4.4 | Station weather sensors | Not used; weather comes from Open-Meteo | 13 of the 39 stations have no thermometer; the "BP (mmHg)" column holds hPa at 24 stations, mmHg at 4 and nothing at 11. |
 | D5   | Station identity | CPCB station ID (e.g. `site_124`), not the name | Names drift (trailing spaces, different titles), and Lodhi Road IITM and Lodhi Road IMD are different stations 0.67 km apart (PM2.5 correlation 0.57). |
@@ -188,7 +216,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/04_inspect_raw.py                     # data-quality evidence -> reports/stage2/
 .venv/bin/python scripts/05_clean.py                           # cleaning -> data/interim/hourly_clean.parquet
 
-.venv/bin/python -m pytest                                     # 75 tests
+.venv/bin/python -m pytest                                     # 82 tests
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -204,7 +232,7 @@ python3 -m venv .venv
 config/stations.csv    the 39 stations: CPCB ID, name, agency, coordinates
 config/pipeline.toml   every target, split and cleaning decision (change here, re-run)
 scripts/               01-05: fetch -> stack -> inspect -> clean (run in order)
-src/delhi_pm25/         the tested code the scripts use
+src/delhi_pm25/        the tested code the scripts use
 tests/                 pytest tests
 reports/stage2/        data-quality evidence and cleaning logs (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)

@@ -41,12 +41,15 @@ class CeilingRule:
 class SpikeRule:
     jump_ug_m3: float
     calm_city_median_ug_m3: float
+    polluted_city_median_ug_m3: float
+    min_ratio_in_between: float
 
 
 @dataclass(frozen=True, slots=True)
 class FlatRule:
     min_hours: int
     pollutants: tuple[str, ...]
+    exempt_hours_at_ceiling: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,6 +102,12 @@ class _Table:
             raise ConfigError(f"[{self.name}] {key}: unknown pollutant(s) {unknown}; choose from {POLLUTANTS}")
         return tuple(value)
 
+    def flag(self, key: str) -> bool:
+        value = self.get(key)
+        if not isinstance(value, bool):
+            raise ConfigError(f"[{self.name}] {key} must be true or false, got {value!r}")
+        return value
+
 
 def _target(value: object) -> Target:
     match value:
@@ -134,9 +143,25 @@ def _spike_rules(spikes: _Table) -> Mapping[str, SpikeRule]:
         raise ConfigError(f"[spikes] unknown pollutant(s) {unknown}; choose from {POLLUTANTS}")
     rules = {}
     for pollutant in spikes.values:
-        rule = spikes.table(pollutant)
-        rules[pollutant] = SpikeRule(rule.number("jump_ug_m3"), rule.number("calm_city_median_ug_m3"))
+        rules[pollutant] = _spike_rule(spikes.table(pollutant))
     return MappingProxyType(rules)
+
+
+def _spike_rule(rule: _Table) -> SpikeRule:
+    calm, polluted = rule.number("calm_city_median_ug_m3"), rule.number("polluted_city_median_ug_m3")
+    if polluted < calm:
+        raise ConfigError(f"[{rule.name}] polluted_city_median_ug_m3 ({polluted:g}) must not be "
+                          f"below calm_city_median_ug_m3 ({calm:g})")
+    return SpikeRule(rule.number("jump_ug_m3"), calm, polluted, rule.number("min_ratio_in_between"))
+
+
+def _flat_rule(flat: _Table, ceiling: CeilingRule) -> FlatRule:
+    pollutants, exempt = flat.pollutants("pollutants"), flat.flag("exempt_hours_at_ceiling")
+    unflagged = sorted(set(pollutants) - set(ceiling.pollutants))
+    if exempt and unflagged:
+        raise ConfigError(f"[{flat.name}] exempt_hours_at_ceiling needs a ceiling flag for every "
+                          f"pollutant, but [ceiling] pollutants lacks {unflagged}")
+    return FlatRule(flat.whole_number("min_hours", range(2, 10_000)), pollutants, exempt)
 
 
 def load_config(path: Path) -> PipelineConfig:
@@ -146,13 +171,14 @@ def load_config(path: Path) -> PipelineConfig:
             root = _Table("top level", tomllib.load(file))
     except (OSError, tomllib.TOMLDecodeError) as error:
         raise ConfigError(f"cannot read {path}: {error}") from error
-    hourly, ceiling, flat = root.table("hourly"), root.table("ceiling"), root.table("flat_runs")
+    hourly, ceiling = root.table("hourly"), root.table("ceiling")
+    ceiling_rule = CeilingRule(ceiling.number("ug_m3"), ceiling.pollutants("pollutants"))
     return PipelineConfig(
         target=_target(root.get("target")),
         test_start=_test_start(root.table("split").get("test_start")),
         min_train_coverage_pct=root.table("stations").number("min_train_coverage_pct", at_most=100.0),
         hourly=HourlyRules(hourly.whole_number("min_readings", range(1, 5)), _clock(hourly.get("clock"))),
-        ceiling=CeilingRule(ceiling.number("ug_m3"), ceiling.pollutants("pollutants")),
+        ceiling=ceiling_rule,
         spikes=_spike_rules(root.table("spikes")),
-        flat_runs=FlatRule(flat.whole_number("min_hours", range(2, 10_000)), flat.pollutants("pollutants")),
+        flat_runs=_flat_rule(root.table("flat_runs"), ceiling_rule),
     )

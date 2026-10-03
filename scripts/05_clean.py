@@ -19,7 +19,7 @@ the analysers' 1000 ug/m3 limit.
 
 Outputs:
   data/interim/hourly_clean.parquet          cleaned hourly table (kept stations only)
-  reports/stage2/cleaning_summary.csv        values left after each step, per pollutant
+  reports/stage2/cleaning_summary.csv        rows and values left after each step, per pollutant
   reports/stage2/station_selection.csv       coverage per station; which were kept
   reports/stage2/removed_spikes.csv          every spike found, removed or kept
   reports/stage2/removed_flat_runs.csv       every frozen run that was blanked
@@ -71,8 +71,8 @@ def print_summary(config: PipelineConfig, hourly: pd.DataFrame, tables: dict[str
     print("D4.1 spikes found:", tables["removed_spikes"].groupby(["pollutant", "action"]).size().to_dict())
     runs = tables["removed_flat_runs"].groupby("pollutant")["hours"].agg(["size", "sum"])
     print("D4.2 frozen runs blanked:", {p: f"{n} runs, {h:,} hours" for p, (n, h) in runs.iterrows()})
-    print(f"\n{config.target} values left after each step:")
-    print(tables["cleaning_summary"].loc[config.target].to_string())
+    print(f"\nRows and {config.target} values left after each step:")
+    print(tables["cleaning_summary"].loc[["rows", config.target]].T.to_string())
     print(f"\nBlank {config.target} values, all hours vs the smoggiest hours (city median >= cutoff):")
     print(tables["missing_in_worst_hours"].to_string(index=False))
 
@@ -95,6 +95,7 @@ def main() -> int:
     steps = {"raw_15min_readings": readings, "hourly_values": hourly, "hourly_values_kept_stations": kept,
              "after_spike_rule": despiked, "after_frozen_rule": cleaned}
     summary = pd.DataFrame({step: frame[POLLUTANTS].notna().sum() for step, frame in steps.items()})
+    summary.loc["rows"] = [len(frame) for frame in steps.values()]
     tables = {
         "cleaning_summary": summary.rename_axis("pollutant"),
         "station_selection": selection,

@@ -17,7 +17,9 @@ from delhi_pm25.series_checks import flat_mask, isolated_spikes
 SLOTS_PER_HOUR: Final = 4
 DELHI: Final = "Asia/Kolkata"
 TAIL_SHARES: Final = (0.10, 0.01, 0.001)
-SPIKE_LOG_COLUMNS: Final = ["slug", "hour_end_utc", "pollutant", "before", "value", "after", "city_median", "action"]
+SPIKE_LOG_COLUMNS: Final = [
+    "slug", "hour_end_utc", "pollutant", "before", "value", "after", "ratio", "city_median", "action",
+]
 RUN_LOG_COLUMNS: Final = ["slug", "pollutant", "first_hour_end_utc", "last_hour_end_utc", "hours", "value"]
 
 
@@ -41,10 +43,13 @@ def station_selection(hourly: pd.DataFrame, config: PipelineConfig) -> pd.DataFr
 
 
 def remove_spikes(hourly: pd.DataFrame, rules: Mapping[str, SpikeRule]) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """D4.1 (c): blank a one-hour spike only when the rest of the city is calm that hour.
+    """D4.1 (d): blank a one-hour spike unless it sits inside real city-wide smog.
 
     Spike = more than `jump_ug_m3` above BOTH neighbouring hours. Instrument glitches look
     like that, but so does a real Diwali-night peak; the city median tells them apart.
+    City median below `calm_city_median_ug_m3`: removed. At or above
+    `polluted_city_median_ug_m3`: kept. In between: removed only if the spike is at least
+    `min_ratio_in_between` times its higher neighbouring hour (a glitch-sized jump).
     Returns the cleaned table and a log of every spike found, removed or kept.
     """
     cleaned = hourly.copy()
@@ -53,12 +58,23 @@ def remove_spikes(hourly: pd.DataFrame, rules: Mapping[str, SpikeRule]) -> tuple
         values = hourly[pollutant]
         by_station = values.groupby(hourly["slug"], observed=True)
         spike = by_station.transform(isolated_spikes, jump=rule.jump_ug_m3)
+        before, after = by_station.shift(1), by_station.shift(-1)
+        higher = np.fmax(before, after)
         city = values.groupby(hourly["hour_end_utc"]).transform("median")
-        remove = spike & (city < rule.calm_city_median_ug_m3)
+        calm = city < rule.calm_city_median_ug_m3
+        polluted = city >= rule.polluted_city_median_ug_m3
+        glitch_sized = values >= rule.min_ratio_in_between * higher
+        remove = spike & (calm | (~polluted & glitch_sized))
+        neighbour_test = f"{rule.min_ratio_in_between:g}x higher neighbour"
+        action = np.select(
+            [calm, polluted, glitch_sized],
+            ["removed: city calm", "kept: city polluted", f"removed: >= {neighbour_test}"],
+            default=f"kept: < {neighbour_test}",
+        )
         log = pd.DataFrame({
             "slug": hourly["slug"], "hour_end_utc": hourly["hour_end_utc"], "pollutant": pollutant,
-            "before": by_station.shift(1), "value": values, "after": by_station.shift(-1),
-            "city_median": city, "action": np.where(remove, "removed", "kept: city polluted"),
+            "before": before, "value": values, "after": after, "ratio": (values / higher).round(2),
+            "city_median": city, "action": action,
         })
         logs.append(log[spike])
         cleaned[pollutant] = values.mask(remove)
@@ -71,6 +87,10 @@ def blank_flat_runs(hourly: pd.DataFrame, rule: FlatRule) -> tuple[pd.DataFrame,
     """D4.2 (b): blank values repeated unchanged for `min_hours` or more hours (a stuck
     analyser, or a logger copying its last value). Returns the cleaned table and one log
     row per blanked run. Runs never continue from one station into the next.
+
+    With `exempt_hours_at_ceiling`, hours where the analyser hit its limit are never
+    blanked: a value pinned at the limit may be real smog above it, and the
+    `<pollutant>_at_ceiling` flag keeps that information.
     """
     cleaned = hourly.copy()
     slug = hourly["slug"]
@@ -78,6 +98,8 @@ def blank_flat_runs(hourly: pd.DataFrame, rule: FlatRule) -> tuple[pd.DataFrame,
     for pollutant in rule.pollutants:
         values = hourly[pollutant]
         frozen = values.groupby(slug, observed=True).transform(flat_mask, min_hours=rule.min_hours)
+        if rule.exempt_hours_at_ceiling:
+            frozen = frozen & ~hourly[f"{pollutant}_at_ceiling"]
         run_id = (values.ne(values.shift()) | slug.ne(slug.shift())).cumsum()
         runs = hourly[frozen].groupby(run_id[frozen]).agg(
             slug=("slug", "first"), first_hour_end_utc=("hour_end_utc", "first"),

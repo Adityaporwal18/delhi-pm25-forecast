@@ -8,13 +8,15 @@ target = "pm25"
 [split]
 # Everything from this moment on is the TEST period; the model never trains on it.
 # Fixed BEFORE any model, because station selection (below) looks only at training data.
-# Proposal: calendar 2025 (Delhi time) as test = one full year incl. a winter and Diwali.
+# Confirmed 2 Oct 2026: calendar 2025 (Delhi time) is the test year, one full year incl.
+# a winter and Diwali; 2023-2024 is training.
 test_start = 2025-01-01T00:00:00+05:30
 
 [hourly]
 # D2: an hourly value is the mean of the 15-min readings present; at least this many (1-4).
 min_readings = 1
-# D1 (sub-decision): which hours to average over. Labels become true UTC either way.
+# D1 (sub-decision, confirmed 2 Oct 2026): which hours to average over. Labels become
+# true UTC either way.
 # "ist" = Delhi clock hours, exactly the hourly values CPCB publishes (10:00-11:00 IST).
 # "utc" = whole UTC hours (aligned with weather data, but blends two CPCB hours).
 clock = "ist"
@@ -24,15 +26,23 @@ clock = "ist"
 ug_m3 = 1000.0
 pollutants = ["pm25", "pm10"]
 
-# D4.1 (c): remove a one-hour spike only if the rest of the city is calm that hour.
+# D4.1 (d), chosen 2 Oct 2026: a one-hour spike (up more than jump_ug_m3 and straight
+# back down) is removed when the city median that hour is below calm_city_median_ug_m3,
+# kept when it is at or above polluted_city_median_ug_m3, and in between removed only
+# if it is at least min_ratio_in_between x its higher neighbouring hour.
 # One table per pollutant; PM10 needs its own evidence before adding [spikes.pm10].
 [spikes.pm25]
 jump_ug_m3 = 200.0
-calm_city_median_ug_m3 = 300.0
+calm_city_median_ug_m3 = 200.0
+polluted_city_median_ug_m3 = 300.0
+min_ratio_in_between = 2.0
 
 [flat_runs]
 # D4.2 (b): blank a value repeated unchanged for this many hours or more (stuck instrument).
 min_hours = 6
+# Chosen 2 Oct 2026: hours at the analyser limit are never blanked as frozen; the value
+# may be real smog above the limit, and the [ceiling] flag keeps that information.
+exempt_hours_at_ceiling = true
 pollutants = ["pm25", "pm10"]
 
 [stations]
