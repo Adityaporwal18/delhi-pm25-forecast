@@ -10,5 +10,9 @@ pytest==9.1.1
 # source without OpenMP (one CPU core, same results):
 #   .venv/bin/pip install --no-binary lightgbm lightgbm==4.7.0 --config-settings=cmake.define.USE_OPENMP=OFF
 lightgbm==4.7.0
+# Stage 7 API (httpx2 is only for FastAPI's test client).
+fastapi==0.165.0
+uvicorn==0.54.0
+httpx2==2.16.2
 # Installs our own code in src/delhi_pm25/ so scripts and tests can `import delhi_pm25`.
 -e .

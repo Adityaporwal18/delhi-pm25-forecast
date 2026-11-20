@@ -4,7 +4,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (20 Nov 2026): stages 1–6 of 7 done; stage 7 (serving) in progress — forecasts every 6 hours with uncertainty bands are ready, the website is next.**
+> **Status (20 Nov 2026): stages 1–6 of 7 done; stage 7 (serving) in progress — forecasts with uncertainty bands and the API are ready, the website is next.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -349,8 +349,21 @@ stage 6. Persistence does well at 24 and 48 hours (the same clock time as now) a
 CPCB defines on 24-hour averages; applying them to an hourly forecast is an approximation, so
 the map says "PM2.5-based category", never AQI.
 
-Next: a FastAPI backend serving `data/serving/replay_2025.parquet`, a React map with a 48-hour
-chart per station, Docker, and deployment.
+Step 2 (done): a FastAPI backend serving `data/serving/replay_2025.parquet` (726 issue times,
+08:00 and 20:00 Delhi time from 1 January to 29 December 2025, for 37 stations):
+
+```
+.venv/bin/uvicorn delhi_pm25.server:app --reload    # then open http://127.0.0.1:8000/docs
+```
+
+| Endpoint | Returns |
+|---|---|
+| `GET /api/meta` | issue times, horizons, stations, colour bands, credits |
+| `GET /api/map?issued=…&horizon=48` | every station's forecast for one horizon, with its PM2.5-based category |
+| `GET /api/stations/{slug}/forecast?issued=…` | one station's path from now to 48 h: band, median, what was measured |
+
+Next: a React map with a 48-hour chart per station (step 3), then Docker and deployment
+(step 4).
 
 ## Quirks in the source data (handled in cleaning)
 
@@ -439,4 +452,4 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 4. Time-based split, persistence and climatology baselines — done
 5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
 6. Error analysis, with the smoggiest hours as the headline — done
-7. API, map frontend and deployment — in progress (step 1 of 4 done: forecasts every 6 hours with uncertainty bands)
+7. API, map frontend and deployment — in progress (steps 1–2 of 4 done: forecasts every 6 hours with bands; the API)
