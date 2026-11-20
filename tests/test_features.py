@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from delhi_pm25.config import PipelineConfig
-from delhi_pm25.features import FeatureError, calendar_features, city_features, station_history
+from delhi_pm25.features import FeatureError, calendar_features, city_features, horizon_view, station_history
 from delhi_pm25.guards import InputsOutOfDate
 from delhi_pm25.raw_cpcb import POLLUTANTS
 from delhi_pm25.weather import SOURCES, weather_features
@@ -151,3 +151,16 @@ def test_rain_is_summed_over_the_last_24_hours() -> None:
 def test_missing_weather_stops_with_the_command_that_fetches_it() -> None:
     with pytest.raises(InputsOutOfDate, match="02_fetch_weather"):
         weather_features(keys_at("2024-11-05 05:30"), calm_weather())
+
+
+def test_horizon_view_aims_the_target_and_its_hour_further_ahead(config: PipelineConfig) -> None:
+    # Given: two stations whose PM2.5 now runs 0, 1, 2, ... (only these columns matter here)
+    hours = pd.Series(pd.date_range(START, periods=5, freq="h", unit="us"))
+    table = pd.DataFrame({"slug": pd.Categorical(["a"] * 5 + ["b"] * 5),
+                          "hour_end_utc": pd.concat([hours, hours], ignore_index=True),
+                          "pm25_lag_0h": np.arange(10.0, dtype="float32")})
+    # When
+    view = horizon_view(table, hours=3, config=config)
+    # Then: the target is the same station's value 3 hours later, and the target hour moves with it
+    assert view["target"].fillna(-1).tolist() == [3, 4, -1, -1, -1, 8, 9, -1, -1, -1]
+    assert view["target_hour_end_utc"].iloc[0] == START + pd.Timedelta(hours=3)

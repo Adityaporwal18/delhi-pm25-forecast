@@ -9,6 +9,7 @@ import pytest
 from delhi_pm25.model import (
     FixedTrees,
     ModelError,
+    Quantile,
     Recipe,
     StopEarly,
     feature_columns,
@@ -113,3 +114,16 @@ def score_table(all_hours: float, smoggiest_10: float, smoggiest_1: float = 300.
 )
 def test_keep_rule_needs_a_gain_on_all_hours_or_the_smoggiest_tenth(without: pd.DataFrame, kept: bool) -> None:
     assert worth_keeping(score_table(40.0, 100.0), without, min_gain_pct=1.0) is kept
+
+
+def test_quantile_models_bracket_about_80_percent_of_fresh_values() -> None:
+    # Given: the same relation with up to 20 ug/m3 of random noise either way, and enough rows
+    # that the quantile models do not just memorise the noise
+    rng = np.random.default_rng(4)
+    noisy, fresh = (rows.assign(target=rows["target"] + rng.uniform(-20, 20, len(rows)))
+                    for rows in (rows_where_target_is_2x_plus_10(20_000, seed=5), FRESH))
+    # When: models for the 10th and the 90th percentile
+    low, high = (predict(fit(noisy, Recipe(RECIPE.columns, Quantile(alpha)), FixedTrees(trees=100)), fresh)
+                 for alpha in (0.1, 0.9))
+    # Then: about 80% of fresh values fall between them
+    assert 0.7 < ((fresh["target"] >= low) & (fresh["target"] <= high)).mean() < 0.9

@@ -116,3 +116,15 @@ def build_features(hourly: pd.DataFrame, weather: pd.DataFrame, config: Pipeline
     table["target"] = ordered[target].groupby(ordered["slug"], observed=True).shift(-settings.horizon_hours)
     floats = table.select_dtypes("float64").columns
     return table.astype(dict.fromkeys(floats, "float32"))
+
+
+def horizon_view(features: pd.DataFrame, hours: int, config: PipelineConfig) -> pd.DataFrame:
+    """The feature table re-aimed `hours` ahead (stage 7 serves several horizons): the target,
+    its hour and the calendar of the target hour change; everything known at the forecast hour
+    stays. Rows must be in station, then time order on a complete grid (as build_features
+    returns them)."""
+    target_end = features["hour_end_utc"] + hours * HOUR
+    calendar = calendar_features(target_end, config.features)
+    calendar = calendar.astype({name: "float32" for name in calendar.select_dtypes("float64").columns})
+    later = features[f"{config.target}_lag_0h"].groupby(features["slug"], observed=True).shift(-hours)
+    return features.assign(target_hour_end_utc=target_end, target=later, **{name: calendar[name] for name in calendar.columns})

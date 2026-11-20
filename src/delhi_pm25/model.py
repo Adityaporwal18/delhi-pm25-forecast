@@ -27,9 +27,16 @@ class ModelError(Exception):
 
 
 @dataclass(frozen=True, slots=True)
+class Quantile:
+    """A quantile model: with alpha = 0.9 the truth should fall below the forecast 90% of the time."""
+
+    alpha: float
+
+
+@dataclass(frozen=True, slots=True)
 class Recipe:
     columns: tuple[str, ...]
-    objective: Objective
+    objective: Objective | Quantile
 
 
 @dataclass(frozen=True, slots=True)
@@ -67,10 +74,20 @@ def _dataset(rows: pd.DataFrame, recipe: Recipe, reference: lgb.Dataset | None =
     return lgb.Dataset(measured[list(recipe.columns)], label=measured["target"], reference=reference)
 
 
+def _objective_params(objective: Objective | Quantile) -> dict[str, object]:
+    match objective:
+        case "l1" | "l2":
+            return {"objective": objective}
+        case Quantile(alpha=alpha):
+            return {"objective": "quantile", "alpha": alpha}
+        case unreachable:
+            assert_never(unreachable)
+
+
 def fit(train: pd.DataFrame, recipe: Recipe, stopping: StopEarly | FixedTrees) -> FittedModel:
     """Train on the rows of `train` whose target was measured. LightGBM defaults otherwise;
     `deterministic` and a fixed seed make every run give the same model."""
-    params = {"objective": recipe.objective, "seed": SEED, "deterministic": True,
+    params = {**_objective_params(recipe.objective), "seed": SEED, "deterministic": True,
               "force_row_wise": True, "verbosity": -1}
     train_set = _dataset(train, recipe)
     match stopping:
@@ -94,7 +111,7 @@ def predict(model: FittedModel, rows: pd.DataFrame) -> pd.Series:
     return pd.Series(np.clip(values, 0.0, None), index=rows.index, name="model")
 
 
-def load_model(path: Path, objective: Objective) -> FittedModel:
+def load_model(path: Path, objective: Objective | Quantile) -> FittedModel:
     """A model saved by scripts/08_model.py, ready for predict()."""
     booster = lgb.Booster(model_file=path)
     return FittedModel(booster, Recipe(tuple(booster.feature_name()), objective), booster.current_iteration())

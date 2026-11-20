@@ -114,3 +114,13 @@ no_doy = ["target_doy_sin", "target_doy_cos"]
 # A feature group stays in the final model only if removing it makes the validation MAE worse
 # by at least this many percent, on all hours or on the smoggiest 10% of hours.
 min_gain_pct = 1.0
+
+[serving]
+# Stage 7, set 20 Nov 2026. The chart shows forecasts every 6 hours up to 48 hours ahead: one
+# direct model per horizon, with the stage 5 recipe and feature set.
+horizons_hours = [6, 12, 18, 24, 30, 36, 42, 48]
+# The uncertainty band: models for the 10th and 90th percentiles, so about 80% of measured
+# values should fall inside it (checked on the test year in reports/stage7/horizons.csv).
+band_quantiles = [0.1, 0.9]
+# Replay of the test year: forecasts issued at these Delhi clock hours every day of 2025.
+replay_issue_hours_ist = [8, 20]

@@ -4,7 +4,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (20 Nov 2026): stages 1–6 of 7 done — data, cleaning, features, baselines, a first model, and an error analysis.**
+> **Status (20 Nov 2026): stages 1–6 of 7 done; stage 7 (serving) in progress — forecasts every 6 hours with uncertainty bands are ready, the website is next.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -324,6 +324,34 @@ anecdote, not evidence.
 ![MAE by station](reports/stage6/by_station.png)
 ![Diwali 2025](reports/stage6/diwali_2025.png)
 
+## Serving (stage 7, in progress)
+
+The website starts as a **replay of the test year 2025**: pick a date and time, and see what
+the model would have forecast then for the next 48 hours, next to what was measured. A replay
+needs no API keys and no live data; live forecasts come later.
+
+Step 1 (done): one model per horizon, every 6 hours up to 48 hours ahead, each with an
+uncertainty band from two quantile models (the 10th and 90th percentiles, so about 80% of
+measured values should fall inside). Test year 2025, from `reports/stage7/horizons.csv`:
+
+| Hours ahead | Persistence MAE | Climatology MAE | Model MAE | Inside the 80% band | Inside the band, smoggiest 10% |
+|---|---|---|---|---|---|
+| 6 | 42.1 | 37.8 | **27.0** | 78.4% | 71.2% |
+| 12 | 50.1 | 37.9 | **30.2** | 79.6% | 66.9% |
+| 24 | 37.2 | 37.9 | **31.6** | 79.5% | 63.7% |
+| 36 | 54.9 | 37.9 | **34.7** | 79.0% | 59.4% |
+| 48 | 43.4 | 38.0 | **34.7** | 79.0% | 59.3% |
+
+The model beats both baselines at every horizon. The band holds what it promises on average
+(78–81% at every horizon) but is too narrow in heavy smog (59–71%), the weakness found in
+stage 6. Persistence does well at 24 and 48 hours (the same clock time as now) and badly at
+12 and 36 (the opposite part of the daily cycle). Map colours use CPCB's PM2.5 bands, which
+CPCB defines on 24-hour averages; applying them to an hourly forecast is an approximation, so
+the map says "PM2.5-based category", never AQI.
+
+Next: a FastAPI backend serving `data/serving/replay_2025.parquet`, a React map with a 48-hour
+chart per station, Docker, and deployment.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -375,7 +403,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/07_baselines.py                       # split + baselines
 .venv/bin/python scripts/08_model.py                           # model, comparisons, test score
 .venv/bin/python scripts/09_error_analysis.py                  # where the model is weakest
-.venv/bin/python -m pytest                                     # 239 tests
+.venv/bin/python scripts/10_horizon_models.py                  # every 6 h ahead + bands + replay file
+.venv/bin/python -m pytest                                     # 243 tests
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -398,6 +427,7 @@ reports/stage3/        feature list and evidence (committed)
 reports/stage4/        baseline scores and the split (committed)
 reports/stage5/        model scores, feature comparisons, importances (committed)
 reports/stage6/        error-analysis tables and charts (committed)
+reports/stage7/        accuracy and band coverage per horizon (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)
 ```
 
@@ -409,4 +439,4 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 4. Time-based split, persistence and climatology baselines — done
 5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
 6. Error analysis, with the smoggiest hours as the headline — done
-7. API, map frontend and deployment — next
+7. API, map frontend and deployment — in progress (step 1 of 4 done: forecasts every 6 hours with uncertainty bands)
