@@ -1,0 +1,13 @@
+fold,rows,hours,city_median_from_ug_m3,n_hours,n_target_rows,n_rows,persistence_mae,climatology_mae,model_mae
+validation,same rows as baselines,all hours,3.5,8784,308497,296346,47.06,43.28,41.08
+validation,same rows as baselines,smoggiest 10.0%,222.2,879,31689,30968,119.31,110.51,125.1
+validation,same rows as baselines,smoggiest 1.0%,427.5,88,3072,2994,263.79,297.1,340.77
+validation,all measured rows,all hours,3.5,8784,308497,308497,,,40.92
+validation,all measured rows,smoggiest 10.0%,222.2,879,31689,31689,,,125.62
+validation,all measured rows,smoggiest 1.0%,427.5,88,3072,3072,,,340.35
+test,same rows as baselines,all hours,4.0,8760,309066,298602,43.37,37.97,34.38
+test,same rows as baselines,smoggiest 10.0%,223.0,879,31525,30865,108.33,89.32,104.99
+test,same rows as baselines,smoggiest 1.0%,378.7,88,2974,2902,201.31,193.61,236.1
+test,all measured rows,all hours,4.0,8760,309066,309066,,,34.25
+test,all measured rows,smoggiest 10.0%,223.0,879,31525,31525,,,105.69
+test,all measured rows,smoggiest 1.0%,378.7,88,2974,2974,,,237.13
