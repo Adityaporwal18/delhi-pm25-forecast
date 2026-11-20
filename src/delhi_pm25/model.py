@@ -8,6 +8,7 @@ whose target was measured, uses every feature column, and handles blank features
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Final, assert_never
 
 import lightgbm as lgb
@@ -91,6 +92,12 @@ def predict(model: FittedModel, rows: pd.DataFrame) -> pd.Series:
     """A forecast for every row, blank features included; never below zero (PM2.5 cannot be)."""
     values = model.booster.predict(rows[list(model.recipe.columns)], num_iteration=model.trees)
     return pd.Series(np.clip(values, 0.0, None), index=rows.index, name="model")
+
+
+def load_model(path: Path, objective: Objective) -> FittedModel:
+    """A model saved by scripts/08_model.py, ready for predict()."""
+    booster = lgb.Booster(model_file=path)
+    return FittedModel(booster, Recipe(tuple(booster.feature_name()), objective), booster.current_iteration())
 
 
 def importance(model: FittedModel) -> pd.DataFrame:

@@ -4,7 +4,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (20 Nov 2026): stages 1–5 of 7 done — data collected, cleaned, turned into features, baselines scored, and a first model trained.**
+> **Status (20 Nov 2026): stages 1–6 of 7 done — data, cleaning, features, baselines, a first model, and an error analysis.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -100,7 +100,7 @@ Validation fold (train on 2023, score 2024), used while building the model: pers
 baselines on average: 34.7 vs 38.0 for climatology (−8.6%) and 43.4 for persistence (−20%).
 It is **not** better in the hours that matter most: in the smoggiest 10% of 2025 hours it is
 worse than climatology (106.0 vs 89.3), and in the smoggiest 1% it is the worst of the three.
-Likely reasons, to be tested in stage 6: the model forecasts the typical (median) outcome,
+Reasons (checked in stage 6, below): the model forecasts the typical (median) outcome,
 which is right for MAE overall but pulls forecasts down in rare smog; ranking hours by how
 smoggy they *turned out* favours forecasts that never pull back towards typical values (the
 "forecaster's dilemma"); and two winters are little to learn extremes from. The model also
@@ -267,6 +267,63 @@ The final model relies most on PM2.5 now (32.5% of the total gain), the city med
 (21.1%), PM2.5 24 hours earlier (7.7%), the 72-hour mean (6.4%) and air pressure (5.1%)
 (`reports/stage5/importance.csv`).
 
+## Error analysis (stage 6): where the model is weakest
+
+All numbers are for the test year 2025. The three forecasts are compared on the same rows.
+MAE is in µg/m³; bias is the average of forecast minus truth (negative means the forecasts
+were too low). Tables and charts are in `reports/stage6/`. Nothing here was used to change
+the model.
+
+**The smoggiest hours (headline).**
+
+| Hours | Persistence | Climatology | Model | Model bias | Target blank |
+|---|---|---|---|---|---|
+| All hours | 43.4 | 38.0 | **34.7** | −9.8 | 4.6% |
+| Smoggiest 10%, by outcome | 108.3 | **89.3** | 106.0 | −95.6 | 3.1% |
+| Smoggiest 1%, by outcome | 201.3 | **193.6** | 226.1 | −222.4 | 8.7% |
+| Smoggiest 10%, known at forecast time | 102.9 | 70.5 | **70.4** | −21.8 | 2.9% |
+| Smoggiest 1%, known at forecast time | 190.9 | **66.0** | 71.5 | −3.2 | 2.7% |
+
+These rows answer two different questions. "When it turned out smoggy, how wrong were we?"
+(by outcome): every method under-forecasts badly and the model most, because it leans
+towards typical values. Its forecasts level off around 300–350 µg/m³ however high the real
+value goes (`forecast_vs_measured.png`). "When the city is smoggy now, how good is the
+48-hour forecast?" (hours chosen by the city median at forecast time, which is fair to every
+method): the model ties climatology and beats persistence by about a third, because heavy
+smog usually clears within two days (persistence's bias there is +56). A smog warning is
+judged by the first question, so it stays the headline: **the model is not yet useful for
+warning of the worst smog two days ahead.**
+
+**Season.** The model beats both baselines in every season, but its winter MAE is four times
+its monsoon MAE (56.6 vs 13.9), and its low bias is largest in October–November (−20.8) and
+winter (−15.8).
+
+**Steady periods vs sharp changes**, split by how far PM2.5 actually moved in the 48 hours.
+When it stayed within 30 µg/m³, persistence is best (12.8 vs the model's 16.0). After falls
+the model is best (62.3 vs 66.5 for climatology after falls of 100+). **When PM2.5 rose by
+more than 100 µg/m³, the model is almost as bad as persistence** (168.0 vs 177.4; climatology
+125.6): it does not see sudden smog build-ups coming two days ahead. Forecast weather is the
+most promising fix, and the planned forecast-weather comparison tests exactly that.
+
+**Stations.** The model beats climatology at 30 of 37 stations (median gain 5.5%) and is
+slightly worse at seven: Ashok Vihar (−5.2%), Bawana (−2.0%), Wazirpur (−1.6%), Sirifort
+(−1.2%), Vivek Vihar (−0.5%), Narela (−0.3%), Rohini (−0.2%). The largest errors are at the
+dirtiest stations (Anand Vihar 45.0, Wazirpur 44.4, Jahangirpuri 42.9). NSIT Dwarka gains
+44% because its 2025 levels sit well below its 2023–2024 average, which misleads
+climatology (bias +36.9), while the model follows recent readings.
+
+**Diwali 2025 (one night, n = 1).** All three forecasts missed the spike by about 200 µg/m³
+(model MAE 206.8, bias −196.8; climatology 237.9; persistence 228.6). With only two Diwalis in
+training, the Diwali flag cannot teach the model the size of the spike. One night is an
+anecdote, not evidence.
+
+![MAE in the smoggiest hours](reports/stage6/tails.png)
+![Model forecast vs measured](reports/stage6/forecast_vs_measured.png)
+![MAE by 48-hour change](reports/stage6/by_change.png)
+![MAE by season](reports/stage6/by_season.png)
+![MAE by station](reports/stage6/by_station.png)
+![Diwali 2025](reports/stage6/diwali_2025.png)
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -317,7 +374,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/06_features.py                        # feature table
 .venv/bin/python scripts/07_baselines.py                       # split + baselines
 .venv/bin/python scripts/08_model.py                           # model, comparisons, test score
-.venv/bin/python -m pytest                                     # 233 tests
+.venv/bin/python scripts/09_error_analysis.py                  # where the model is weakest
+.venv/bin/python -m pytest                                     # 239 tests
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -339,6 +397,7 @@ reports/stage2/        data-quality evidence and cleaning logs (committed)
 reports/stage3/        feature list and evidence (committed)
 reports/stage4/        baseline scores and the split (committed)
 reports/stage5/        model scores, feature comparisons, importances (committed)
+reports/stage6/        error-analysis tables and charts (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)
 ```
 
@@ -349,5 +408,5 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 3. Features — done
 4. Time-based split, persistence and climatology baselines — done
 5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
-6. Error analysis, with the smoggiest hours as the headline — next
-7. API, map frontend and deployment
+6. Error analysis, with the smoggiest hours as the headline — done
+7. API, map frontend and deployment — next

@@ -1,5 +1,7 @@
 """Tests for the stage 5 model wrapper (src/delhi_pm25/model.py)."""
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +14,7 @@ from delhi_pm25.model import (
     feature_columns,
     fit,
     importance,
+    load_model,
     predict,
     worth_keeping,
 )
@@ -78,6 +81,17 @@ def test_early_stopping_stops_once_the_validation_rows_stop_improving() -> None:
 def test_importance_puts_the_informative_feature_first() -> None:
     table = importance(fit(TRAIN, RECIPE, FixedTrees(trees=50)))
     assert (table["feature"].iloc[0], round(table["gain_pct"].sum())) == ("x", 100)
+
+
+def test_a_saved_model_loads_and_forecasts_the_same(tmp_path: Path) -> None:
+    # Given: a fitted model saved the way scripts/08_model.py saves it
+    model = fit(TRAIN, RECIPE, FixedTrees(trees=30))
+    model.booster.save_model(tmp_path / "model.txt", num_iteration=model.trees)
+    # When
+    loaded = load_model(tmp_path / "model.txt", objective="l1")
+    # Then
+    assert loaded.recipe.columns == RECIPE.columns
+    np.testing.assert_allclose(predict(loaded, FRESH), predict(model, FRESH), rtol=1e-9)
 
 
 def score_table(all_hours: float, smoggiest_10: float, smoggiest_1: float = 300.0) -> pd.DataFrame:

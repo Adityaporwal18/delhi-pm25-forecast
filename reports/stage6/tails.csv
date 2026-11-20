@@ -1,0 +1,6 @@
+hours,n_rows,persistence_mae,climatology_mae,model_mae,persistence_bias,climatology_bias,model_bias,target_blank_pct
+all hours,298602,43.4,38.0,34.7,-0.7,6.0,-9.8,4.6
+"smoggiest 10%, by outcome",30865,108.3,89.3,106.0,-63.6,-58.5,-95.6,3.1
+"smoggiest 10%, known at forecast time",30685,102.9,70.5,70.4,55.5,-3.0,-21.8,2.9
+"smoggiest 1%, by outcome",2902,201.3,193.6,226.1,-194.5,-180.0,-222.4,8.7
+"smoggiest 1%, known at forecast time",2909,190.9,66.0,71.5,179.4,5.8,-3.2,2.7

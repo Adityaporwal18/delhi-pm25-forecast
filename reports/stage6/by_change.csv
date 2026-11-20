@@ -1,0 +1,6 @@
+change_48h,n_rows,persistence_mae,climatology_mae,model_mae,persistence_bias,climatology_bias,model_bias
+fell 100+,16015,172.5,66.5,62.3,172.5,52.2,50.7
+fell 30-100,47441,54.3,46.8,35.6,54.3,36.3,25.2
+steady (within 30),172090,12.8,24.4,16.0,-0.6,12.0,-0.3
+rose 30-100,46704,54.0,38.7,46.7,-54.0,-18.2,-45.4
+rose 100+,16352,177.4,125.6,168.0,-177.4,-121.5,-167.9
