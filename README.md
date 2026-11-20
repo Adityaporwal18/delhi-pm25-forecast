@@ -4,8 +4,8 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (2 Oct 2026): stages 1–3 of 7 done — data collected, cleaned and turned into features.**
-> No model has been trained yet, so the results table below is empty on purpose.
+> **Status (20 Nov 2026): stages 1–4 of 7 done — data collected, cleaned, turned into features, and the two baselines scored.**
+> No model has been trained yet; the results table below holds only the two baselines so far.
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
 
@@ -82,14 +82,19 @@ What this means for the results:
 Mean absolute error (MAE, average size of the miss in µg/m³; lower is better) of the
 48-hour-ahead PM2.5 forecast on the test period, calendar 2025 (Delhi time). Two baselines:
 persistence, "PM2.5 in 48 hours = PM2.5 now", and climatology, "PM2.5 in 48 hours = the
-training-period average for this station at that time of year and day" (how much to
-smooth it is decided in stage 4).
+training-period average for this station at the same Delhi clock hour, on days within 7
+either side of the same calendar day" (at least 5 values, else blank). MAE = mean absolute
+error in µg/m³. Every method is scored on the same rows: target measured and both baselines
+available (298,602 of the 309,066 measured test rows; the rest have no reading "now" or too
+little history). The model will be scored on these same rows.
 
 | Test hours    | Cannot be scored (blank) | Persistence MAE       | Climatology MAE       | Model MAE             |
 |---------------|--------------------------|-----------------------|-----------------------|-----------------------|
-| All hours     | 4.6%                     | not run yet (stage 4) | not run yet (stage 4) | not run yet (stage 5) |
-| Smoggiest 10% | 3.1%                     | —                     | —                     | —                     |
-| Smoggiest 1%  | 8.7%                     | —                     | —                     | —                     |
+| All hours     | 4.6%                     | 43.4                  | 38.0                  | not run yet (stage 5) |
+| Smoggiest 10% | 3.1%                     | 108.3                 | 89.3                  | not run yet (stage 5) |
+| Smoggiest 1%  | 8.7%                     | 201.3                 | 193.6                 | not run yet (stage 5) |
+
+Validation fold (train on 2023, score 2024), used while building the model: persistence 47.1 / climatology 43.3 on all hours, 119.3 / 110.5 on the smoggiest 10%, 263.8 / 297.1 on the smoggiest 1% (`reports/stage4/baselines.csv`). Climatology is the stronger baseline overall, but in the smoggiest 1% of 2024 hours persistence wins: extreme episodes don't repeat on the same calendar days.
 
 Where the model is weak (winter vs summer, spikes vs steady periods, station by station)
 will be reported in stage 6. Diwali 2025 is reported there separately and labelled n = 1:
@@ -152,9 +157,15 @@ used by the rule.
 - Two cleaning rules (spikes, frozen readings) look at the following hours, so in live use
   they cannot be applied in exactly the same way to the newest hours. This is a small,
   known difference between the test setup and live forecasts.
-- A 48-hour gap before the test start: a training row whose 48-hours-ahead target falls on
-  or after the test start is dropped, so no test hour is ever a training target. A test
-  fails if any training row's target time is on or after the test start (stage 4).
+- A 48-hour gap before every boundary: training rows are forecasts made at least 48 hours
+  before it, so no training target lies past it. `src/delhi_pm25/split.py` stops with an
+  `EmbargoError` if any training row's target hour starts on or after the boundary, and
+  `tests/test_split.py` checks both folds.
+- Model choices (features, settings) are made on a validation fold: train on 2023, score
+  2024. It has only one winter to learn from, less than the final model, which trains on
+  2023–2024 and meets 2025 once.
+- The horizon stays at 48 hours. A small honest gain over the baselines is reported as it
+  is; the horizon is never shortened to make the gain look bigger.
 
 ## Cleaning decisions (stage 2)
 
@@ -200,6 +211,9 @@ Spearman correlation with the PM2.5 value 48 h later, training rows only
 (`reports/stage3/feature_correlations.csv`): PM2.5 now 0.752, 24 h ago 0.725, mean of the
 last week 0.744, city median now 0.730. No feature is dropped on these numbers, because a
 feature can matter in combination with others; pruning waits for the stage 5 importances.
+`pm25_minus_city` correlates only 0.146 with the target because the target's level is set
+mostly by city-wide smog and the season; the same gap now and 48 hours later correlates
+about 0.48 (checked separately), so a station that runs above the city tends to stay there.
 
 `tests/test_leakage.py` checks for leakage automatically: it changes every input after a
 cut-off hour and checks that no feature at or before that hour moves, for every feature
@@ -253,7 +267,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/05_clean.py                           # cleaning -> data/interim/hourly_clean.parquet
 
 .venv/bin/python scripts/06_features.py                        # feature table
-.venv/bin/python -m pytest                                     # 201 tests
+.venv/bin/python scripts/07_baselines.py                       # split + baselines
+.venv/bin/python -m pytest                                     # 217 tests
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -273,6 +288,7 @@ src/delhi_pm25/        the tested code the scripts use
 tests/                 pytest tests
 reports/stage2/        data-quality evidence and cleaning logs (committed)
 reports/stage3/        feature list and evidence (committed)
+reports/stage4/        baseline scores and the split (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)
 ```
 
@@ -281,7 +297,7 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 1. Data — done
 2. Cleaning — done
 3. Features — done
-4. Time-based split, persistence and climatology baselines — next
-5. Model (LightGBM or XGBoost)
+4. Time-based split, persistence and climatology baselines — done
+5. Model (LightGBM or XGBoost) — next
 6. Error analysis, with the smoggiest hours as the headline
 7. API, map frontend and deployment
