@@ -91,7 +91,7 @@ class PipelineConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class _Table:
+class Table:
     name: str
     values: Mapping[str, object]
 
@@ -100,11 +100,11 @@ class _Table:
             raise ConfigError(f"[{self.name}] {key} is missing")
         return self.values[key]
 
-    def table(self, key: str) -> "_Table":
+    def table(self, key: str) -> "Table":
         value = self.get(key)
         if not isinstance(value, dict):
             raise ConfigError(f"[{self.name}] {key} must be a table of settings")
-        return _Table(key if self.name == "top level" else f"{self.name}.{key}", value)
+        return Table(key if self.name == "top level" else f"{self.name}.{key}", value)
 
     def number(self, key: str, at_most: float = float("inf")) -> float:
         value = self.get(key)
@@ -180,7 +180,7 @@ def _clock(value: object) -> Clock:
             raise ConfigError(f'[hourly] clock must be "ist" or "utc", got {value!r}')
 
 
-def _moment(split: _Table, key: str) -> pd.Timestamp:
+def _moment(split: Table, key: str) -> pd.Timestamp:
     value = split.get(key)
     if not isinstance(value, datetime) or value.tzinfo is None:
         raise ConfigError(
@@ -189,21 +189,21 @@ def _moment(split: _Table, key: str) -> pd.Timestamp:
     return pd.Timestamp(value).tz_convert("UTC")
 
 
-def _split_moments(split: _Table) -> tuple[pd.Timestamp, pd.Timestamp]:
+def _split_moments(split: Table) -> tuple[pd.Timestamp, pd.Timestamp]:
     test_start, validation_start = _moment(split, "test_start"), _moment(split, "validation_start")
     if validation_start >= test_start:
         raise ConfigError(f"[split] validation_start ({validation_start}) must be before test_start ({test_start})")
     return test_start, validation_start
 
 
-def _baseline_settings(baselines: _Table) -> BaselineSettings:
+def _baseline_settings(baselines: Table) -> BaselineSettings:
     return BaselineSettings(
         climatology_days_either_side=baselines.whole_number("climatology_days_either_side", range(184)),
         climatology_min_values=baselines.whole_number("climatology_min_values", range(1, 10_000)),
     )
 
 
-def _spike_rules(spikes: _Table) -> Mapping[str, SpikeRule]:
+def _spike_rules(spikes: Table) -> Mapping[str, SpikeRule]:
     unknown = [p for p in spikes.values if p not in POLLUTANTS]
     if unknown:
         raise ConfigError(f"[spikes] unknown pollutant(s) {unknown}; choose from {POLLUTANTS}")
@@ -213,7 +213,7 @@ def _spike_rules(spikes: _Table) -> Mapping[str, SpikeRule]:
     return MappingProxyType(rules)
 
 
-def _spike_rule(rule: _Table) -> SpikeRule:
+def _spike_rule(rule: Table) -> SpikeRule:
     calm, polluted = rule.number("calm_city_median_ug_m3"), rule.number("polluted_city_median_ug_m3")
     if polluted < calm:
         raise ConfigError(f"[{rule.name}] polluted_city_median_ug_m3 ({polluted:g}) must not be "
@@ -221,7 +221,7 @@ def _spike_rule(rule: _Table) -> SpikeRule:
     return SpikeRule(rule.number("jump_ug_m3"), calm, polluted, rule.number("min_ratio_in_between"))
 
 
-def _flat_rule(flat: _Table, ceiling: CeilingRule) -> FlatRule:
+def _flat_rule(flat: Table, ceiling: CeilingRule) -> FlatRule:
     pollutants, exempt = flat.pollutants("pollutants"), flat.flag("exempt_hours_at_ceiling")
     unflagged = sorted(set(pollutants) - set(ceiling.pollutants))
     if exempt and unflagged:
@@ -230,7 +230,7 @@ def _flat_rule(flat: _Table, ceiling: CeilingRule) -> FlatRule:
     return FlatRule(flat.whole_number("min_hours", range(2, 10_000)), pollutants, exempt)
 
 
-def _feature_settings(features: _Table, target: Target, ceiling: CeilingRule) -> FeatureSettings:
+def _feature_settings(features: Table, target: Target, ceiling: CeilingRule) -> FeatureSettings:
     others = features.pollutants("other_pollutants")
     if target in others:
         raise ConfigError(f"[{features.name}] other_pollutants must not include the target "
@@ -255,13 +255,18 @@ def _feature_settings(features: _Table, target: Target, ceiling: CeilingRule) ->
     )
 
 
-def load_config(path: Path) -> PipelineConfig:
-    """Read config/pipeline.toml; raise ConfigError naming the first bad setting."""
+def read_table(path: Path) -> Table:
+    """The whole TOML file as a Table; ConfigError if it cannot be read."""
     try:
         with path.open("rb") as file:
-            root = _Table("top level", tomllib.load(file))
+            return Table("top level", tomllib.load(file))
     except (OSError, tomllib.TOMLDecodeError) as error:
         raise ConfigError(f"cannot read {path}: {error}") from error
+
+
+def load_config(path: Path) -> PipelineConfig:
+    """Read config/pipeline.toml; raise ConfigError naming the first bad setting."""
+    root = read_table(path)
     hourly, ceiling = root.table("hourly"), root.table("ceiling")
     ceiling_rule = CeilingRule(ceiling.number("ug_m3"), ceiling.pollutants("pollutants"))
     target = _target(root.get("target"))

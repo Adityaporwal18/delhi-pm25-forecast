@@ -6,5 +6,9 @@ pyarrow==25.0.1
 numpy==2.5.3
 matplotlib==3.11.2
 pytest==9.1.1
+# Stage 5 model. The macOS wheel needs Homebrew's libomp; without Homebrew, build it from
+# source without OpenMP (one CPU core, same results):
+#   .venv/bin/pip install --no-binary lightgbm lightgbm==4.7.0 --config-settings=cmake.define.USE_OPENMP=OFF
+lightgbm==4.7.0
 # Installs our own code in src/delhi_pm25/ so scripts and tests can `import delhi_pm25`.
 -e .

@@ -86,3 +86,26 @@ last_day = "11-15"
 climatology_days_either_side = 7
 # Fewer training values than this in the window -> blank, not a guess (set 20 Nov 2026).
 climatology_min_values = 5
+
+[model]
+# Stage 5, written 20 Nov 2026 BEFORE any model was trained (the git history shows the order).
+# LightGBM gradient-boosted trees. "l1" = minimise the mean absolute error, the metric this
+# project reports ("l2" would chase the average and get pulled around by rare spikes).
+objective = "l1"
+# Nothing is tuned: every other LightGBM setting is its default. If the model loses to the
+# baselines, the fix is better features, not different settings. The one number taken from
+# data is how many trees to grow: training on 2023 stops once 100 more trees no longer improve
+# the 2024 validation score (at most max_trees), and the final model reuses that count.
+max_trees = 5000
+early_stopping_rounds = 100
+
+[model.ablations]
+# Validation-only comparisons (train 2023, score 2024): the same model without these features.
+# The test year is never used to choose features.
+no_blh = ["wx_blh", "wx_blh_min_24h", "wx_ventilation"]
+no_stubble = ["target_in_stubble_season"]
+
+[model.keep_rule]
+# A feature group stays in the final model only if removing it makes the validation MAE worse
+# by at least this many percent, on all hours or on the smoggiest 10% of hours.
+min_gain_pct = 1.0
