@@ -14,6 +14,7 @@ target = "pm25"
 
 [split]
 test_start = 2025-01-01T00:00:00+05:30
+validation_start = 2024-01-01T00:00:00+05:30
 
 [hourly]
 min_readings = 1
@@ -52,6 +53,10 @@ hours = 18
 [features.stubble]
 first_day = "10-15"
 last_day = "11-15"
+
+[baselines]
+climatology_days_either_side = 7
+climatology_min_values = 5
 """
 
 
@@ -99,6 +104,10 @@ def test_valid_config_gives_typed_rules(tmp_path: Path) -> None:
         ('first_day = "10-15"', 'first_day = "11-20"', "first_day"),
         ('other_pollutants = ["pm10", "no2", "co"]', 'other_pollutants = ["pm25", "no2"]', "other_pollutants"),
         ("dates = [2023-11-12,", "dates = [2023-11-12T18:00:00,", "dates"),
+        ("validation_start = 2024-01-01T00:00:00+05:30", "validation_start = 2025-06-01T00:00:00+05:30", "validation_start"),
+        ("validation_start = 2024-01-01T00:00:00+05:30", "validation_start = 2024-01-01T00:00:00", "validation_start"),
+        ("climatology_days_either_side = 7", "climatology_days_either_side = 200", "climatology_days_either_side"),
+        ("climatology_min_values = 5", "climatology_min_values = 0", "climatology_min_values"),
     ],
 )
 def test_invalid_settings_are_rejected_with_a_clear_message(
@@ -127,3 +136,11 @@ def test_feature_settings_are_read_from_the_file(tmp_path: Path) -> None:
     # Then: dates stay calendar dates, the stubble season becomes month*100 + day
     assert (features.horizon_hours, features.lags_hours[-1], features.diwali.dates[1],
             features.stubble_season) == (48, 168, date(2024, 10, 31), (1015, 1115))
+
+
+def test_split_and_baseline_settings_are_read_from_the_file(tmp_path: Path) -> None:
+    # Given / When
+    config = load_config(write_config(tmp_path, VALID))
+    # Then
+    assert (config.validation_start, config.baselines.climatology_days_either_side,
+            config.baselines.climatology_min_values) == (pd.Timestamp("2023-12-31 18:30", tz="UTC"), 7, 5)

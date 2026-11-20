@@ -71,15 +71,23 @@ class FeatureSettings:
 
 
 @dataclass(frozen=True, slots=True)
+class BaselineSettings:
+    climatology_days_either_side: int
+    climatology_min_values: int
+
+
+@dataclass(frozen=True, slots=True)
 class PipelineConfig:
     target: Target
     test_start: pd.Timestamp
+    validation_start: pd.Timestamp
     min_train_coverage_pct: float
     hourly: HourlyRules
     ceiling: CeilingRule
     spikes: Mapping[str, SpikeRule]
     flat_runs: FlatRule
     features: FeatureSettings
+    baselines: BaselineSettings
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,12 +180,27 @@ def _clock(value: object) -> Clock:
             raise ConfigError(f'[hourly] clock must be "ist" or "utc", got {value!r}')
 
 
-def _test_start(value: object) -> pd.Timestamp:
+def _moment(split: _Table, key: str) -> pd.Timestamp:
+    value = split.get(key)
     if not isinstance(value, datetime) or value.tzinfo is None:
         raise ConfigError(
-            f"[split] test_start must be a date-time with a time zone, e.g. 2025-01-01T00:00:00+05:30; got {value!r}"
+            f"[split] {key} must be a date-time with a time zone, e.g. 2025-01-01T00:00:00+05:30; got {value!r}"
         )
     return pd.Timestamp(value).tz_convert("UTC")
+
+
+def _split_moments(split: _Table) -> tuple[pd.Timestamp, pd.Timestamp]:
+    test_start, validation_start = _moment(split, "test_start"), _moment(split, "validation_start")
+    if validation_start >= test_start:
+        raise ConfigError(f"[split] validation_start ({validation_start}) must be before test_start ({test_start})")
+    return test_start, validation_start
+
+
+def _baseline_settings(baselines: _Table) -> BaselineSettings:
+    return BaselineSettings(
+        climatology_days_either_side=baselines.whole_number("climatology_days_either_side", range(184)),
+        climatology_min_values=baselines.whole_number("climatology_min_values", range(1, 10_000)),
+    )
 
 
 def _spike_rules(spikes: _Table) -> Mapping[str, SpikeRule]:
@@ -242,13 +265,16 @@ def load_config(path: Path) -> PipelineConfig:
     hourly, ceiling = root.table("hourly"), root.table("ceiling")
     ceiling_rule = CeilingRule(ceiling.number("ug_m3"), ceiling.pollutants("pollutants"))
     target = _target(root.get("target"))
+    test_start, validation_start = _split_moments(root.table("split"))
     return PipelineConfig(
         target=target,
-        test_start=_test_start(root.table("split").get("test_start")),
+        test_start=test_start,
+        validation_start=validation_start,
         min_train_coverage_pct=root.table("stations").number("min_train_coverage_pct", at_most=100.0),
         hourly=HourlyRules(hourly.whole_number("min_readings", range(1, 5)), _clock(hourly.get("clock"))),
         ceiling=ceiling_rule,
         spikes=_spike_rules(root.table("spikes")),
         flat_runs=_flat_rule(root.table("flat_runs"), ceiling_rule),
         features=_feature_settings(root.table("features"), target, ceiling_rule),
+        baselines=_baseline_settings(root.table("baselines")),
     )

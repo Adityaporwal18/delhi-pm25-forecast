@@ -11,6 +11,10 @@ target = "pm25"
 # Confirmed 2 Oct 2026: calendar 2025 (Delhi time) is the test year, one full year incl.
 # a winter and Diwali; 2023-2024 is training.
 test_start = 2025-01-01T00:00:00+05:30
+# Validation (a), chosen in stage 4: while developing, train on 2023 and score on 2024;
+# the final model trains on 2023-2024 and meets the test year once. Every boundary has
+# a 48-hour gap (src/delhi_pm25/split.py), so no training target falls past it.
+validation_start = 2024-01-01T00:00:00+05:30
 
 [hourly]
 # D2: an hourly value is the mean of the 15-min readings present; at least this many (1-4).
@@ -74,3 +78,11 @@ hours = 18
 # whether it adds anything; stage 5 removes it if it does not (same standard as BLH).
 first_day = "10-15"
 last_day = "11-15"
+
+[baselines]
+# Stage 4, climatology (a) = the average at the same station and Delhi
+# clock hour, on days within this many days either side of the same calendar day,
+# training years only.
+climatology_days_either_side = 7
+# Fewer training values than this in the window -> blank, not a guess (set 20 Nov 2026).
+climatology_min_values = 5
