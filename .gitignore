@@ -24,3 +24,9 @@ data/**
 .vscode/
 .codegraph
 .omo/
+
+# Frontend packages and build output (rebuilt by npm install / npm run build)
+frontend/node_modules/
+frontend/dist/
+# Visual-QA screenshots and page snapshots
+.playwright-mcp/

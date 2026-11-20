@@ -4,7 +4,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (20 Nov 2026): stages 1–6 of 7 done; stage 7 (serving) in progress — forecasts with uncertainty bands and the API are ready, the website is next.**
+> **Status (20 Nov 2026): stages 1–6 of 7 done; stage 7 (serving) in progress — the website works locally; Docker and deployment are next.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -362,8 +362,17 @@ Step 2 (done): a FastAPI backend serving `data/serving/replay_2025.parquet` (726
 | `GET /api/map?issued=…&horizon=48` | every station's forecast for one horizon, with its PM2.5-based category |
 | `GET /api/stations/{slug}/forecast?issued=…` | one station's path from now to 48 h: band, median, what was measured |
 
-Next: a React map with a 48-hour chart per station (step 3), then Docker and deployment
-(step 4).
+Step 3 (done): the website (`frontend/`, React + TypeScript + Vite; Leaflet map on
+OpenStreetMap tiles; Recharts). Pick when a forecast was made (any day of 2025, 08:00 or
+20:00 Delhi time) and how many hours ahead the map shows; click a station or pick it from the
+list to see its 48-hour path: the median forecast, the 80% band fanning out from the value
+measured at that moment, and what was later measured. Colours are labelled "PM2.5-based
+category" everywhere, and the footer credits the data sources. The design system is in
+`frontend/DESIGN.md`; the layout was checked in a real browser at 375, 768 and 1280 px wide.
+
+![The website, 1 Nov 2025 08:00: Anand Vihar's 48-hour forecast](docs/site-2025-11-01.png)
+
+Next: Docker and deployment (step 4).
 
 ## Quirks in the source data (handled in cleaning)
 
@@ -417,7 +426,9 @@ python3 -m venv .venv
 .venv/bin/python scripts/08_model.py                           # model, comparisons, test score
 .venv/bin/python scripts/09_error_analysis.py                  # where the model is weakest
 .venv/bin/python scripts/10_horizon_models.py                  # every 6 h ahead + bands + replay file
-.venv/bin/python -m pytest                                     # 243 tests
+.venv/bin/python -m pytest                                     # 253 tests
+(cd frontend && npm install && npm test && npm run build)       # website -> frontend/dist
+.venv/bin/uvicorn delhi_pm25.server:app                        # site + API: http://127.0.0.1:8000
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -434,6 +445,7 @@ config/stations.csv    the 39 stations: CPCB ID, name, agency, coordinates
 config/pipeline.toml   every target, split and cleaning decision (change here, re-run)
 scripts/               01-05: fetch -> stack -> inspect -> clean (run in order)
 src/delhi_pm25/        the tested code the scripts use
+frontend/              the website (React + TypeScript; frontend/DESIGN.md is its design system)
 tests/                 pytest tests
 reports/stage2/        data-quality evidence and cleaning logs (committed)
 reports/stage3/        feature list and evidence (committed)
@@ -452,4 +464,4 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 4. Time-based split, persistence and climatology baselines — done
 5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
 6. Error analysis, with the smoggiest hours as the headline — done
-7. API, map frontend and deployment — in progress (steps 1–2 of 4 done: forecasts every 6 hours with bands; the API)
+7. API, map frontend and deployment — in progress (steps 1–3 of 4 done: forecasts with bands, the API, the website; next: Docker and deployment)
