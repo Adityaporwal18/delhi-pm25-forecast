@@ -12,7 +12,7 @@ from delhi_pm25.paths import PIPELINE_TOML
 def test_project_settings_compare_blh_and_stubble_with_an_l1_model() -> None:
     settings = load_model_settings(PIPELINE_TOML)
     assert (settings.objective, sorted(settings.ablations), settings.min_gain_pct) == (
-        "l1", ["no_blh", "no_stubble"], 1.0,
+        "l1", ["no_blh", "no_doy", "no_stubble"], 1.0,
     )
 
 

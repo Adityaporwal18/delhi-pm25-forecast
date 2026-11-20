@@ -100,10 +100,15 @@ max_trees = 5000
 early_stopping_rounds = 100
 
 [model.ablations]
-# Validation-only comparisons (train 2023, score 2024): the same model without these features.
-# The test year is never used to choose features.
+# Validation-only comparisons (train 2023, score 2024): the same model, with the same number
+# of trees, without these features. The test year is never used to choose features.
+# Corrected 20 Nov 2026 after the first run, which let each variant choose its own number of
+# trees (26 vs 36) and so mixed tree count with features.
 no_blh = ["wx_blh", "wx_blh_min_24h", "wx_ventilation"]
 no_stubble = ["target_in_stubble_season"]
+# Added 20 Nov 2026 after the first run: with one training year, day of year lets the trees
+# memorise that year's calendar (validation MAE 41.1 -> 39.4 without it, in a check on 2024).
+no_doy = ["target_doy_sin", "target_doy_cos"]
 
 [model.keep_rule]
 # A feature group stays in the final model only if removing it makes the validation MAE worse

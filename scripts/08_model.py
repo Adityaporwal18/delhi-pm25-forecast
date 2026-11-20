@@ -3,7 +3,8 @@
 The order was fixed before any model was trained ([model] in config/pipeline.toml):
 1. Validation fold (train on 2023, score 2024): the model with every feature. Training stops
    once 100 more trees no longer improve the 2024 score; that tree count is kept.
-2. Same fold, the model without each group in [model.ablations]. A group stays only if
+2. Same fold, the same number of trees, without each group in [model.ablations], so only the
+   features differ. A group stays only if
    removing it makes the validation MAE worse by at least min_gain_pct % (all hours or the
    smoggiest 10% of hours).
 3. Test fold: the final model trains on 2023-2024 with the kept features and the tree count
@@ -120,10 +121,11 @@ def choose(features: pd.DataFrame, data: FoldData, settings: ModelSettings) -> C
     early = StopEarly(data.evaluate, settings.max_trees, settings.early_stopping_rounds)
     full = fit(data.train, Recipe(feature_columns(features, ()), settings.objective), early)
     full_scores = scores(data, full)
+    same_size = FixedTrees(full.trees)
     lines = [ablation_line("all features", full, full_scores) | {"decision": ""}]
     dropped: list[str] = []
     for name, group in settings.ablations.items():
-        variant = fit(data.train, Recipe(feature_columns(features, group), settings.objective), early)
+        variant = fit(data.train, Recipe(feature_columns(features, group), settings.objective), same_size)
         variant_scores = scores(data, variant)
         keep = worth_keeping(same_rows(full_scores), same_rows(variant_scores), settings.min_gain_pct)
         lines.append(ablation_line(name, variant, variant_scores) | {"decision": "keep" if keep else "drop"})

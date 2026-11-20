@@ -1,43 +1,37 @@
 feature,gain_pct,splits,group
-pm25_lag_0h,34.97,70,A own history
-city_pm25_median,15.73,12,C city-wide
-pm25_lag_24h,8.44,38,A own history
-pm25_mean_72h,5.07,17,B rolling means
-target_doy_sin,4.7,184,D calendar
-pm25_mean_168h,4.67,31,B rolling means
-target_doy_cos,4.28,127,D calendar
-wx_pressure,4.14,29,F weather now
-wx_temperature,3.11,47,F weather now
-pm25_lag_168h,1.88,24,A own history
-slug,1.86,80,station
-pm25_lag_48h,1.59,37,A own history
-wx_dew_point,1.41,46,F weather now
-target_hour_sin,1.12,46,D calendar
-city_pm25_median_mean_24h,1.1,58,C city-wide
-wx_blh_min_24h,0.78,36,F weather now
-wx_rain_sum_24h,0.75,26,F weather now
-wx_wind_speed_mean_24h,0.69,35,F weather now
-pm25_mean_6h,0.68,4,B rolling means
-wx_blh,0.61,22,F weather now
-wx_cloud,0.6,20,F weather now
-wx_wind_u,0.58,25,F weather now
-target_hour_cos,0.4,19,D calendar
-wx_ventilation,0.2,11,F weather now
-target_in_stubble_season,0.17,8,E events
-wx_rh,0.11,6,F weather now
-city_pm25_n_stations,0.11,7,C city-wide
-wx_wind_speed,0.08,5,F weather now
-wx_wind_v,0.07,4,F weather now
-wx_shortwave,0.05,3,F weather now
-pm25_minus_city,0.02,1,C city-wide
+pm25_lag_0h,32.51,83,A own history
+city_pm25_median,21.05,60,C city-wide
+pm25_lag_24h,7.65,61,A own history
+pm25_mean_72h,6.42,39,B rolling means
+wx_pressure,5.09,72,F weather now
+pm25_mean_168h,4.9,65,B rolling means
+wx_temperature,3.23,87,F weather now
+pm25_lag_168h,2.53,53,A own history
+city_pm25_median_mean_24h,2.29,170,C city-wide
+wx_dew_point,2.26,131,F weather now
+slug,1.78,117,station
+pm25_lag_48h,1.73,55,A own history
+wx_wind_speed_mean_24h,1.4,113,F weather now
+wx_cloud,1.32,68,F weather now
+wx_rain_sum_24h,1.18,72,F weather now
+wx_wind_u,0.99,65,F weather now
+target_hour_sin,0.94,53,D calendar
+pm25_mean_6h,0.84,6,B rolling means
+city_pm25_n_stations,0.42,38,C city-wide
+target_hour_cos,0.4,26,D calendar
+wx_wind_speed,0.27,23,F weather now
+wx_shortwave,0.23,15,F weather now
+wx_wind_v,0.21,20,F weather now
+wx_rh,0.21,18,F weather now
+target_in_diwali_window,0.07,8,E events
+pm25_lag_3h,0.04,4,A own history
+pm10_now,0.03,4,G other pollutants
+pm25_minus_city,0.01,1,C city-wide
 pm25_mean_24h,0.01,1,B rolling means
-pm10_now,0.01,1,G other pollutants
+pm25_lag_6h,0.01,1,A own history
+pm25_lag_12h,0.01,1,A own history
+pm25_hit_limit_24h,0.0,0,G data quality
+hours_since_pm25,0.0,0,G data quality
 n_pm25_now,0.0,0,G data quality
 co_now,0.0,0,G other pollutants
 no2_now,0.0,0,G other pollutants
-pm25_hit_limit_24h,0.0,0,G data quality
-hours_since_pm25,0.0,0,G data quality
-target_in_diwali_window,0.0,0,E events
-pm25_lag_12h,0.0,0,A own history
-pm25_lag_6h,0.0,0,A own history
-pm25_lag_3h,0.0,0,A own history

@@ -1,4 +1,6 @@
 variant,features,trees,mae_all_hours,mae_smoggiest_10pct,mae_smoggiest_1pct,decision,worse_all_hours_pct,worse_smoggiest_10pct_pct
 all features,42,36,41.08,125.1,340.77,,0.0,0.0
-no_blh,39,26,40.92,128.44,342.79,keep,-0.39,2.67
-no_stubble,41,26,40.95,129.42,347.78,keep,-0.32,3.45
+no_blh,39,36,41.02,124.26,339.09,drop,-0.15,-0.67
+no_stubble,41,36,40.99,125.12,342.23,drop,-0.22,0.02
+no_doy,40,36,39.39,111.85,327.73,drop,-4.11,-10.59
+final feature set,36,51,39.41,110.62,319.73,,-4.07,-11.57

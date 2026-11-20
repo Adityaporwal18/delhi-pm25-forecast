@@ -4,8 +4,8 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (20 Nov 2026): stages 1–4 of 7 done — data collected, cleaned, turned into features, and the two baselines scored.**
-> No model has been trained yet; the results table below holds only the two baselines so far.
+> **Status (20 Nov 2026): stages 1–5 of 7 done — data collected, cleaned, turned into features, baselines scored, and a first model trained.**
+> The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
 
@@ -90,11 +90,28 @@ little history). The model will be scored on these same rows.
 
 | Test hours    | Cannot be scored (blank) | Persistence MAE       | Climatology MAE       | Model MAE             |
 |---------------|--------------------------|-----------------------|-----------------------|-----------------------|
-| All hours     | 4.6%                     | 43.4                  | 38.0                  | not run yet (stage 5) |
-| Smoggiest 10% | 3.1%                     | 108.3                 | 89.3                  | not run yet (stage 5) |
-| Smoggiest 1%  | 8.7%                     | 201.3                 | 193.6                 | not run yet (stage 5) |
+| All hours     | 4.6%                     | 43.4                  | 38.0                  | **34.7**              |
+| Smoggiest 10% | 3.1%                     | 108.3                 | **89.3**              | 106.0                 |
+| Smoggiest 1%  | 8.7%                     | 201.3                 | **193.6**             | 226.1                 |
 
 Validation fold (train on 2023, score 2024), used while building the model: persistence 47.1 / climatology 43.3 on all hours, 119.3 / 110.5 on the smoggiest 10%, 263.8 / 297.1 on the smoggiest 1% (`reports/stage4/baselines.csv`). Climatology is the stronger baseline overall, but in the smoggiest 1% of 2024 hours persistence wins: extreme episodes don't repeat on the same calendar days.
+
+**How to read the model column.** The model (LightGBM, stage 5) is better than both
+baselines on average: 34.7 vs 38.0 for climatology (−8.6%) and 43.4 for persistence (−20%).
+It is **not** better in the hours that matter most: in the smoggiest 10% of 2025 hours it is
+worse than climatology (106.0 vs 89.3), and in the smoggiest 1% it is the worst of the three.
+Likely reasons, to be tested in stage 6: the model forecasts the typical (median) outcome,
+which is right for MAE overall but pulls forecasts down in rare smog; ranking hours by how
+smoggy they *turned out* favours forecasts that never pull back towards typical values (the
+"forecaster's dilemma"); and two winters are little to learn extremes from. The model also
+forecasts rows where "PM2.5 now" is blank, which persistence cannot: MAE 34.6 on all 309,066
+measured test rows.
+
+The test year was scored twice, and both results are reported. The first run used every
+feature (34.4 on all hours; 105.0 and 236.1 on the smoggiest 10% and 1%). Checks on the
+validation year alone then found a flaw in the feature comparison and showed that
+day-of-year features hurt (see "Model (stage 5)"). The corrected model was chosen on 2024
+and scored on 2025 a second time (the table). The two runs differ by 0.3 µg/m³ on all hours.
 
 Where the model is weak (winter vs summer, spikes vs steady periods, station by station)
 will be reported in stage 6. Diwali 2025 is reported there separately and labelled n = 1:
@@ -107,7 +124,7 @@ one night, where a good result is luck as much as skill.
   actual weather at *t* + 48 h. The same features exist for all three years.
 - **Archived 2-day weather forecasts exist only from about 20 January 2024**, so the main
   pipeline does not use them: 2023 rows would be structurally different from 2024–2025.
-- **Boundary-layer height (BLH) is kept, with a known hole.** BLH is the depth of air that
+- **Boundary-layer height (BLH) was built as a feature, with a known hole; stage 5 dropped it.** BLH is the depth of air that
   pollution mixes into (median about 45 m on winter nights vs about 1,900 m on summer
   afternoons in ERA5), so the physical reason to use it is strong. ERA5 has no BLH for
   January–June 2024 (about 25% of training hours); those rows have it blank.
@@ -122,9 +139,9 @@ Planned comparisons (results go here, whichever way they come out):
 
 | Question | How | Rule |
 |---|---|---|
-| Does BLH earn its place? | Stage 5: the same model with and without the BLH features | If it adds little, drop it rather than carry the mismatch risk |
+| Does BLH earn its place? | Stage 5: the same model, same number of trees, with and without the BLH features | **No:** removing them changed validation MAE by −0.15% (all hours) and −0.67% (smoggiest 10%), so BLH is dropped and the mismatch warning above no longer applies |
 | Does knowing the weather forecast help predict PM2.5 two days out? | After the main pipeline works: a 2024–2025-only variant (train 2024, test 2025) with and without the archived 2-day ICON forecasts, compared at 48 h | Reported here either way |
-| Does the stubble-season flag add anything? | Stage 5: with and without `target_in_stubble_season` (15 Oct–15 Nov) | Prior evidence is weak (training city PM2.5 in that window: 181 µg/m³ with wind from the west–north quarter vs 185 otherwise); removed if it adds nothing, the same standard as BLH |
+| Does the stubble-season flag add anything? | Stage 5: with and without `target_in_stubble_season` (15 Oct–15 Nov) | **No:** −0.22% / +0.02% on validation, so it is dropped |
 
 ## Stations: the selection rule was fixed before any model
 
@@ -219,6 +236,37 @@ about 0.48 (checked separately), so a station that runs above the city tends to 
 cut-off hour and checks that no feature at or before that hour moves, for every feature
 column, including any added later.
 
+## Model (stage 5)
+
+LightGBM gradient-boosted trees: small decision trees grown one after another, each
+correcting the errors of the ones before. Settings are in `[model]` of `config/pipeline.toml`,
+committed before the first model was trained:
+
+- Objective "l1": the model minimises mean absolute error, the metric reported here.
+- Every other LightGBM setting is its default; nothing was tuned. The number of trees is the
+  one value taken from data: training on 2023 stops when 100 more trees no longer improve the
+  2024 score. It stopped early (36 trees with every feature, 51 for the final set), a sign
+  that 2023 and 2024 differ and that extra trees only learn 2023's quirks.
+- Feature groups are tested on the validation fold by removing them. A group stays only if
+  removing it makes MAE worse by at least 1% on all hours or on the smoggiest 10%.
+
+| Removed from the model | Validation MAE change, all hours | Smoggiest 10% | Decision |
+|---|---|---|---|
+| BLH (`wx_blh`, `wx_blh_min_24h`, `wx_ventilation`) | −0.15% | −0.67% | dropped |
+| Stubble-season flag | −0.22% | +0.02% | dropped |
+| Day of year (`target_doy_sin`, `target_doy_cos`) | −4.11% | −10.59% | dropped |
+
+Two corrections were made after the first run; both are in the git history. The first
+comparison let each variant pick its own number of trees (26 vs 36), which mixed tree count
+with features, so every variant now gets the same number. The day-of-year group was added
+after a validation-only check showed that, with one training year, the trees memorised that
+year's calendar. All these decisions use 2024 only, never 2025. With two training years the
+test year barely changed, so the one-winter validation fold exaggerates such effects.
+
+The final model relies most on PM2.5 now (32.5% of the total gain), the city median now
+(21.1%), PM2.5 24 hours earlier (7.7%), the 72-hour mean (6.4%) and air pressure (5.1%)
+(`reports/stage5/importance.csv`).
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -268,7 +316,8 @@ python3 -m venv .venv
 
 .venv/bin/python scripts/06_features.py                        # feature table
 .venv/bin/python scripts/07_baselines.py                       # split + baselines
-.venv/bin/python -m pytest                                     # 217 tests
+.venv/bin/python scripts/08_model.py                           # model, comparisons, test score
+.venv/bin/python -m pytest                                     # 233 tests
 ```
 
 - The fetch scripts skip files already downloaded, and record SHA-256 fingerprints in the
@@ -289,6 +338,7 @@ tests/                 pytest tests
 reports/stage2/        data-quality evidence and cleaning logs (committed)
 reports/stage3/        feature list and evidence (committed)
 reports/stage4/        baseline scores and the split (committed)
+reports/stage5/        model scores, feature comparisons, importances (committed)
 data/                  downloaded and derived data (not committed; rebuilt by the scripts)
 ```
 
@@ -298,6 +348,6 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 2. Cleaning — done
 3. Features — done
 4. Time-based split, persistence and climatology baselines — done
-5. Model (LightGBM or XGBoost) — next
-6. Error analysis, with the smoggiest hours as the headline
+5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
+6. Error analysis, with the smoggiest hours as the headline — next
 7. API, map frontend and deployment
