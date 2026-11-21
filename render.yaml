@@ -1,0 +1,9 @@
+# Render alternative to Railway (railway.json): a free web service built from the Dockerfile.
+# Render deploys from a Git repository, so the code must be on GitHub first.
+services:
+  - type: web
+    name: delhi-pm25
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
