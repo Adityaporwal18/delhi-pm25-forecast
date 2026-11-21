@@ -1,10 +1,14 @@
 # Delhi PM2.5 forecast — 48 hours ahead, per monitoring station
 
+**Live site: https://delhi-pm25.onrender.com** — a replay of the 2025 test year. It runs on
+Render's free plan: after 15 quiet minutes it sleeps, and the next visit takes about a minute
+to wake it.
+
 Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours ahead for
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (20 Nov 2026): stages 1–6 of 7 done; stage 7 (serving) in progress — the website works locally; Docker and deployment are next.**
+> **Status (21 Nov 2026): all 7 stages done — the website is live (a replay of 2025). Planned follow-ups are listed under Progress.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -324,7 +328,7 @@ anecdote, not evidence.
 ![MAE by station](reports/stage6/by_station.png)
 ![Diwali 2025](reports/stage6/diwali_2025.png)
 
-## Serving (stage 7, in progress)
+## Serving (stage 7)
 
 The website starts as a **replay of the test year 2025**: pick a date and time, and see what
 the model would have forecast then for the next 48 hours, next to what was measured. A replay
@@ -372,7 +376,7 @@ category" everywhere, and the footer credits the data sources. The design system
 
 ![The website, 1 Nov 2025 08:00: Anand Vihar's 48-hour forecast](docs/site-2025-11-01.png)
 
-Step 4 (in progress): one Docker image holds the website and the API. It builds the React
+Step 4 (done): one Docker image holds the website and the API. It builds the React
 site, then serves it with FastAPI as a non-root user, on the port the host provides (`$PORT`,
 default 8000):
 
@@ -383,7 +387,9 @@ docker run --rm -p 8000:8000 delhi-pm25     # then open http://localhost:8000
 
 The image carries `serving/replay_2025.parquet` (4.4 MB). Its measured values are derived from
 CPCB data, so that file is published under ODbL-1.0 with credits (`serving/LICENSE-DATA.md`).
-Next: deployment to a free host.
+It is deployed on Render's free plan from `render.yaml` (Singapore region):
+https://delhi-pm25.onrender.com. Railway's free plan (`railway.json`) works too and can
+deploy without GitHub.
 
 ## Quirks in the source data (handled in cleaning)
 
@@ -475,4 +481,8 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 4. Time-based split, persistence and climatology baselines — done
 5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
 6. Error analysis, with the smoggiest hours as the headline — done
-7. API, map frontend and deployment — in progress (steps 1–3 done, Docker image done; next: deployment)
+7. API, map frontend and deployment — done: https://delhi-pm25.onrender.com
+
+Planned follow-ups: the forecast-weather comparison (does knowing the weather forecast help?),
+features for sudden smog build-ups, and live forecasts (needs a live PM2.5 source with a free
+API key).
