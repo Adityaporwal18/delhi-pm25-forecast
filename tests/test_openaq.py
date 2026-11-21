@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from delhi_pm25.openaq import OpenAQFormatError, StationIdentity, station_table
+from delhi_pm25.openaq import OpenAQFormatError, StationIdentity, api_rows, station_table
 from delhi_pm25.raw_cpcb import EXPECTED_HEADER, read_station_file
 
 RKP = StationIdentity(station_id="site_124", name="R K Puram, Delhi - DPCC")
@@ -63,3 +63,16 @@ def test_converted_file_reads_back_through_the_unchanged_loader(tmp_path: Path) 
     assert (facts.station_id, readings["ts_label"].iloc[0], readings["pm25"].iloc[1]) == (
         "site_124", pd.Timestamp("2026-11-17 00:45"), 91.0,
     )
+
+
+def api_result(ends_local: str, parameter: str, value: float) -> dict[str, object]:
+    """One measurement as OpenAQ's /v3/sensors/{id}/measurements returns it (fields we use)."""
+    return {"value": value, "parameter": {"name": parameter, "units": "µg/m³"},
+            "period": {"datetimeFrom": {"local": "earlier"}, "datetimeTo": {"local": ends_local}}}
+
+
+def test_api_readings_are_labelled_by_the_end_of_their_period() -> None:
+    # Given: the API's reading for 00:30-00:45 Delhi time (the archive and CPCB label it 00:45)
+    rows = api_rows([api_result("2026-11-17T00:45:00+05:30", "pm25", 89.0)])
+    # When / Then: it reaches the station file with the same label as the archive copy
+    assert station_table(rows, RKP)["Timestamp"].tolist() == ["2026-11-17T00:45:00.000000+0530"]

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from delhi_pm25.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
+from delhi_pm25.clean_rules import apply_rules, blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
 from delhi_pm25.config import PipelineConfig
 
 START = pd.Timestamp("2024-11-01 00:30", tz="UTC")
@@ -129,3 +129,13 @@ def test_missing_share_in_the_test_year_ignores_later_hours(config: PipelineConf
     table = missing_in_worst_hours(hourly, in_years).set_index(["period", "hours"])
     # Then
     assert table.loc[("test", "all hours"), "blank_pct"] == 0.0
+
+
+def test_rules_run_spikes_first_then_frozen_runs(config: PipelineConfig) -> None:
+    # Given: a glitch spike inside a calm city, and a station frozen for six hours
+    hourly = hourly_grid({"a": [100.0, 400.0, 110.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0], "b": [100.0] * 9, "c": [100.0] * 9})
+    # When
+    result = apply_rules(hourly, config)
+    # Then: the same as running the two rules by hand, in that order
+    by_hand, _ = blank_flat_runs(remove_spikes(hourly, config.spikes)[0], config.flat_runs)
+    pd.testing.assert_frame_equal(result.cleaned, by_hand)

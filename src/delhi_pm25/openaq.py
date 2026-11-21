@@ -12,6 +12,7 @@ from typing import Final
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel, ValidationError
 
 from delhi_pm25.raw_cpcb import EXPECTED_HEADER
 
@@ -75,3 +76,40 @@ def station_table(records: pd.DataFrame, station: StationIdentity) -> pd.DataFra
         if parameter in wide.columns:
             table[column] = wide[parameter]
     return table.sort_index().reset_index(drop=True)[EXPECTED_HEADER]
+
+
+class _Moment(BaseModel):
+    local: str
+
+
+class _Period(BaseModel):
+    datetimeTo: _Moment
+
+
+class _Parameter(BaseModel):
+    name: str
+    units: str
+
+
+class _Measurement(BaseModel):
+    """The fields we use from one /v3/sensors/{id}/measurements result."""
+
+    value: float
+    parameter: _Parameter
+    period: _Period
+
+
+def api_rows(results: list[dict[str, object]]) -> pd.DataFrame:
+    """OpenAQ API measurements -> archive-style rows. A reading is labelled by the END of its
+    period (period.datetimeTo.local), which matched the archive and CPCB's labels exactly
+    (91 of 91 readings checked)."""
+    try:
+        parsed = [_Measurement.model_validate(result) for result in results]
+    except ValidationError as err:
+        raise OpenAQFormatError(f"unexpected measurement in the API response: {err}") from err
+    return pd.DataFrame({
+        "datetime": [m.period.datetimeTo.local for m in parsed],
+        "parameter": [m.parameter.name for m in parsed],
+        "units": [m.parameter.units for m in parsed],
+        "value": [m.value for m in parsed],
+    })

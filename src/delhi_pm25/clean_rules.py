@@ -5,6 +5,7 @@ stays complete. Each rule also returns a log of exactly what it touched.
 """
 
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Final
 
 import numpy as np
@@ -28,6 +29,24 @@ def _period(hourly: pd.DataFrame, config: PipelineConfig) -> np.ndarray:
     live model only, never part of a published number)."""
     end = hourly["hour_end_utc"]
     return np.select([end <= config.test_start, end <= config.test_end], ["train", "test"], default="after test")
+
+
+@dataclass(frozen=True, slots=True)
+class RulesApplied:
+    """The hourly table after each rule, and what each rule touched."""
+
+    after_spikes: pd.DataFrame
+    cleaned: pd.DataFrame
+    spikes: pd.DataFrame
+    runs: pd.DataFrame
+
+
+def apply_rules(hourly: pd.DataFrame, config: PipelineConfig) -> RulesApplied:
+    """D4.1 then D4.2, the one sequence used by training and by live forecasts alike. Spikes go
+    first: a frozen run next to a spike would otherwise hide it."""
+    after_spikes, spikes = remove_spikes(hourly, config.spikes)
+    cleaned, runs = blank_flat_runs(after_spikes, config.flat_runs)
+    return RulesApplied(after_spikes, cleaned, spikes, runs)
 
 
 def station_selection(hourly: pd.DataFrame, config: PipelineConfig) -> pd.DataFrame:

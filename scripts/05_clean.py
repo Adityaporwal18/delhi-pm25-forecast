@@ -35,7 +35,7 @@ from typing import Final
 import pandas as pd
 
 from delhi_pm25.clean import GridError, check_complete_grid, to_hourly
-from delhi_pm25.clean_rules import blank_flat_runs, missing_in_worst_hours, remove_spikes, station_selection
+from delhi_pm25.clean_rules import apply_rules, missing_in_worst_hours, station_selection
 from delhi_pm25.config import ConfigError, PipelineConfig, load_config
 from delhi_pm25.guards import InputsOutOfDate, check_up_to_date, check_weather_covers
 from delhi_pm25.paths import INTERIM_DIR, PIPELINE_TOML, RAW_WEATHER_DIR, REPORTS_DIR, STATIONS_CSV
@@ -89,8 +89,8 @@ def main() -> int:
     selection = station_selection(hourly, config)
     kept = hourly[hourly["slug"].isin(selection.index[selection["kept"].to_numpy()])].reset_index(drop=True)
     kept["slug"] = kept["slug"].cat.remove_unused_categories()
-    despiked, spikes = remove_spikes(kept, config.spikes)
-    cleaned, runs = blank_flat_runs(despiked, config.flat_runs)
+    rules = apply_rules(kept, config)
+    despiked, cleaned, spikes, runs = rules.after_spikes, rules.cleaned, rules.spikes, rules.runs
 
     steps = {"raw_15min_readings": readings, "hourly_values": hourly, "hourly_values_kept_stations": kept,
              "after_spike_rule": despiked, "after_frozen_rule": cleaned}
