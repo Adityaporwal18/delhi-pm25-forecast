@@ -1,0 +1,15 @@
+.git
+.venv
+.omo
+.codegraph
+.playwright-mcp
+.pytest_cache
+data
+reports
+scripts
+tests
+docs
+frontend/node_modules
+frontend/dist
+**/__pycache__
+**/*.egg-info

@@ -349,7 +349,7 @@ stage 6. Persistence does well at 24 and 48 hours (the same clock time as now) a
 CPCB defines on 24-hour averages; applying them to an hourly forecast is an approximation, so
 the map says "PM2.5-based category", never AQI.
 
-Step 2 (done): a FastAPI backend serving `data/serving/replay_2025.parquet` (726 issue times,
+Step 2 (done): a FastAPI backend serving `serving/replay_2025.parquet` (726 issue times,
 08:00 and 20:00 Delhi time from 1 January to 29 December 2025, for 37 stations):
 
 ```
@@ -372,7 +372,18 @@ category" everywhere, and the footer credits the data sources. The design system
 
 ![The website, 1 Nov 2025 08:00: Anand Vihar's 48-hour forecast](docs/site-2025-11-01.png)
 
-Next: Docker and deployment (step 4).
+Step 4 (in progress): one Docker image holds the website and the API. It builds the React
+site, then serves it with FastAPI as a non-root user, on the port the host provides (`$PORT`,
+default 8000):
+
+```
+docker build -t delhi-pm25 .
+docker run --rm -p 8000:8000 delhi-pm25     # then open http://localhost:8000
+```
+
+The image carries `serving/replay_2025.parquet` (4.4 MB). Its measured values are derived from
+CPCB data, so that file is published under ODbL-1.0 with credits (`serving/LICENSE-DATA.md`).
+Next: deployment to a free host.
 
 ## Quirks in the source data (handled in cleaning)
 
@@ -464,4 +475,4 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 4. Time-based split, persistence and climatology baselines — done
 5. Model (LightGBM) — done: better than both baselines on average, not in the smoggiest hours
 6. Error analysis, with the smoggiest hours as the headline — done
-7. API, map frontend and deployment — in progress (steps 1–3 of 4 done: forecasts with bands, the API, the website; next: Docker and deployment)
+7. API, map frontend and deployment — in progress (steps 1–3 done, Docker image done; next: deployment)

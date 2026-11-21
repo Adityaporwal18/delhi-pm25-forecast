@@ -11,7 +11,7 @@ and how often the measured value falls inside the band (it should be about 80%).
 Outputs:
   data/models/h{HH}_{p10,p50,p90}.txt   the models
   reports/stage7/horizons.csv           per horizon: trees, MAE vs baselines, band coverage
-  data/serving/replay_2025.parquet      forecasts issued at the replay hours on every day of
+  serving/replay_2025.parquet      forecasts issued at the replay hours on every day of
                                         2025, next to what was measured (served by the API)
 
 Usage:

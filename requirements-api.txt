@@ -1,0 +1,8 @@
+# Only what the running website needs (used by the Dockerfile).
+# The full data and model pipeline uses requirements.txt.
+fastapi==0.165.0
+pydantic==2.14.4
+uvicorn==0.54.0
+pandas==3.0.6
+pyarrow==25.0.1
+numpy==2.5.3
