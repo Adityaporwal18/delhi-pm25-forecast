@@ -8,7 +8,8 @@ What this module does:
     the file name -- so a manually downloaded 2023 file with any name can be put in
     a new folder under data/raw/cpcb/ and is picked up automatically
   * keeps each timestamp label exactly as written, as a plain (naive) date-time.
-    Whether "+0000" really means UTC is a Stage 2 decision, applied in cleaning.
+    Labels end in "+0000" (the CPCB-derived files, really Delhi time: stage 2) or "+0530"
+    (OpenAQ-derived files, Delhi time stated outright); both are kept as Delhi wall-clock labels.
 
 What it deliberately does NOT do: fill gaps, remove outliers, average to hourly,
 shift time zones or convert units. Those are decisions, made later, on purpose.
@@ -43,7 +44,7 @@ MEASUREMENTS: Final = list(SHORT_NAMES.values())
 # The 7 pollutants with CPCB AQI breakpoints; the only measurements kept after cleaning.
 POLLUTANTS: Final = ["pm25", "pm10", "no2", "so2", "co", "o3", "nh3"]
 EXPECTED_HEADER: Final = ID_COLUMNS + list(SHORT_NAMES)
-LABEL_SUFFIX: Final = "+0000"
+LABEL_SUFFIXES: Final = ("+0000", "+0530")
 LABEL_FORMAT: Final = "%Y-%m-%dT%H:%M:%S.%f"
 
 
@@ -97,15 +98,15 @@ def read_station_file(path: Path) -> tuple[pd.DataFrame, FileFacts]:
         raise RawFormatError(f"{path}: expected readings from one station, found {station_ids}")
 
     labels = table["Timestamp"]
-    as_published = labels.str.endswith(LABEL_SUFFIX, na=False)
+    as_published = labels.notna() & labels.str[-5:].isin(LABEL_SUFFIXES)
     if not as_published.all():
         odd = labels[~as_published].iloc[0]
         raise RawFormatError(
-            f"{path}: timestamp {odd!r} does not end in '{LABEL_SUFFIX}'. The time-zone "
-            "fix assumes the 2024-25 format, so check this file by hand first."
+            f"{path}: timestamp {odd!r} does not end in '+0000' or '+0530'. The time-zone fix "
+            "knows only those two forms (both mean Delhi time), so check this file by hand first."
         )
     try:
-        ts_label = pd.to_datetime(labels.str.removesuffix(LABEL_SUFFIX), format=LABEL_FORMAT)
+        ts_label = pd.to_datetime(labels.str[:-5], format=LABEL_FORMAT)
     except ValueError as err:
         raise RawFormatError(f"{path}: unreadable timestamp ({err})") from err
 

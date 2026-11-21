@@ -54,11 +54,20 @@ def test_file_with_unexpected_columns_is_rejected(tmp_path: Path) -> None:
         read_station_file(path)
 
 
-def test_offset_other_than_plus0000_is_rejected(tmp_path: Path) -> None:
-    # Given: a file whose timestamps carry an explicit +0530 offset (a different export)
-    path = write_station_csv(tmp_path / "rkp.csv", ["site_124|2024-01-01T05:30:00.000000+0530|50.0"])
-    # When / Then: the IST fix assumes "+0000" labels, so anything else must stop the pipeline
-    with pytest.raises(RawFormatError, match=r"\+0000"):
+def test_explicit_delhi_offset_gives_the_same_label_as_the_cpcb_files(tmp_path: Path) -> None:
+    # Given: an OpenAQ-derived file, whose labels say +0530 (Delhi time) explicitly
+    path = write_station_csv(tmp_path / "rkp.csv", ["site_124|2026-01-01T05:30:00.000000+0530|50.0"])
+    # When
+    readings, _ = read_station_file(path)
+    # Then: the same Delhi wall-clock label a CPCB "+0000" file would give
+    assert readings["ts_label"].iloc[0] == pd.Timestamp("2026-01-01 05:30")
+
+
+def test_any_other_offset_is_rejected(tmp_path: Path) -> None:
+    # Given: an offset that is neither CPCB's "+0000" (really Delhi time) nor Delhi's "+0530"
+    path = write_station_csv(tmp_path / "rkp.csv", ["site_124|2024-01-01T05:30:00.000000+0100|50.0"])
+    # When / Then: the time-zone fix cannot vouch for it, so the pipeline stops
+    with pytest.raises(RawFormatError, match=r"\+0000.*\+0530"):
         read_station_file(path)
 
 
