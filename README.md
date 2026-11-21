@@ -391,6 +391,29 @@ It is deployed on Render's free plan from `render.yaml` (Singapore region):
 https://delhi-pm25.onrender.com. Railway's free plan (`railway.json`) works too and can
 deploy without GitHub.
 
+## Live forecasts (in progress)
+
+The website replays 2025. Making it forecast the next 48 hours live is being built in stages.
+
+**Two models.** The *evaluation model* (trained on 2023–2024, tested on 2025) is unchanged and
+produced every accuracy number in this README. The *live model* will be identical in every
+respect except its training window (2023 to the latest data), so it learns from the most recent
+station behaviour. It has no held-out year, so it has no accuracy number of its own: the live
+view quotes the evaluation model's 2025 numbers, labelled "based on held-out 2025 testing". A
+test will fail if the two settings ever differ in anything but the dates.
+
+**Data source check (21 Nov 2026).**
+
+| Source | Fresh? | Our 37 stations | Format | Key | Verdict |
+|---|---|---|---|---|---|
+| Vonter/india-cpcb-aqi (training data) | No: newest data 2025, updated by hand about once a year | all | hourly files per year | none | not for live use |
+| data.gov.in CPCB feed | about 30 min | 36 by place name (7 renamed) | current snapshot only, no history | free | values look like AQI sub-indices (capped at 500), not µg/m³: unusable |
+| OpenAQ (copies the CPCB feed) | 1.3–3 h behind | **all 37** | 15-minute µg/m³ readings, explicit +05:30 times, 10 days per request | free | **chosen** |
+
+OpenAQ's live values are identical to its public archive (91 of 91 readings checked), and its
+timestamps match how the training data is labelled. Its timestamps will still be checked
+independently (sun and temperature tests, as in stage 2) before they are trusted.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
