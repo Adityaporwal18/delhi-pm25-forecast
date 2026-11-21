@@ -190,6 +190,10 @@ used by the rule.
 
 ## Cleaning decisions (stage 2)
 
+The counts in this section describe 2023–2025, as cleaned in stage 2. Since the live phase added
+2026, re-running the scripts also covers 2026 in `reports/stage2/`; the 2025 evaluation numbers
+are unaffected.
+
 Every choice lives in `config/pipeline.toml`; the evidence is in `reports/stage2/`.
 
 | #    | Question | Decision | Why |
@@ -414,6 +418,24 @@ OpenAQ's live values are identical to its public archive (91 of 91 readings chec
 timestamps match how the training data is labelled. Its timestamps will still be checked
 independently (sun and temperature tests, as in stage 2) before they are trusted.
 
+**Stage B (done, 21 Nov 2026): 2026 data and the live models.**
+
+- 2026 readings (1 January to 16 November) come from OpenAQ's public archive: all 37 stations,
+  913,542 readings, 275–307 of 320 days per station. The missing days are OpenAQ outages and
+  stay blank. `scripts/01c_fetch_openaq.py` writes them in the CPCB file layout, so the same
+  loader, cleaning, features and models handle every year.
+- Checked against our training data where both exist (6 stations, 1–10 December 2025): PM2.5 is
+  identical with no time shift, so OpenAQ's labels are the same Delhi-time labels. OpenAQ calls
+  NO2 and CO "ppb", but the values are exactly CPCB's µg/m³ and mg/m³ (ratio 1.00000). Treating
+  them as ppb would have silently rescaled two model inputs, so they are copied unchanged.
+- The evaluation model's numbers did not move: after the rebuild every report in
+  `reports/stage4` to `reports/stage7` is byte-identical. The test year now has an explicit end
+  (`test_end`), so 2026 is never scored.
+- The live models (24: the median and both band edges for each of 8 horizons) learn from 2023
+  to 16 November 2026 with the same recipe and the same number of trees.
+  `tests/test_model_spec.py` fails if their spec differs from the evaluation spec in anything
+  but the training window.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -456,7 +478,8 @@ python3 -m venv .venv
 
 .venv/bin/python scripts/01_fetch_cpcb.py                      # 2024–2025 station files (~460 MB)
 .venv/bin/python scripts/01b_fetch_cpcb_vonter.py --year 2023  # 2023 (~690 MB download)
-.venv/bin/python scripts/02_fetch_weather.py                   # weather, ~8 min (free API, rate-limited)
+.venv/bin/python scripts/01c_fetch_openaq.py --end 2026-11-16   # 2026 from OpenAQ's archive (no key)
+.venv/bin/python scripts/02_fetch_weather.py --end 2026-11-16   # weather, ~10 min (free API, rate-limited)
 .venv/bin/python scripts/03_stack_raw.py                       # stack every raw file -> data/interim/
 .venv/bin/python scripts/04_inspect_raw.py                     # data-quality evidence -> reports/stage2/
 .venv/bin/python scripts/05_clean.py                           # cleaning -> data/interim/hourly_clean.parquet
@@ -466,7 +489,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/08_model.py                           # model, comparisons, test score
 .venv/bin/python scripts/09_error_analysis.py                  # where the model is weakest
 .venv/bin/python scripts/10_horizon_models.py                  # every 6 h ahead + bands + replay file
-.venv/bin/python -m pytest                                     # 253 tests
+.venv/bin/python scripts/11_live_models.py                     # live models: same recipe, all data
+.venv/bin/python -m pytest                                     # 274 tests
 (cd frontend && npm install && npm test && npm run build)       # website -> frontend/dist
 .venv/bin/uvicorn delhi_pm25.server:app                        # site + API: http://127.0.0.1:8000
 ```

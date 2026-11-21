@@ -31,8 +31,9 @@ from delhi_pm25.config import ConfigError, PipelineConfig, load_config
 from delhi_pm25.error_analysis import outcome_tail
 from delhi_pm25.features import DELHI, FeatureError, horizon_view
 from delhi_pm25.guards import InputsOutOfDate, check_up_to_date
-from delhi_pm25.model import FixedTrees, Quantile, Recipe, StopEarly, fit, load_model, predict
+from delhi_pm25.model import FixedTrees, Recipe, StopEarly, band_objectives, fit, load_model, predict
 from delhi_pm25.model_settings import ModelSettings, ServingSettings, load_model_settings, load_serving_settings
+from delhi_pm25.model_spec import SpecParts, build_spec, spec_to_json, window_of
 from delhi_pm25.paths import MODELS_DIR, PIPELINE_TOML, PROCESSED_DIR, REPORTS_DIR, SERVING_DIR
 from delhi_pm25.split import EmbargoError, folds, split
 
@@ -54,15 +55,15 @@ class Plan:
     last_issue: pd.Timestamp
 
 
-def band_models(view: pd.DataFrame, plan: Plan, hours: int) -> tuple[pd.DataFrame, dict[str, int]]:
-    """Fit the median and band models for one horizon; return the test rows with forecasts."""
+def band_models(view: pd.DataFrame, plan: Plan, hours: int) -> tuple[pd.DataFrame, dict[str, int], pd.Series]:
+    """Fit the median and band models for one horizon; return the test rows with forecasts, the
+    trees used, and the target hours the final models learned from."""
     validation, test = folds(plan.config)
     gap = plan.config.features.horizon_hours
     val_train, val_rows = split(view, validation, gap)
     train, rows = split(view, test, gap)
-    low, high = plan.serving.band_quantiles
     trees: dict[str, int] = {}
-    for name, objective in {"p50": plan.model.objective, "p10": Quantile(low), "p90": Quantile(high)}.items():
+    for name, objective in band_objectives(plan.model, plan.serving).items():
         recipe = Recipe(plan.columns, objective)
         stop = StopEarly(val_rows, plan.model.max_trees, plan.model.early_stopping_rounds)
         final = fit(train, recipe, FixedTrees(fit(val_train, recipe, stop).trees))
@@ -72,7 +73,7 @@ def band_models(view: pd.DataFrame, plan: Plan, hours: int) -> tuple[pd.DataFram
     rows["p10"] = np.minimum(rows["p10"], rows["p50"])
     rows["p90"] = np.maximum(rows["p90"], rows["p50"])
     rows["climatology"] = climatology(rows, climatology_table(train, plan.config.baselines))
-    return rows, trees
+    return rows, trees, train.loc[train["target"].notna(), "target_hour_end_utc"]
 
 
 def check_horizon(rows: pd.DataFrame, plan: Plan, hours: int) -> dict[str, object]:
@@ -112,11 +113,16 @@ def main() -> int:
         model, serving = load_model_settings(PIPELINE_TOML), load_serving_settings(PIPELINE_TOML)
         features = pd.read_parquet(FEATURES_PARQUET)
         columns = load_model(MODEL_48H, model.objective).recipe.columns
-        plan = Plan(config, model, serving, columns, features["hour_end_utc"].max() - 48 * HOUR)
+        last_issue = min(features["hour_end_utc"].max(), config.test_end) - 48 * HOUR
+        plan = Plan(config, model, serving, columns, last_issue)
         now = features.assign(p10=np.nan, p50=np.nan, p90=np.nan, target=features[f"{config.target}_lag_0h"])
         checks, replay = [], [replay_rows(now, plan, 0)]
+        model_trees: dict[str, int] = {}
+        learned: list[pd.Series] = []
         for hours in serving.horizons_hours:
-            rows, trees = band_models(horizon_view(features, hours, config), plan, hours)
+            rows, trees, targets = band_models(horizon_view(features, hours, config), plan, hours)
+            model_trees |= {f"h{hours:02d}_{name.removeprefix('trees_')}": count for name, count in trees.items()}
+            learned.append(targets)
             checks.append(check_horizon(rows, plan, hours) | trees)
             replay.append(replay_rows(rows, plan, hours))
             print(f"horizon {hours:2d} h: {trees}", flush=True)
@@ -127,6 +133,8 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     SERVING_DIR.mkdir(parents=True, exist_ok=True)
     table.to_csv(OUT / "horizons.csv", index=False)
+    spec = build_spec(window_of(pd.concat(learned)), model_trees, SpecParts(config, model, serving, columns))
+    (OUT / "model_spec_evaluation.json").write_text(spec_to_json(spec))
     replayed = pd.concat(replay, ignore_index=True).sort_values(["issued_utc", "slug", "horizon_h"], ignore_index=True)
     replayed.to_parquet(REPLAY, index=False)
     pd.set_option("display.width", 220)

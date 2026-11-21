@@ -107,3 +107,25 @@ def test_partial_share_counts_values_built_from_fewer_than_four_readings(config:
     table = missing_in_worst_hours(hourly, config).set_index(["period", "hours"])
     # Then
     assert table.loc[("train", "all hours"), "partial_pct"] == 50.0
+
+
+def test_test_coverage_counts_only_the_test_year(config: PipelineConfig) -> None:
+    # Given: training, test and after-test hours (newer data, used only by the live model)
+    hourly = hourly_grid({"a": [10.0, 10.0, 10.0, float("nan")]})
+    hourly["n_pm25"] = np.array([4, 4, 4, 0], dtype="int8")
+    in_years = dataclasses.replace(config, test_start=START + HOUR, test_end=START + 2 * HOUR)
+    # When
+    selection = station_selection(hourly, in_years)
+    # Then: the empty hour after the test year does not count against the test coverage
+    assert selection.loc["a", "test_readings_pct"] == 100.0
+
+
+def test_missing_share_in_the_test_year_ignores_later_hours(config: PipelineConfig) -> None:
+    # Given: every test-year hour measured, every hour after the test year blank
+    values = [100.0] * 15 + [float("nan")] * 5
+    hourly = hourly_grid({"a": values, "b": values})
+    in_years = dataclasses.replace(config, test_start=START + 9 * HOUR, test_end=START + 14 * HOUR)
+    # When
+    table = missing_in_worst_hours(hourly, in_years).set_index(["period", "hours"])
+    # Then
+    assert table.loc[("test", "all hours"), "blank_pct"] == 0.0

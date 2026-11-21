@@ -81,6 +81,7 @@ class PipelineConfig:
     target: Target
     test_start: pd.Timestamp
     validation_start: pd.Timestamp
+    test_end: pd.Timestamp
     min_train_coverage_pct: float
     hourly: HourlyRules
     ceiling: CeilingRule
@@ -189,11 +190,12 @@ def _moment(split: Table, key: str) -> pd.Timestamp:
     return pd.Timestamp(value).tz_convert("UTC")
 
 
-def _split_moments(split: Table) -> tuple[pd.Timestamp, pd.Timestamp]:
+def _split_moments(split: Table) -> tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp]:
     test_start, validation_start = _moment(split, "test_start"), _moment(split, "validation_start")
-    if validation_start >= test_start:
-        raise ConfigError(f"[split] validation_start ({validation_start}) must be before test_start ({test_start})")
-    return test_start, validation_start
+    test_end = _moment(split, "test_end")
+    if not validation_start < test_start < test_end:
+        raise ConfigError(f"[split] needs validation_start < test_start < test_end, got {validation_start}, {test_start}, {test_end}")
+    return test_start, validation_start, test_end
 
 
 def _baseline_settings(baselines: Table) -> BaselineSettings:
@@ -270,11 +272,12 @@ def load_config(path: Path) -> PipelineConfig:
     hourly, ceiling = root.table("hourly"), root.table("ceiling")
     ceiling_rule = CeilingRule(ceiling.number("ug_m3"), ceiling.pollutants("pollutants"))
     target = _target(root.get("target"))
-    test_start, validation_start = _split_moments(root.table("split"))
+    test_start, validation_start, test_end = _split_moments(root.table("split"))
     return PipelineConfig(
         target=target,
         test_start=test_start,
         validation_start=validation_start,
+        test_end=test_end,
         min_train_coverage_pct=root.table("stations").number("min_train_coverage_pct", at_most=100.0),
         hourly=HourlyRules(hourly.whole_number("min_readings", range(1, 5)), _clock(hourly.get("clock"))),
         ceiling=ceiling_rule,

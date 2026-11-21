@@ -15,6 +15,7 @@ target = "pm25"
 [split]
 test_start = 2025-01-01T00:00:00+05:30
 validation_start = 2024-01-01T00:00:00+05:30
+test_end = 2026-01-01T00:00:00+05:30
 
 [hourly]
 min_readings = 1
@@ -108,6 +109,7 @@ def test_valid_config_gives_typed_rules(tmp_path: Path) -> None:
         ("validation_start = 2024-01-01T00:00:00+05:30", "validation_start = 2024-01-01T00:00:00", "validation_start"),
         ("climatology_days_either_side = 7", "climatology_days_either_side = 200", "climatology_days_either_side"),
         ("climatology_min_values = 5", "climatology_min_values = 0", "climatology_min_values"),
+        ("test_end = 2026-01-01T00:00:00+05:30", "test_end = 2024-06-01T00:00:00+05:30", "test_end"),
     ],
 )
 def test_invalid_settings_are_rejected_with_a_clear_message(
@@ -144,3 +146,8 @@ def test_split_and_baseline_settings_are_read_from_the_file(tmp_path: Path) -> N
     # Then
     assert (config.validation_start, config.baselines.climatology_days_either_side,
             config.baselines.climatology_min_values) == (pd.Timestamp("2023-12-31 18:30", tz="UTC"), 7, 5)
+
+
+def test_the_test_year_has_an_end_so_later_data_is_never_scored(tmp_path: Path) -> None:
+    config = load_config(write_config(tmp_path, VALID))
+    assert config.test_end == pd.Timestamp("2025-12-31 18:30", tz="UTC")

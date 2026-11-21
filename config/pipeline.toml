@@ -15,6 +15,9 @@ test_start = 2025-01-01T00:00:00+05:30
 # the final model trains on 2023-2024 and meets the test year once. Every boundary has
 # a 48-hour gap (src/delhi_pm25/split.py), so no training target falls past it.
 validation_start = 2024-01-01T00:00:00+05:30
+# The test year ends here (set 21 Nov 2026, when 2026 data arrived for the live model).
+# Forecasts for later hours are never scored, so the published 2025 numbers stay comparable.
+test_end = 2026-01-01T00:00:00+05:30
 
 [hourly]
 # D2: an hourly value is the mean of the 15-min readings present; at least this many (1-4).

@@ -24,6 +24,7 @@ def config() -> PipelineConfig:
         target="pm25",
         test_start=pd.Timestamp("2024-12-31 18:30", tz="UTC"),
         validation_start=pd.Timestamp("2023-12-31 18:30", tz="UTC"),
+        test_end=pd.Timestamp("2025-12-31 18:30", tz="UTC"),
         min_train_coverage_pct=75.0,
         hourly=HourlyRules(min_readings=1, clock="ist"),
         ceiling=CeilingRule(ug_m3=1000.0, pollutants=("pm25",)),

@@ -1,40 +1,40 @@
 slug,bp_present_pct,bp_median,looks_like
-alipur_dpcc,97.4,979.0,hPa
-anand_vihar_dpcc,78.9,741.0,mmHg
-ashok_vihar_dpcc,97.7,981.0,hPa
+alipur_dpcc,79.5,979.0,hPa
+anand_vihar_dpcc,64.2,741.0,mmHg
+ashok_vihar_dpcc,78.6,981.0,hPa
 aya_nagar_imd,0.0,,no sensor
-bawana_dpcc,98.7,988.0,hPa
+bawana_dpcc,79.7,988.0,hPa
 burari_crossing_imd,0.0,,no sensor
 chandni_chowk_iitm,54.3,996.5,hPa
 crri_mathura_road_imd,0.0,,no sensor
-dr_karni_singh_shooting_range_dpcc,98.5,982.0,hPa
-dtu_cpcb,1.2,974.3,hPa
-dwarka_sector_8_dpcc,98.8,986.0,hPa
+dr_karni_singh_shooting_range_dpcc,79.4,982.0,hPa
+dtu_cpcb,0.9,974.3,hPa
+dwarka_sector_8_dpcc,79.3,986.0,hPa
 igi_airport_t3_imd,0.0,,no sensor
 ihbas_dilshad_garden_cpcb,0.0,,no sensor
 ito_cpcb,0.0,,no sensor
-jahangirpuri_dpcc,95.6,976.8,hPa
-jawaharlal_nehru_stadium_dpcc,96.7,977.0,hPa
+jahangirpuri_dpcc,77.7,976.8,hPa
+jawaharlal_nehru_stadium_dpcc,78.1,977.0,hPa
 lodhi_road_iitm,0.0,,no sensor
 lodhi_road_imd,0.0,,no sensor
-major_dhyan_chand_national_stadium_dpcc,98.0,981.3,hPa
-mandir_marg_dpcc,91.5,986.0,hPa
-mundka_dpcc,96.7,977.0,hPa
-najafgarh_dpcc,95.0,984.0,hPa
-narela_dpcc,97.5,979.5,hPa
-nehru_nagar_dpcc,98.6,980.8,hPa
+major_dhyan_chand_national_stadium_dpcc,78.7,981.3,hPa
+mandir_marg_dpcc,74.1,986.0,hPa
+mundka_dpcc,77.8,977.0,hPa
+najafgarh_dpcc,76.7,984.0,hPa
+narela_dpcc,78.5,979.5,hPa
+nehru_nagar_dpcc,79.2,980.8,hPa
 north_campus_du_imd,0.0,,no sensor
-nsit_dwarka_cpcb,6.1,708.4,mmHg
-okhla_phase_2_dpcc,98.2,980.5,hPa
-patparganj_dpcc,94.4,982.0,hPa
-punjabi_bagh_dpcc,32.9,736.3,mmHg
-pusa_dpcc,97.0,981.0,hPa
+nsit_dwarka_cpcb,5.1,708.4,mmHg
+okhla_phase_2_dpcc,79.1,980.5,hPa
+patparganj_dpcc,76.1,982.0,hPa
+punjabi_bagh_dpcc,26.5,736.3,mmHg
+pusa_dpcc,78.1,981.0,hPa
 pusa_imd,0.0,,no sensor
-r_k_puram_dpcc,96.7,976.6,hPa
-rohini_dpcc,96.1,980.0,hPa
-shadipur_cpcb,0.2,728.1,mmHg
+r_k_puram_dpcc,78.3,976.6,hPa
+rohini_dpcc,77.2,980.0,hPa
+shadipur_cpcb,0.1,728.1,mmHg
 sirifort_cpcb,0.0,,no sensor
-sonia_vihar_dpcc,94.6,983.0,hPa
-sri_aurobindo_marg_dpcc,94.3,984.0,hPa
-vivek_vihar_dpcc,95.0,982.2,hPa
-wazirpur_dpcc,95.6,974.7,hPa
+sonia_vihar_dpcc,76.5,983.0,hPa
+sri_aurobindo_marg_dpcc,75.9,984.0,hPa
+vivek_vihar_dpcc,76.6,982.2,hPa
+wazirpur_dpcc,77.1,974.7,hPa

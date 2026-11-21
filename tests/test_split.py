@@ -67,3 +67,12 @@ def test_test_rows_start_with_the_first_hour_of_the_test_year() -> None:
     _, evaluate = split(ROWS, TEST, embargo_hours=HORIZON)
     # Then
     assert evaluate["target_hour_end_utc"].min() == CONFIG.test_start + HOUR
+
+
+def test_the_test_fold_scores_only_the_test_year_even_when_newer_data_exists() -> None:
+    # Given: feature rows running into 2026 (newer data, used only by the live model)
+    rows = feature_rows("2025-12-20 00:30", "2026-01-10 00:30")
+    # When
+    _, evaluate = split(rows, TEST, embargo_hours=HORIZON)
+    # Then: no 2026 target hour is scored, so the published 2025 numbers stay comparable
+    assert evaluate["target_hour_end_utc"].max() == CONFIG.test_end

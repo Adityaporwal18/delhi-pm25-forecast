@@ -32,10 +32,10 @@ class Fold:
 
 def folds(config: PipelineConfig) -> tuple[Fold, Fold]:
     """Validation: train on 2023, score 2024 (for choosing features and settings).
-    Test: train on 2023-2024, score 2025 (once, at the end)."""
+    Test: train on 2023-2024, score 2025 (once, at the end; never past test_end)."""
     return (
         Fold("validation", config.validation_start, config.test_start),
-        Fold("test", config.test_start, None),
+        Fold("test", config.test_start, config.test_end),
     )
 
 

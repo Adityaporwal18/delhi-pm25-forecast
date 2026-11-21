@@ -23,6 +23,13 @@ SPIKE_LOG_COLUMNS: Final = [
 RUN_LOG_COLUMNS: Final = ["slug", "pollutant", "first_hour_end_utc", "last_hour_end_utc", "hours", "value"]
 
 
+def _period(hourly: pd.DataFrame, config: PipelineConfig) -> np.ndarray:
+    """"train" up to test_start, "test" up to test_end, "after test" beyond (newer data for the
+    live model only, never part of a published number)."""
+    end = hourly["hour_end_utc"]
+    return np.select([end <= config.test_start, end <= config.test_end], ["train", "test"], default="after test")
+
+
 def station_selection(hourly: pd.DataFrame, config: PipelineConfig) -> pd.DataFrame:
     """D3 (b): keep a station only if it reported the target in at least
     `min_train_coverage_pct` % of its 15-min slots during TRAINING.
@@ -31,8 +38,7 @@ def station_selection(hourly: pd.DataFrame, config: PipelineConfig) -> pd.DataFr
     cleaning threshold. Test-period and per-year coverage are shown for information only.
     """
     pct = hourly[f"n_{config.target}"] / SLOTS_PER_HOUR * 100
-    period = pd.Series(np.where(hourly["hour_end_utc"] <= config.test_start, "train", "test"),
-                       index=hourly.index, name="period")
+    period = pd.Series(_period(hourly, config), index=hourly.index, name="period")
     delhi_year = (hourly["hour_end_utc"] - HOUR).dt.tz_convert(DELHI).dt.year.rename("year")
     by_period = pct.groupby([hourly["slug"], period], observed=True).mean().unstack()
     by_year = pct.groupby([hourly["slug"], delhi_year], observed=True).mean().unstack()
@@ -123,9 +129,10 @@ def missing_in_worst_hours(hourly: pd.DataFrame, config: PipelineConfig) -> pd.D
     ('missing not at random').
     """
     target = config.target
-    in_train = hourly["hour_end_utc"] <= config.test_start
+    periods = _period(hourly, config)
     rows = []
-    for period, part in (("train", hourly[in_train]), ("test", hourly[~in_train])):
+    for period in ("train", "test"):
+        part = hourly[periods == period]
         city = part.groupby("hour_end_utc")[target].median()
         smog = part["hour_end_utc"].map(city)
         tails = {"all hours": pd.Series(True, index=part.index)}

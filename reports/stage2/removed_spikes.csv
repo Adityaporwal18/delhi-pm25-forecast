@@ -9,8 +9,10 @@ anand_vihar_dpcc,2024-03-22 06:30:00+00:00,pm25,73.0,827.0,620.5,1.33,58.145,rem
 anand_vihar_dpcc,2025-01-14 20:30:00+00:00,pm25,593.0,830.0,598.0,1.39,335.0,kept: city polluted
 anand_vihar_dpcc,2025-01-21 02:30:00+00:00,pm25,172.0,462.0,177.0,2.61,141.0,removed: city calm
 anand_vihar_dpcc,2025-12-27 01:30:00+00:00,pm25,429.0,710.0,464.0,1.53,292.1,kept: < 2x higher neighbour
+anand_vihar_dpcc,2026-08-20 15:30:00+00:00,pm25,95.0,415.0,29.0,4.37,40.5,removed: city calm
 ashok_vihar_dpcc,2024-10-30 17:30:00+00:00,pm25,272.0,548.0,294.0,1.86,195.0175,removed: city calm
 ashok_vihar_dpcc,2025-10-17 20:30:00+00:00,pm25,190.0,490.0,237.0,2.07,136.0,removed: city calm
+ashok_vihar_dpcc,2026-03-07 19:30:00+00:00,pm25,157.0,443.0,184.0,2.41,150.0,removed: city calm
 aya_nagar_imd,2023-03-01 09:30:00+00:00,pm25,51.9825,336.1175,121.705,2.76,58.0,removed: city calm
 aya_nagar_imd,2024-05-21 12:30:00+00:00,pm25,90.35,306.6725,77.3425,3.39,61.2,removed: city calm
 aya_nagar_imd,2024-07-31 15:30:00+00:00,pm25,35.455,521.6,117.3225,4.45,16.0,removed: city calm
@@ -21,6 +23,7 @@ aya_nagar_imd,2025-02-13 18:30:00+00:00,pm25,44.4425,661.765,359.96002,1.84,50.0
 aya_nagar_imd,2025-03-31 17:30:00+00:00,pm25,246.37666,469.715,63.947502,1.91,46.0,removed: city calm
 aya_nagar_imd,2025-03-31 21:30:00+00:00,pm25,105.09,683.2067,378.80997,1.8,45.0,removed: city calm
 aya_nagar_imd,2025-04-14 05:30:00+00:00,pm25,154.0,544.6066,54.533337,3.54,67.5,removed: city calm
+aya_nagar_imd,2026-05-18 07:30:00+00:00,pm25,92.71,300.93002,22.022501,3.25,38.81625,removed: city calm
 bawana_dpcc,2023-01-08 15:30:00+00:00,pm25,597.0,918.0,519.0,1.54,363.1875,kept: city polluted
 bawana_dpcc,2023-01-20 17:30:00+00:00,pm25,225.5,458.5,124.25,2.03,125.75,removed: city calm
 bawana_dpcc,2024-05-10 17:30:00+00:00,pm25,83.0,355.0,72.0,4.28,110.875,removed: city calm
@@ -30,6 +33,8 @@ bawana_dpcc,2024-12-31 18:30:00+00:00,pm25,348.0,569.0,362.0,1.57,252.0,kept: < 
 bawana_dpcc,2025-01-03 17:30:00+00:00,pm25,357.0,561.0,208.0,1.57,361.0,kept: city polluted
 bawana_dpcc,2025-11-14 00:30:00+00:00,pm25,310.0,675.0,332.0,2.03,258.38873,removed: >= 2x higher neighbour
 bawana_dpcc,2025-11-17 15:30:00+00:00,pm25,342.0,896.0,438.0,2.05,186.525,removed: city calm
+bawana_dpcc,2026-02-08 17:30:00+00:00,pm25,152.0,409.0,199.0,2.06,136.0,removed: city calm
+bawana_dpcc,2026-02-15 19:30:00+00:00,pm25,233.0,477.0,173.0,2.05,153.0,removed: city calm
 burari_crossing_imd,2023-10-12 21:30:00+00:00,pm25,148.1575,444.89,236.6225,1.88,140.375,removed: city calm
 burari_crossing_imd,2024-04-15 08:30:00+00:00,pm25,133.47751,465.69,213.91,2.18,82.0,removed: city calm
 burari_crossing_imd,2024-05-30 07:30:00+00:00,pm25,244.4675,487.41498,57.98,1.99,52.0,removed: city calm
@@ -38,11 +43,13 @@ burari_crossing_imd,2024-08-06 07:30:00+00:00,pm25,127.1275,814.45496,493.26498,
 burari_crossing_imd,2024-08-06 11:30:00+00:00,pm25,239.93,610.47253,51.6875,2.54,14.815001,removed: city calm
 burari_crossing_imd,2024-10-04 05:30:00+00:00,pm25,15.4925,351.1175,105.42667,3.33,29.125,removed: city calm
 burari_crossing_imd,2024-11-13 08:30:00+00:00,pm25,327.53,545.29,299.835,1.66,333.865,kept: city polluted
+burari_crossing_imd,2026-04-25 08:30:00+00:00,pm25,61.8875,2025.1699,182.48334,11.1,42.975,removed: city calm
 crri_mathura_road_imd,2023-01-01 17:30:00+00:00,pm25,37.505,413.24,95.64,4.32,304.75,kept: city polluted
 crri_mathura_road_imd,2023-01-02 05:30:00+00:00,pm25,126.7475,516.68,271.96667,1.9,217.25,kept: < 2x higher neighbour
 crri_mathura_road_imd,2023-01-31 04:30:00+00:00,pm25,96.2525,616.96497,88.735,6.41,68.0,removed: city calm
 crri_mathura_road_imd,2024-04-04 10:30:00+00:00,pm25,62.595,347.84,77.333336,4.5,29.125,removed: city calm
 crri_mathura_road_imd,2025-03-03 05:30:00+00:00,pm25,153.5,408.1975,61.8,2.66,88.0,removed: city calm
+crri_mathura_road_imd,2026-05-16 06:30:00+00:00,pm25,63.1975,300.46,-10.345,4.75,63.0,removed: city calm
 dtu_cpcb,2023-11-22 09:30:00+00:00,pm25,88.0,1000.0,96.0,10.42,169.66667,removed: city calm
 dtu_cpcb,2023-12-20 07:30:00+00:00,pm25,85.5,1000.0,60.0,11.7,135.25,removed: city calm
 dtu_cpcb,2024-01-19 08:30:00+00:00,pm25,117.0,1000.0,172.0,5.81,226.25,removed: >= 2x higher neighbour
@@ -62,23 +69,41 @@ dtu_cpcb,2024-07-09 09:30:00+00:00,pm25,31.0,944.5,22.9125,30.47,24.5,removed: c
 dtu_cpcb,2024-11-18 10:30:00+00:00,pm25,101.75,643.3975,365.29498,1.76,680.0,kept: city polluted
 dtu_cpcb,2025-08-22 05:30:00+00:00,pm25,54.29,325.21,9.875,5.99,52.0,removed: city calm
 dtu_cpcb,2025-12-28 04:30:00+00:00,pm25,331.63,600.0,388.0,1.55,246.0,kept: < 2x higher neighbour
+dtu_cpcb,2026-01-10 03:30:00+00:00,pm25,181.0,477.0,207.0,2.3,167.0,removed: city calm
+dtu_cpcb,2026-07-09 01:30:00+00:00,pm25,451.35336,976.75665,0.1,2.16,6.1,removed: city calm
 dwarka_sector_8_dpcc,2025-05-30 04:30:00+00:00,pm25,88.0,309.0,107.0,2.89,81.3825,removed: city calm
 igi_airport_t3_imd,2023-11-20 15:30:00+00:00,pm25,421.47,636.81,248.185,1.51,195.875,removed: city calm
 igi_airport_t3_imd,2023-12-04 13:30:00+00:00,pm25,100.552505,612.28503,130.3975,4.7,106.5,removed: city calm
 igi_airport_t3_imd,2024-08-08 11:30:00+00:00,pm25,97.96,299.025,31.56,3.05,14.0,removed: city calm
 igi_airport_t3_imd,2025-03-20 22:30:00+00:00,pm25,347.3775,644.9025,116.43,1.86,64.215,removed: city calm
+igi_airport_t3_imd,2026-02-26 13:30:00+00:00,pm25,113.175,835.525,221.65,3.77,36.0,removed: city calm
+ihbas_dilshad_garden_cpcb,2026-03-07 04:30:00+00:00,pm25,6251.4497,7513.05,3779.5332,1.2,174.0,removed: city calm
+ihbas_dilshad_garden_cpcb,2026-04-15 10:30:00+00:00,pm25,14.066667,508.125,168.5,3.02,17.5,removed: city calm
+ihbas_dilshad_garden_cpcb,2026-05-13 03:30:00+00:00,pm25,848.94995,1164.2,561.3333,1.37,82.0,removed: city calm
+ihbas_dilshad_garden_cpcb,2026-05-14 18:30:00+00:00,pm25,2749.275,7318.267,1963.2,2.66,56.5,removed: city calm
 ito_cpcb,2024-05-10 17:30:00+00:00,pm25,107.75,476.25,94.333336,4.42,110.875,removed: city calm
+ito_cpcb,2026-03-25 11:30:00+00:00,pm25,-180.0,474.25,-294.0,-2.63,23.0,removed: city calm
+ito_cpcb,2026-10-17 19:30:00+00:00,pm25,91.0,573.5,274.0,2.09,121.95,removed: city calm
 jahangirpuri_dpcc,2023-01-10 15:30:00+00:00,pm25,510.25,732.6667,445.33334,1.44,302.0,kept: city polluted
 jahangirpuri_dpcc,2024-12-16 17:30:00+00:00,pm25,656.0,872.0,589.0,1.33,411.68,kept: city polluted
 jahangirpuri_dpcc,2025-01-03 15:30:00+00:00,pm25,490.0,879.0,546.0,1.61,334.55624,kept: city polluted
 jahangirpuri_dpcc,2025-01-08 15:30:00+00:00,pm25,332.0,691.0,397.0,1.74,191.0,removed: city calm
 jahangirpuri_dpcc,2025-12-04 20:30:00+00:00,pm25,263.0,475.0,216.0,1.81,213.0,kept: < 2x higher neighbour
+jahangirpuri_dpcc,2026-03-24 04:30:00+00:00,pm25,255.0,470.0,233.0,1.84,121.0,removed: city calm
+jahangirpuri_dpcc,2026-04-20 01:30:00+00:00,pm25,81.0,384.0,124.0,3.1,75.8925,removed: city calm
+jawaharlal_nehru_stadium_dpcc,2026-05-23 04:30:00+00:00,pm25,67.0,373.0,146.0,2.55,67.0,removed: city calm
 lodhi_road_imd,2023-04-14 02:30:00+00:00,pm25,235.555,637.975,190.92,2.71,174.0,removed: city calm
 lodhi_road_imd,2024-09-10 05:30:00+00:00,pm25,65.3125,425.6775,74.3025,5.73,59.0,removed: city calm
+lodhi_road_imd,2026-03-30 06:30:00+00:00,pm25,0.0,1360.2,321.77502,4.23,55.0,removed: city calm
+lodhi_road_imd,2026-03-30 08:30:00+00:00,pm25,321.77502,829.6,211.3,2.58,33.8125,removed: city calm
+mandir_marg_dpcc,2026-04-17 03:30:00+00:00,pm25,177.0,458.0,146.0,2.59,180.10999,removed: city calm
+mandir_marg_dpcc,2026-04-27 16:30:00+00:00,pm25,66.0,479.0,236.0,2.03,122.0,removed: city calm
 mundka_dpcc,2023-09-21 13:30:00+00:00,pm25,38.0,282.0,25.0,7.42,30.755001,removed: city calm
 mundka_dpcc,2025-04-11 14:30:00+00:00,pm25,44.0,249.0,20.0,5.66,93.575,removed: city calm
 mundka_dpcc,2025-05-21 15:30:00+00:00,pm25,83.0,307.0,36.0,3.7,73.535,removed: city calm
 mundka_dpcc,2025-10-16 16:30:00+00:00,pm25,191.0,414.0,189.0,2.17,115.7925,removed: city calm
+mundka_dpcc,2026-03-06 18:30:00+00:00,pm25,178.0,453.0,211.0,2.15,127.0,removed: city calm
+mundka_dpcc,2026-11-07 17:30:00+00:00,pm25,455.0,718.0,454.0,1.58,329.0,kept: city polluted
 najafgarh_dpcc,2025-12-22 13:30:00+00:00,pm25,269.0,747.0,272.0,2.75,328.5,kept: city polluted
 narela_dpcc,2023-01-15 21:30:00+00:00,pm25,327.0,582.0,294.0,1.78,161.625,removed: city calm
 narela_dpcc,2023-02-18 17:30:00+00:00,pm25,292.25,552.75,171.0,1.89,180.0,removed: city calm
@@ -103,6 +128,8 @@ nehru_nagar_dpcc,2025-11-23 19:30:00+00:00,pm25,262.0,637.0,323.0,1.97,312.0,kep
 nehru_nagar_dpcc,2025-12-24 15:30:00+00:00,pm25,367.0,806.0,310.0,2.2,133.0,removed: city calm
 nehru_nagar_dpcc,2025-12-26 16:30:00+00:00,pm25,539.0,741.0,514.0,1.37,277.0925,kept: < 2x higher neighbour
 nehru_nagar_dpcc,2025-12-30 15:30:00+00:00,pm25,494.0,769.0,543.0,1.42,264.5,kept: < 2x higher neighbour
+nehru_nagar_dpcc,2026-01-01 14:30:00+00:00,pm25,290.0,738.0,379.0,1.95,231.5,kept: < 2x higher neighbour
+nehru_nagar_dpcc,2026-11-09 15:30:00+00:00,pm25,287.0,608.0,316.0,1.92,174.25,removed: city calm
 north_campus_du_imd,2023-08-05 01:30:00+00:00,pm25,63.0375,558.2875,39.0825,8.86,30.51375,removed: city calm
 north_campus_du_imd,2024-01-17 06:30:00+00:00,pm25,195.9,417.4075,183.0825,2.13,230.875,removed: >= 2x higher neighbour
 north_campus_du_imd,2024-01-28 05:30:00+00:00,pm25,464.075,693.85254,424.85748,1.5,343.0,kept: city polluted
@@ -110,10 +137,30 @@ north_campus_du_imd,2024-03-15 18:30:00+00:00,pm25,228.815,523.8433,93.75,2.29,8
 north_campus_du_imd,2024-06-03 10:30:00+00:00,pm25,66.335,406.7175,145.60251,2.79,38.44125,removed: city calm
 north_campus_du_imd,2024-06-22 01:30:00+00:00,pm25,287.48,530.9025,220.19,1.85,144.10875,removed: city calm
 north_campus_du_imd,2024-06-28 19:30:00+00:00,pm25,9.53,296.725,96.375,3.08,58.48,removed: city calm
+north_campus_du_imd,2026-01-27 01:30:00+00:00,pm25,331.6,782.65,486.9,1.61,218.0,kept: < 2x higher neighbour
+north_campus_du_imd,2026-05-18 05:30:00+00:00,pm25,55.9,403.15,125.625,3.21,54.1425,removed: city calm
 nsit_dwarka_cpcb,2024-07-09 13:30:00+00:00,pm25,34.025,957.7,157.4,6.08,38.8125,removed: city calm
 nsit_dwarka_cpcb,2025-07-16 17:30:00+00:00,pm25,81.325005,424.6,6.1999993,5.22,32.0,removed: city calm
 nsit_dwarka_cpcb,2025-12-22 13:30:00+00:00,pm25,117.875,573.625,344.325,1.67,328.5,kept: city polluted
+nsit_dwarka_cpcb,2026-01-04 10:30:00+00:00,pm25,1346.45,2387.575,1485.0,1.61,132.0,removed: city calm
+nsit_dwarka_cpcb,2026-01-05 09:30:00+00:00,pm25,41.6,606.8667,323.775,1.87,114.0,removed: city calm
+nsit_dwarka_cpcb,2026-01-05 19:30:00+00:00,pm25,8.233334,1659.0,1444.7,1.15,171.0,removed: city calm
+nsit_dwarka_cpcb,2026-01-06 06:30:00+00:00,pm25,696.05005,2245.0251,1066.125,2.11,175.5,removed: city calm
+nsit_dwarka_cpcb,2026-01-06 14:30:00+00:00,pm25,33.333332,1825.3251,1503.1,1.21,165.0,removed: city calm
+nsit_dwarka_cpcb,2026-01-07 10:30:00+00:00,pm25,47.725,296.93332,96.125,3.09,140.0,removed: city calm
+nsit_dwarka_cpcb,2026-01-08 05:30:00+00:00,pm25,218.225,461.27502,252.125,1.83,115.34375,removed: city calm
+nsit_dwarka_cpcb,2026-01-08 08:30:00+00:00,pm25,312.175,659.975,336.16666,1.96,159.0,removed: city calm
+nsit_dwarka_cpcb,2026-01-23 09:30:00+00:00,pm25,598.63336,1218.275,830.6,1.47,147.0,removed: city calm
+nsit_dwarka_cpcb,2026-03-27 01:30:00+00:00,pm25,34.575,3929.8997,2442.3,1.61,84.5,removed: city calm
+nsit_dwarka_cpcb,2026-05-18 12:30:00+00:00,pm25,42.4,340.83334,55.2,6.17,34.5,removed: city calm
+nsit_dwarka_cpcb,2026-05-20 04:30:00+00:00,pm25,53.225,399.93335,68.0,5.88,57.5,removed: city calm
+nsit_dwarka_cpcb,2026-05-25 06:30:00+00:00,pm25,87.9,608.0,320.7,1.9,65.0,removed: city calm
+nsit_dwarka_cpcb,2026-05-31 04:30:00+00:00,pm25,9.1,933.2,470.325,1.98,20.0,removed: city calm
+nsit_dwarka_cpcb,2026-06-07 14:30:00+00:00,pm25,113.875,320.675,50.375,2.82,38.0,removed: city calm
+nsit_dwarka_cpcb,2026-06-15 10:30:00+00:00,pm25,71.674995,348.025,67.125,4.86,42.0,removed: city calm
+nsit_dwarka_cpcb,2026-07-23 18:30:00+00:00,pm25,267.59998,533.73334,37.0,1.99,25.0,removed: city calm
 patparganj_dpcc,2024-11-01 18:30:00+00:00,pm25,353.0,554.0,337.0,1.57,299.0,kept: < 2x higher neighbour
+punjabi_bagh_dpcc,2026-04-28 06:30:00+00:00,pm25,208.0,764.0,219.0,3.49,66.0,removed: city calm
 pusa_imd,2023-08-24 06:30:00+00:00,pm25,13.5175,625.79333,264.585,2.37,27.45,removed: city calm
 pusa_imd,2023-09-27 12:30:00+00:00,pm25,229.9725,442.17,64.645004,1.92,44.25,removed: city calm
 pusa_imd,2023-09-29 23:30:00+00:00,pm25,47.302498,275.0025,48.8675,5.63,73.3775,removed: city calm
@@ -123,9 +170,11 @@ pusa_imd,2024-11-12 02:30:00+00:00,pm25,160.32501,424.4475,196.545,2.16,203.55,r
 pusa_imd,2025-02-10 10:30:00+00:00,pm25,101.5475,392.305,68.23,3.86,58.0,removed: city calm
 pusa_imd,2025-04-14 08:30:00+00:00,pm25,104.1275,526.7925,77.3,5.06,45.0,removed: city calm
 pusa_imd,2025-10-19 12:30:00+00:00,pm25,257.5425,566.7975,133.43,2.2,108.0,removed: city calm
+pusa_imd,2026-06-18 10:30:00+00:00,pm25,73.03333,337.85,41.666668,4.63,35.0,removed: city calm
 r_k_puram_dpcc,2023-12-13 16:30:00+00:00,pm25,406.0,719.0,434.0,1.66,230.9,kept: < 2x higher neighbour
 r_k_puram_dpcc,2025-04-11 14:30:00+00:00,pm25,45.75,265.0,48.0,5.52,93.575,removed: city calm
 r_k_puram_dpcc,2025-12-11 16:30:00+00:00,pm25,186.0,677.0,353.0,1.92,208.0,kept: < 2x higher neighbour
+rohini_dpcc,2026-03-24 04:30:00+00:00,pm25,263.0,471.0,168.0,1.79,121.0,removed: city calm
 shadipur_cpcb,2024-06-07 14:30:00+00:00,pm25,134.75,826.675,355.45,2.33,35.3,removed: city calm
 shadipur_cpcb,2024-06-08 14:30:00+00:00,pm25,115.425,517.0,299.175,1.73,27.0,removed: city calm
 shadipur_cpcb,2024-06-11 14:30:00+00:00,pm25,309.6,717.65,480.09998,1.49,27.75,removed: city calm
@@ -137,6 +186,7 @@ shadipur_cpcb,2025-04-11 14:30:00+00:00,pm25,79.024994,911.575,87.075005,10.47,9
 shadipur_cpcb,2025-04-16 14:30:00+00:00,pm25,103.55,452.45,251.275,1.8,68.0,removed: city calm
 shadipur_cpcb,2025-05-01 21:30:00+00:00,pm25,114.5,606.60004,172.225,3.52,93.625,removed: city calm
 shadipur_cpcb,2025-08-22 02:30:00+00:00,pm25,24.525,296.35,38.9,7.62,60.415,removed: city calm
+shadipur_cpcb,2026-04-19 01:30:00+00:00,pm25,83.924995,668.275,381.02502,1.75,233.86665,kept: < 2x higher neighbour
 sirifort_cpcb,2023-01-08 17:30:00+00:00,pm25,314.5,967.0,445.0,2.17,443.125,kept: city polluted
 sirifort_cpcb,2023-01-08 22:30:00+00:00,pm25,571.0,979.0,462.25,1.71,333.76752,kept: city polluted
 sirifort_cpcb,2023-09-25 08:30:00+00:00,pm25,46.0,709.0,39.5,15.41,50.5,removed: city calm
@@ -145,10 +195,18 @@ sirifort_cpcb,2023-12-15 19:30:00+00:00,pm25,237.90668,452.89,237.89998,1.9,263.
 sirifort_cpcb,2023-12-16 04:30:00+00:00,pm25,259.7975,474.71,273.1,1.74,319.145,kept: city polluted
 sirifort_cpcb,2025-03-23 03:30:00+00:00,pm25,112.579994,378.21,113.185,3.34,102.75,removed: city calm
 sirifort_cpcb,2025-11-27 17:30:00+00:00,pm25,231.805,600.805,256.825,2.34,303.9275,kept: city polluted
+sirifort_cpcb,2026-03-16 00:30:00+00:00,pm25,44.0,471.0,23.0,10.7,24.45,removed: city calm
+sirifort_cpcb,2026-06-21 19:30:00+00:00,pm25,86.4875,336.0,123.785,2.71,65.85,removed: city calm
+sirifort_cpcb,2026-11-08 23:30:00+00:00,pm25,0.06,1000.0,555.61,1.8,357.0,kept: city polluted
+sirifort_cpcb,2026-11-09 02:30:00+00:00,pm25,347.83,954.52,692.0,1.38,304.11,kept: city polluted
+sirifort_cpcb,2026-11-15 14:30:00+00:00,pm25,424.695,625.88,314.0,1.47,45.0,removed: city calm
+sirifort_cpcb,2026-11-15 18:30:00+00:00,pm25,630.78503,831.5234,340.0,1.32,104.01666,removed: city calm
 sonia_vihar_dpcc,2024-12-22 20:30:00+00:00,pm25,553.0,786.0,420.0,1.42,323.0,kept: city polluted
 sonia_vihar_dpcc,2025-03-11 04:30:00+00:00,pm25,153.0,365.0,157.0,2.32,171.0,removed: city calm
 sonia_vihar_dpcc,2025-10-20 20:30:00+00:00,pm25,514.0,923.0,713.0,1.29,853.2833,kept: city polluted
 sonia_vihar_dpcc,2025-12-28 03:30:00+00:00,pm25,255.0,523.0,282.0,1.85,264.6,kept: < 2x higher neighbour
+sonia_vihar_dpcc,2026-04-15 04:30:00+00:00,pm25,243.0,525.0,128.0,2.16,193.0625,removed: city calm
 vivek_vihar_dpcc,2023-11-24 01:30:00+00:00,pm25,649.25,910.5,698.0,1.3,309.0,kept: city polluted
 vivek_vihar_dpcc,2023-11-30 20:30:00+00:00,pm25,279.0,552.0,337.0,1.64,188.25,removed: city calm
 wazirpur_dpcc,2023-12-23 17:30:00+00:00,pm25,566.75,889.5,599.25,1.48,303.97498,kept: city polluted
+wazirpur_dpcc,2026-05-30 06:30:00+00:00,pm25,51.0,282.0,73.0,3.86,24.875,removed: city calm

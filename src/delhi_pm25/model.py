@@ -16,9 +16,10 @@ import numpy as np
 import pandas as pd
 
 from delhi_pm25.features import NON_FEATURE_COLUMNS
-from delhi_pm25.model_settings import Objective
+from delhi_pm25.model_settings import ModelSettings, Objective, ServingSettings
 
 SEED: Final = 0
+BASE_PARAMS: Final = {"seed": SEED, "deterministic": True, "force_row_wise": True, "verbosity": -1}
 GAIN_TAILS: Final = ["all hours", "smoggiest 10.0%"]
 
 
@@ -84,11 +85,16 @@ def _objective_params(objective: Objective | Quantile) -> dict[str, object]:
             assert_never(unreachable)
 
 
+def band_objectives(settings: ModelSettings, serving: ServingSettings) -> dict[str, Objective | Quantile]:
+    """The three models behind every forecast: the median and the two ends of the band."""
+    low, high = serving.band_quantiles
+    return {"p50": settings.objective, "p10": Quantile(low), "p90": Quantile(high)}
+
+
 def fit(train: pd.DataFrame, recipe: Recipe, stopping: StopEarly | FixedTrees) -> FittedModel:
     """Train on the rows of `train` whose target was measured. LightGBM defaults otherwise;
     `deterministic` and a fixed seed make every run give the same model."""
-    params = {**_objective_params(recipe.objective), "seed": SEED, "deterministic": True,
-              "force_row_wise": True, "verbosity": -1}
+    params = {**_objective_params(recipe.objective), **BASE_PARAMS}
     train_set = _dataset(train, recipe)
     match stopping:
         case StopEarly(validation=validation, max_trees=max_trees, patience=patience):
