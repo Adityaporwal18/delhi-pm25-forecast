@@ -31,7 +31,7 @@ from delhi_pm25.config import ConfigError, PipelineConfig, load_config
 from delhi_pm25.error_analysis import outcome_tail
 from delhi_pm25.features import DELHI, FeatureError, horizon_view
 from delhi_pm25.guards import InputsOutOfDate, check_up_to_date
-from delhi_pm25.model import FixedTrees, Recipe, StopEarly, band_objectives, fit, load_model, predict
+from delhi_pm25.model import FixedTrees, Recipe, StopEarly, band_objectives, fit, load_model, order_band, predict
 from delhi_pm25.model_settings import ModelSettings, ServingSettings, load_model_settings, load_serving_settings
 from delhi_pm25.model_spec import SpecParts, build_spec, spec_to_json, window_of
 from delhi_pm25.paths import MODELS_DIR, PIPELINE_TOML, PROCESSED_DIR, REPORTS_DIR, SERVING_DIR
@@ -70,8 +70,7 @@ def band_models(view: pd.DataFrame, plan: Plan, hours: int) -> tuple[pd.DataFram
         final.booster.save_model(MODELS_DIR / f"h{hours:02d}_{name}.txt", num_iteration=final.trees)
         rows[name] = predict(final, rows)
         trees[f"trees_{name}"] = final.trees
-    rows["p10"] = np.minimum(rows["p10"], rows["p50"])
-    rows["p90"] = np.maximum(rows["p90"], rows["p50"])
+    rows["p10"], rows["p90"] = order_band(rows["p10"], rows["p50"], rows["p90"])
     rows["climatology"] = climatology(rows, climatology_table(train, plan.config.baselines))
     return rows, trees, train.loc[train["target"].notna(), "target_hour_end_utc"]
 

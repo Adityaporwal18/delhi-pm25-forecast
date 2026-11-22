@@ -11,7 +11,7 @@ records, on every forecast whose target lies inside the data, with the same 48-h
 from the evaluation spec, and again before saving if the specs differ in anything but the window.
 
 Outputs:
-  data/models/live/h{HH}_{p10,p50,p90}.txt   the live models
+  serving/models/h{HH}_{p10,p50,p90}.txt     the live models (committed: the refresh needs them)
   reports/live/model_spec_live.json          their spec (tests/test_model_spec.py compares it)
 
 Usage:
@@ -38,12 +38,12 @@ from delhi_pm25.model_spec import (
     spec_to_json,
     window_of,
 )
-from delhi_pm25.paths import MODELS_DIR, PIPELINE_TOML, PROCESSED_DIR, REPORTS_DIR
+from delhi_pm25.paths import PIPELINE_TOML, PROCESSED_DIR, REPORTS_DIR, SERVING_DIR
 from delhi_pm25.split import EmbargoError, Fold, split
 
 FEATURES_PARQUET: Final = PROCESSED_DIR / "features.parquet"
 EVALUATION_SPEC: Final = REPORTS_DIR / "stage7" / "model_spec_evaluation.json"
-LIVE_MODELS: Final = MODELS_DIR / "live"
+LIVE_MODELS: Final = SERVING_DIR / "models"
 OUT: Final = REPORTS_DIR / "live"
 EVALUATION_COMMAND: Final = ".venv/bin/python scripts/10_horizon_models.py"
 

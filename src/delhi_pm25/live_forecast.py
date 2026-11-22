@@ -1,0 +1,83 @@
+"""Live forecasts, stage D: from the latest live features to the file the site reads.
+
+Publishing is all or nothing. problems_with lists every reason to distrust a refresh: too few
+stations reporting, a forecast hour that is old or in the future, nothing newer than the file
+already published, or a short history. With any problem, publish_if_sound leaves the published
+file untouched, because a slightly stale forecast is better than a broken page. The file records
+when it was made ("generated_at_utc", the site's "last updated") and the hour the forecast
+starts from ("issued_utc").
+"""
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Final
+
+import pandas as pd
+
+from delhi_pm25.model import order_band
+
+__all__ = ["Freshness", "forecast_document", "order_band", "previous_issue", "problems_with", "publish_if_sound"]
+
+MIN_REPORTING_SHARE: Final = 2 / 3
+MIN_HISTORY_SHARE: Final = 2 / 3
+MAX_AGE: Final = pd.Timedelta(hours=12)
+FUTURE_SLACK: Final = pd.Timedelta(hours=1)
+
+
+@dataclass(frozen=True, slots=True)
+class Freshness:
+    """When the refresh runs, and the forecast hour of the file already published (None if none)."""
+
+    now: pd.Timestamp
+    previous_issue: pd.Timestamp | None
+
+
+def problems_with(features: pd.DataFrame, target: str, freshness: Freshness) -> list[str]:
+    """Every reason not to publish these live features; an empty list means publish."""
+    issued = features["hour_end_utc"].max()
+    reporting = features[f"{target}_lag_0h"].notna().mean()
+    history = features[f"{target}_mean_168h"].notna().mean()
+    previous = freshness.previous_issue
+    checks = [
+        (reporting < MIN_REPORTING_SHARE,
+         f"only {reporting:.0%} of stations have {target} for the forecast hour (need {MIN_REPORTING_SHARE:.0%})"),
+        (history < MIN_HISTORY_SHARE,
+         f"only {history:.0%} of stations have a 7-day history (need {MIN_HISTORY_SHARE:.0%}): the fetch looks short"),
+        (freshness.now - issued > MAX_AGE, f"the forecast hour {issued} is more than {MAX_AGE} old"),
+        (issued > freshness.now + FUTURE_SLACK, f"the forecast hour {issued} is in the future: the clock or time zone is wrong"),
+        (previous is not None and issued <= previous, f"nothing newer than the published forecast (hour {previous})"),
+    ]
+    return [message for failed, message in checks if failed]
+
+
+def _number(value: float) -> float | None:
+    return None if pd.isna(value) else round(float(value), 1)
+
+
+def forecast_document(table: pd.DataFrame, issued: pd.Timestamp, generated: pd.Timestamp) -> dict[str, object]:
+    """Rows (slug, horizon_h, valid_utc, p10, p50, p90, measured) -> the JSON the site reads.
+    Horizon 0 carries the value measured now; blank values become null."""
+    rows = [{"slug": row.slug, "horizon_h": int(row.horizon_h), "valid_utc": row.valid_utc.isoformat(),
+             "p10": _number(row.p10), "p50": _number(row.p50), "p90": _number(row.p90), "measured": _number(row.measured)}
+            for row in table.itertuples()]
+    return {"generated_at_utc": generated.isoformat(timespec="seconds"), "issued_utc": issued.isoformat(), "rows": rows}
+
+
+def publish_if_sound(document: dict[str, object], problems: list[str], path: Path) -> bool:
+    """Write the document only if there were no problems; otherwise leave the old file as it is."""
+    if problems:
+        return False
+    part = path.with_suffix(".part")
+    part.write_text(json.dumps(document, indent=1) + "\n")
+    part.replace(path)
+    return True
+
+
+def previous_issue(path: Path) -> pd.Timestamp | None:
+    """The forecast hour of the published file; None if there is none (or it cannot be read)."""
+    try:
+        issued = json.loads(path.read_text()).get("issued_utc")
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    return None if issued is None else pd.Timestamp(issued)

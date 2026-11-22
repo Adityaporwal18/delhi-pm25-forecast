@@ -12,3 +12,8 @@ Attribution: Central Pollution Control Board (CPCB);
 [Open-Meteo](https://open-meteo.com) (CC BY 4.0).
 
 Rebuild it with `.venv/bin/python scripts/10_horizon_models.py` (see the README).
+
+`live_forecast.json` holds the latest live forecast and the PM2.5 values measured in the hour it
+starts from. Those readings are CPCB's, fetched through [OpenAQ](https://openaq.org), and are
+released under the same ODbL 1.0 terms with the same credits (plus OpenAQ). `models/` holds the
+24 live models that produce it (`scripts/11_live_models.py`).

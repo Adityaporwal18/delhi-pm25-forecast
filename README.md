@@ -462,6 +462,23 @@ Where live use can still differ from training (known, small):
 - A station that has not reported for the forecast hour has a blank "PM2.5 now", as happened
   in training whenever a reading was missing.
 
+**Stage D (done, 22 Nov 2026): one refresh script that fails safely.**
+
+`scripts/14_refresh_live.py` fetches the last 10 days, builds the features with the training
+functions, runs the 24 live models (`serving/models/`, committed so a scheduled job can use
+them) and writes `serving/live_forecast.json`, whose `generated_at_utc` is the site's "last
+updated". Before forecasting it checks that the settings still match the spec the live models
+were trained with. It publishes nothing, leaving the last good forecast in place and printing
+why, when the fetch fails or the data look wrong:
+
+- fewer than two thirds of the stations have PM2.5 for the forecast hour;
+- fewer than two thirds have a 7-day history (a short fetch);
+- the forecast hour is more than 12 hours old, or in the future (a clock or time-zone fault);
+- nothing is newer than the forecast already published.
+
+First live forecast: from 09:00 Delhi time on 22 Nov 2026, 36 of 37 stations reporting. A run
+without the API key was refused and left the published file byte-for-byte unchanged.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -517,7 +534,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/10_horizon_models.py                  # every 6 h ahead + bands + replay file
 .venv/bin/python scripts/11_live_models.py                     # live models: same recipe, all data
 .venv/bin/python scripts/01d_openaq_sensors.py                 # live: OpenAQ sensor per pollutant (needs OPENAQ_API_KEY)
-.venv/bin/python scripts/13_live_features.py                   # live: last 10 days -> features for the latest hour
+.venv/bin/python scripts/14_refresh_live.py                    # live: fetch -> features -> 24 models -> serving/live_forecast.json
 .venv/bin/python -m pytest                                     # 274 tests
 (cd frontend && npm install && npm test && npm run build)       # website -> frontend/dist
 .venv/bin/uvicorn delhi_pm25.server:app                        # site + API: http://127.0.0.1:8000

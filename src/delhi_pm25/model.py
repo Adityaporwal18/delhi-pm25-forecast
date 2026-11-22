@@ -137,3 +137,9 @@ def worth_keeping(full: pd.DataFrame, without: pd.DataFrame, min_gain_pct: float
     before = full.set_index("hours").loc[GAIN_TAILS, "model_mae"]
     after = without.set_index("hours").loc[GAIN_TAILS, "model_mae"]
     return bool(((after - before) / before * 100 >= min_gain_pct).any())
+
+
+def order_band(p10: pd.Series, p50: pd.Series, p90: pd.Series) -> tuple[pd.Series, pd.Series]:
+    """Band edges that never cross the median (the three quantile models are trained separately,
+    so occasionally they do). Used by the evaluation and the live forecasts alike."""
+    return np.minimum(p10, p50), np.maximum(p90, p50)
