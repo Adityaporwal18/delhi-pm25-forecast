@@ -6,6 +6,7 @@ Endpoints:
   GET /api/map?issued=...&horizon=48            every station's forecast for one horizon, with its colour
   GET /api/stations/{slug}/forecast?issued=...  one station's 48-hour path: band, median, measured
   GET /api/live                                 the latest live forecast (every station, now to 48 h)
+  GET /api/accuracy                             the held-out 2025 accuracy numbers (evaluation model)
 """
 
 import math
@@ -18,7 +19,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from delhi_pm25.live_source import LiveSource
+from delhi_pm25.accuracy import AccuracySummary
+from delhi_pm25.live_source import LivePoint, LiveSource, LiveWindow
 from delhi_pm25.serving import CATEGORIES, CREDITS, Replay, ReplayError, category
 
 NOTE: Final = (
@@ -69,28 +71,24 @@ class ForecastPoint(BaseModel):
     measured: float | None
 
 
-class LiveWindow(BaseModel):
-    first_target_utc: str
-    last_target_utc: str
+class LivePointOut(LivePoint):
+    category: str | None
+    colour: str | None
 
 
-class LivePoint(BaseModel):
-    slug: str
-    horizon_h: int
-    valid_utc: datetime
-    p10: float | None
-    p50: float | None
-    p90: float | None
-    measured: float | None
-
-
-class LiveForecast(BaseModel):
+class LiveForecastOut(BaseModel):
     generated_at_utc: datetime
     issued_utc: datetime
     stations_reporting: int
     stations: int
     training_window: LiveWindow
-    rows: list[LivePoint]
+    rows: list[LivePointOut]
+
+
+def _coloured(point: LivePoint) -> LivePointOut:
+    band = None if point.p50 is None else category(point.p50)
+    return LivePointOut(**point.model_dump(), category=None if band is None else band.label,
+                        colour=None if band is None else band.colour)
 
 
 def _value(number: float) -> float | None:
@@ -147,11 +145,15 @@ def create_app(replay: Replay, frontend: Path | None = None, live: LiveSource | 
                 for row in rows.itertuples()]
 
     @app.get("/api/live")
-    def live_forecast() -> LiveForecast:
+    def live_forecast() -> LiveForecastOut:
         document = None if live is None else live.latest()
         if document is None:
             raise HTTPException(status_code=503, detail="no live forecast is available yet")
-        return LiveForecast.model_validate(document)
+        return LiveForecastOut(**document.model_dump(exclude={"rows"}), rows=[_coloured(row) for row in document.rows])
+
+    @app.get("/api/accuracy")
+    def accuracy() -> AccuracySummary:
+        return replay.accuracy
 
     if frontend is not None and frontend.is_dir():
         app.mount("/", StaticFiles(directory=frontend, html=True), name="site")

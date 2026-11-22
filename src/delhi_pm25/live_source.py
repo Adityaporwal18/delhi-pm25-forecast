@@ -7,13 +7,14 @@ forecast therefore appears within minutes of the commit with no rebuild, and a G
 leaves the last good forecast on the page.
 """
 
-import json
 import time
 from collections.abc import Callable
+from datetime import datetime
 from pathlib import Path
 from typing import Final
 
 import requests
+from pydantic import BaseModel
 
 CACHE_SECONDS: Final = 600.0
 
@@ -32,31 +33,58 @@ def github_fetch(url: str) -> Fetch:
     return fetch
 
 
+class LiveWindow(BaseModel):
+    first_target_utc: str
+    last_target_utc: str
+
+
+class LivePoint(BaseModel):
+    slug: str
+    horizon_h: int
+    valid_utc: datetime
+    p10: float | None
+    p50: float | None
+    p90: float | None
+    measured: float | None
+
+
+class LiveDocument(BaseModel):
+    """serving/live_forecast.json as scripts/14_refresh_live.py writes it."""
+
+    generated_at_utc: datetime
+    issued_utc: datetime
+    stations_reporting: int
+    stations: int
+    training_window: LiveWindow
+    rows: list[LivePoint]
+
+
 class LiveSource:
-    """The latest live forecast: the later of GitHub's copy and the built-in one, cached."""
+    """The latest live forecast: the later of GitHub's copy and the built-in one, cached. A copy
+    that cannot be read as a complete forecast is ignored, so it can never replace a good one."""
 
     def __init__(self, fetch: Fetch, fallback: Path, clock: Clock = time.monotonic) -> None:
         self._fetch, self._fallback, self._clock = fetch, fallback, clock
-        self._cached: dict[str, object] | None = None
+        self._cached: LiveDocument | None = None
         self._checked_at: float | None = None
 
-    def latest(self) -> dict[str, object] | None:
+    def latest(self) -> LiveDocument | None:
         now = self._clock()
         if self._checked_at is not None and now - self._checked_at < CACHE_SECONDS:
             return self._cached
         found = [document for document in (self._remote(), self._built_in()) if document is not None]
-        self._cached = max(found, key=lambda document: str(document.get("issued_utc", "")), default=None)
+        self._cached = max(found, key=lambda document: document.issued_utc, default=None)
         self._checked_at = now
         return self._cached
 
-    def _remote(self) -> dict[str, object] | None:
+    def _remote(self) -> LiveDocument | None:
         try:
-            return self._fetch()
+            return LiveDocument.model_validate(self._fetch())
         except (OSError, ValueError):
             return None
 
-    def _built_in(self) -> dict[str, object] | None:
+    def _built_in(self) -> LiveDocument | None:
         try:
-            return json.loads(self._fallback.read_text())
-        except (FileNotFoundError, json.JSONDecodeError):
+            return LiveDocument.model_validate_json(self._fallback.read_text())
+        except (OSError, ValueError):
             return None

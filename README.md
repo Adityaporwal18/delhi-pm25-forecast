@@ -1,6 +1,7 @@
 # Delhi PM2.5 forecast — 48 hours ahead, per monitoring station
 
-**Live site: https://delhi-pm25.onrender.com** — a replay of the 2025 test year. It runs on
+**Live site: https://delhi-pm25.onrender.com** — the next 48 hours for 37 stations, refreshed
+every 6 hours, and under "Accuracy" the 2025 replay that shows how good the forecasts are. It runs on
 Render's free plan: after 15 quiet minutes it sleeps, and the next visit takes about a minute
 to wake it.
 
@@ -8,7 +9,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (21 Nov 2026): all 7 stages done — the website is live (a replay of 2025). Planned follow-ups are listed under Progress.**
+> **Status (22 Nov 2026): all 7 stages done, plus live forecasts — the site shows the next 48 hours (refreshed every 6 hours) and the 2025 replay that measures how accurate the forecasts are.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -395,7 +396,7 @@ It is deployed on Render's free plan from `render.yaml` (Singapore region):
 https://delhi-pm25.onrender.com. Railway's free plan (`railway.json`) works too and can
 deploy without GitHub.
 
-## Live forecasts (in progress)
+## Live forecasts
 
 The website replays 2025. Making it forecast the next 48 hours live is being built in stages.
 
@@ -479,7 +480,7 @@ why, when the fetch fails or the data look wrong:
 First live forecast: from 09:00 Delhi time on 22 Nov 2026, 36 of 37 stations reporting. A run
 without the API key was refused and left the published file byte-for-byte unchanged.
 
-**Stage E (built, 22 Nov 2026): a free scheduled refresh.**
+**Stage E (done, 22 Nov 2026): a free scheduled refresh.**
 
 `.github/workflows/refresh-live.yml` runs the refresh every 6 hours (00:20, 06:20, 12:20 and
 18:20 UTC) on GitHub's free runners, with the `OPENAQ_API_KEY` repository secret. When the
@@ -488,7 +489,33 @@ history is the refresh log. When the refresh keeps the old forecast, the run fai
 reason in its log and nothing is committed. The site reads the committed file from GitHub
 (`/api/live`, checked at most every 10 minutes, with the copy built into the image as a fallback;
 the later of the two is shown), and `render.yaml` tells Render to ignore commits that change only
-that file. New forecasts therefore appear without a rebuild.
+that file. New forecasts therefore appear without a rebuild. The first scheduled-style run
+(started by hand on 22 Nov 2026) took 5½ minutes and published a forecast from 22:00 Delhi
+time with 32 of 37 stations reporting. GitHub pauses scheduled workflows in public
+repositories after 60 days without activity; if that happens, re-enable it in the Actions tab.
+
+**Stage F (done, 22 Nov 2026): the website shows both.**
+
+A switch at the top chooses the view (the address remembers it: `#live`, `#accuracy`):
+
+- **Live** (the default): the next 48 hours from the latest forecast, with the 80% band on the
+  station chart, when the forecast was made, how many stations reported, and when it was last
+  updated. If the forecast is more than 12 hours old (the refreshes kept failing), a warning
+  says the last good forecast is shown. Next to it, the expected accuracy, labelled as based on
+  held-out 2025 testing, always with the heavy-smog caveat.
+- **Accuracy (2025 replay)**: the replay exactly as before, with the measured 2025 numbers.
+
+Which number comes from which model:
+
+| On the site or in this README | Produced by |
+|---|---|
+| The live forecast: map colours, chart, band | Live models (trained on 2023 to 16 Nov 2026) |
+| 34.7 µg/m³ at 48 h, 79.0% inside the band, 59.3% in the smoggiest 10%, every result above | Evaluation model (trained on 2023–2024, tested on held-out 2025) |
+
+The site's accuracy numbers come from `serving/accuracy_2025.json`, built from the evaluation
+reports by `scripts/15_accuracy_file.py`; `tests/test_accuracy.py` fails if they ever disagree.
+
+![The live view, 22 Nov 2026](docs/site-live-2026-11-22.png)
 
 ## Quirks in the source data (handled in cleaning)
 
@@ -546,7 +573,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/11_live_models.py                     # live models: same recipe, all data
 .venv/bin/python scripts/01d_openaq_sensors.py                 # live: OpenAQ sensor per pollutant (needs OPENAQ_API_KEY)
 .venv/bin/python scripts/14_refresh_live.py                    # live: fetch -> features -> 24 models -> serving/live_forecast.json
-.venv/bin/python -m pytest                                     # 274 tests
+.venv/bin/python scripts/15_accuracy_file.py                   # the site's accuracy numbers, from the evaluation reports
+.venv/bin/python -m pytest                                     # 303 tests
 (cd frontend && npm install && npm test && npm run build)       # website -> frontend/dist
 .venv/bin/uvicorn delhi_pm25.server:app                        # site + API: http://127.0.0.1:8000
 ```
@@ -586,6 +614,7 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 6. Error analysis, with the smoggiest hours as the headline — done
 7. API, map frontend and deployment — done: https://delhi-pm25.onrender.com
 
+Live forecasts (stages A–F) — done: the site shows the next 48 hours, refreshed every 6 hours.
+
 Planned follow-ups: the forecast-weather comparison (does knowing the weather forecast help?),
-features for sudden smog build-ups, and live forecasts (needs a live PM2.5 source with a free
-API key).
+and features for sudden smog build-ups.

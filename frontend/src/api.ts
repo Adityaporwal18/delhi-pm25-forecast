@@ -62,3 +62,50 @@ export function fetchForecast(slug: string, issued: string, signal: AbortSignal)
   const query = new URLSearchParams({ issued });
   return getJson(`/api/stations/${encodeURIComponent(slug)}/forecast?${query.toString()}`, z.array(forecastPointSchema), signal);
 }
+
+const livePointSchema = forecastPointSchema.extend({
+  slug: z.string(),
+  category: z.string().nullable(),
+  colour: z.string().nullable(),
+});
+const liveSchema = z.object({
+  generated_at_utc: z.string(),
+  issued_utc: z.string(),
+  stations_reporting: z.number().int(),
+  stations: z.number().int(),
+  training_window: z.object({ first_target_utc: z.string(), last_target_utc: z.string() }),
+  rows: z.array(livePointSchema),
+});
+const accuracySchema = z.object({
+  source: z.string(),
+  horizons: z.array(
+    z.object({
+      horizon_h: z.number().int(),
+      model_mae: z.number(),
+      persistence_mae: z.number(),
+      climatology_mae: z.number(),
+      inside_band_pct: z.number(),
+      inside_band_smoggiest_10pct: z.number(),
+    }),
+  ),
+  smoggiest_10pct_48h: z.object({
+    model_mae: z.number(),
+    climatology_mae: z.number(),
+    persistence_mae: z.number(),
+    model_bias: z.number(),
+  }),
+});
+
+export type LivePoint = z.infer<typeof livePointSchema>;
+export type Live = z.infer<typeof liveSchema>;
+export type Accuracy = z.infer<typeof accuracySchema>;
+
+/** The latest live forecast (503 while none has been published). */
+export function fetchLive(signal: AbortSignal): Promise<Live> {
+  return getJson("/api/live", liveSchema, signal);
+}
+
+/** The evaluation model's held-out 2025 accuracy: the only accuracy numbers the site shows. */
+export function fetchAccuracy(signal: AbortSignal): Promise<Accuracy> {
+  return getJson("/api/accuracy", accuracySchema, signal);
+}

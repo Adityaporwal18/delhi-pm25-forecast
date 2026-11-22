@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+from delhi_pm25.accuracy import AccuracySummary, HorizonAccuracy, SmogAccuracy
 from delhi_pm25.api import create_app
 from delhi_pm25.live_source import LiveSource
 from delhi_pm25.serving import Replay, category
@@ -28,7 +29,13 @@ def replay(tmp_path: Path) -> Replay:
     pd.DataFrame(rows).to_parquet(tmp_path / "replay.parquet", index=False)
     pd.DataFrame({"slug": ["a", "b", "c"], "station_name": ["A, Delhi - DPCC", "B, Delhi - IMD", "C (dropped)"],
                   "latitude": [28.6, 28.7, 28.8], "longitude": [77.2, 77.1, 77.0]}).to_csv(tmp_path / "stations.csv", index=False)
-    return Replay.load(tmp_path / "replay.parquet", tmp_path / "stations.csv")
+    accuracy = AccuracySummary(
+        source="test", horizons=[HorizonAccuracy(horizon_h=48, model_mae=34.7, persistence_mae=43.4, climatology_mae=38.0,
+                                                 inside_band_pct=79.0, inside_band_smoggiest_10pct=59.3)],
+        smoggiest_10pct_48h=SmogAccuracy(model_mae=106.0, climatology_mae=89.3, persistence_mae=108.3, model_bias=-95.6),
+    )
+    (tmp_path / "accuracy.json").write_text(accuracy.model_dump_json())
+    return Replay.load(tmp_path / "replay.parquet", tmp_path / "stations.csv", tmp_path / "accuracy.json")
 
 
 @pytest.fixture
@@ -90,3 +97,15 @@ def test_no_live_forecast_yet_is_reported_as_unavailable(replay: Replay, tmp_pat
 
     app = create_app(replay, live=LiveSource(unreachable, tmp_path / "missing.json"))
     assert TestClient(app).get("/api/live").status_code == 503
+
+
+def test_live_points_carry_the_pm25_based_category_of_their_median(replay: Replay, tmp_path: Path) -> None:
+    app = create_app(replay, live=LiveSource(lambda: LIVE, tmp_path / "missing.json"))
+    row = TestClient(app).get("/api/live").json()["rows"][0]
+    assert (row["category"], row["colour"]) == ("Very Poor", "#ff0000")
+
+
+def test_accuracy_endpoint_serves_the_held_out_2025_numbers(client: TestClient) -> None:
+    body = client.get("/api/accuracy").json()
+    assert (body["horizons"][0]["model_mae"], body["horizons"][0]["inside_band_smoggiest_10pct"],
+            body["smoggiest_10pct_48h"]["model_mae"]) == (34.7, 59.3, 106.0)

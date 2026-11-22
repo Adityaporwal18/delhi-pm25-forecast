@@ -24,7 +24,9 @@ COPY serving/ serving/
 COPY --from=site /site/dist frontend/dist
 ENV REPLAY_PARQUET=/app/serving/replay_2025.parquet \
     STATIONS_CSV=/app/config/stations.csv \
-    FRONTEND_DIST=/app/frontend/dist
+    FRONTEND_DIST=/app/frontend/dist \
+    ACCURACY_FILE=/app/serving/accuracy_2025.json \
+    LIVE_FORECAST_FILE=/app/serving/live_forecast.json
 RUN useradd --create-home app
 USER app
 EXPOSE 8000

@@ -120,6 +120,24 @@ one-line note on the 24-hour-average definition.
 ### Notice
 A pill-shaped badge "Replay of 2025, not a live forecast" in the header.
 
+### Mode switch (Live / Accuracy)
+The segmented control, two options, at the right of the header ("Live", "Accuracy (2025 replay)"),
+600 weight, 16px side padding. Live is the default; the choice is kept in the URL (#live, #accuracy).
+
+### Accuracy panel
+A Panel with the evaluation model's held-out 2025 numbers (from `/api/accuracy`): the 48-hour
+average error with the two baselines for comparison, the band's coverage, and the heavy-smog caveat
+as a Warning. Titled "Expected accuracy" in the live view (with its source stated: held-out 2025
+testing, not a measurement of the live forecast) and "Accuracy in the held-out 2025 test year" in
+the replay. Never shown without the caveat.
+
+### Freshness panel (live)
+"Forecast from <Delhi time>, with readings from N of 37 stations", then "Last updated … (N hours
+ago)" as a caption. Older than 12 hours: a Warning that the last good forecast is shown.
+
+### Warning
+Body text with a 3px `--focus` left border and 12px padding: the reader must not miss it.
+
 ### Footer
 Credits (from `/api/meta`) and the replay note, `--type-caption`, `--text-subtle`.
 

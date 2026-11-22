@@ -1,7 +1,7 @@
 """The running service: `uvicorn delhi_pm25.server:app`.
 
 Paths default to the project folders; the environment variables REPLAY_PARQUET, STATIONS_CSV,
-FRONTEND_DIST and LIVE_FORECAST_FILE override them (the Docker image uses these). The live
+FRONTEND_DIST, ACCURACY_FILE and LIVE_FORECAST_FILE override them (the Docker image uses these). The live
 forecast is read from LIVE_FORECAST_URL (by default the file the GitHub Action commits).
 """
 
@@ -24,7 +24,8 @@ LIVE_FORECAST_URL = os.environ.get(
 )
 
 app = create_app(
-    Replay.load(_path("REPLAY_PARQUET", SERVING_DIR / "replay_2025.parquet"), _path("STATIONS_CSV", STATIONS_CSV)),
+    Replay.load(_path("REPLAY_PARQUET", SERVING_DIR / "replay_2025.parquet"), _path("STATIONS_CSV", STATIONS_CSV),
+                _path("ACCURACY_FILE", SERVING_DIR / "accuracy_2025.json")),
     frontend=_path("FRONTEND_DIST", PROJECT_ROOT / "frontend" / "dist"),
     live=LiveSource(github_fetch(LIVE_FORECAST_URL), _path("LIVE_FORECAST_FILE", SERVING_DIR / "live_forecast.json")),
 )

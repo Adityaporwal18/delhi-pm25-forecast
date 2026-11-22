@@ -1,0 +1,75 @@
+{
+ "source": "Evaluation model: trained on 2023-2024, scored on the held-out 2025 test year",
+ "horizons": [
+  {
+   "horizon_h": 6,
+   "model_mae": 27.0,
+   "persistence_mae": 42.1,
+   "climatology_mae": 37.8,
+   "inside_band_pct": 78.4,
+   "inside_band_smoggiest_10pct": 71.2
+  },
+  {
+   "horizon_h": 12,
+   "model_mae": 30.2,
+   "persistence_mae": 50.1,
+   "climatology_mae": 37.9,
+   "inside_band_pct": 79.6,
+   "inside_band_smoggiest_10pct": 66.9
+  },
+  {
+   "horizon_h": 18,
+   "model_mae": 30.7,
+   "persistence_mae": 47.6,
+   "climatology_mae": 37.9,
+   "inside_band_pct": 80.5,
+   "inside_band_smoggiest_10pct": 66.0
+  },
+  {
+   "horizon_h": 24,
+   "model_mae": 31.6,
+   "persistence_mae": 37.2,
+   "climatology_mae": 37.9,
+   "inside_band_pct": 79.5,
+   "inside_band_smoggiest_10pct": 63.7
+  },
+  {
+   "horizon_h": 30,
+   "model_mae": 34.4,
+   "persistence_mae": 50.2,
+   "climatology_mae": 38.0,
+   "inside_band_pct": 79.7,
+   "inside_band_smoggiest_10pct": 62.6
+  },
+  {
+   "horizon_h": 36,
+   "model_mae": 34.7,
+   "persistence_mae": 54.9,
+   "climatology_mae": 37.9,
+   "inside_band_pct": 79.0,
+   "inside_band_smoggiest_10pct": 59.4
+  },
+  {
+   "horizon_h": 42,
+   "model_mae": 34.6,
+   "persistence_mae": 52.5,
+   "climatology_mae": 37.9,
+   "inside_band_pct": 79.5,
+   "inside_band_smoggiest_10pct": 59.7
+  },
+  {
+   "horizon_h": 48,
+   "model_mae": 34.7,
+   "persistence_mae": 43.4,
+   "climatology_mae": 38.0,
+   "inside_band_pct": 79.0,
+   "inside_band_smoggiest_10pct": 59.3
+  }
+ ],
+ "smoggiest_10pct_48h": {
+  "model_mae": 106.0,
+  "climatology_mae": 89.3,
+  "persistence_mae": 108.3,
+  "model_bias": -95.6
+ }
+}

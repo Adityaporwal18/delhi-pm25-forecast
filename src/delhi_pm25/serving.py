@@ -13,9 +13,11 @@ from typing import Final
 
 import pandas as pd
 
+from delhi_pm25.accuracy import AccuracySummary
+
 CREDITS: Final = (
-    "PM2.5 data: Central Pollution Control Board (CPCB), via Vonter/india-cpcb-aqi (ODbL-1.0) "
-    "and OpenCity. Weather: Open-Meteo (CC BY 4.0). Map: © OpenStreetMap contributors."
+    "PM2.5 data: Central Pollution Control Board (CPCB), via Vonter/india-cpcb-aqi (ODbL-1.0), "
+    "OpenCity and OpenAQ. Weather: Open-Meteo (CC BY 4.0). Map: © OpenStreetMap contributors."
 )
 
 
@@ -54,14 +56,16 @@ class Replay:
 
     table: pd.DataFrame
     stations: pd.DataFrame
+    accuracy: AccuracySummary
 
     @classmethod
-    def load(cls, replay_path: Path, stations_csv: Path) -> "Replay":
+    def load(cls, replay_path: Path, stations_csv: Path, accuracy_json: Path) -> "Replay":
         table = pd.read_parquet(replay_path)
         table["issued_utc"] = pd.to_datetime(table["issued_utc"], utc=True)
         stations = pd.read_csv(stations_csv)
         served = stations[stations["slug"].isin(table["slug"].unique())].sort_values("slug", ignore_index=True)
-        return cls(table, served[["slug", "station_name", "latitude", "longitude"]])
+        accuracy = AccuracySummary.model_validate_json(accuracy_json.read_text())
+        return cls(table, served[["slug", "station_name", "latitude", "longitude"]], accuracy)
 
     def issue_times(self) -> list[pd.Timestamp]:
         return self.table["issued_utc"].drop_duplicates().sort_values().tolist()
