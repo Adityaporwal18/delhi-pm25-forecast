@@ -5,6 +5,7 @@ Endpoints:
   GET /api/meta                                 issue times, horizons, stations, colour bands, credits
   GET /api/map?issued=...&horizon=48            every station's forecast for one horizon, with its colour
   GET /api/stations/{slug}/forecast?issued=...  one station's 48-hour path: band, median, measured
+  GET /api/live                                 the latest live forecast (every station, now to 48 h)
 """
 
 import math
@@ -17,6 +18,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from delhi_pm25.live_source import LiveSource
 from delhi_pm25.serving import CATEGORIES, CREDITS, Replay, ReplayError, category
 
 NOTE: Final = (
@@ -67,6 +69,30 @@ class ForecastPoint(BaseModel):
     measured: float | None
 
 
+class LiveWindow(BaseModel):
+    first_target_utc: str
+    last_target_utc: str
+
+
+class LivePoint(BaseModel):
+    slug: str
+    horizon_h: int
+    valid_utc: datetime
+    p10: float | None
+    p50: float | None
+    p90: float | None
+    measured: float | None
+
+
+class LiveForecast(BaseModel):
+    generated_at_utc: datetime
+    issued_utc: datetime
+    stations_reporting: int
+    stations: int
+    training_window: LiveWindow
+    rows: list[LivePoint]
+
+
 def _value(number: float) -> float | None:
     return None if math.isnan(number) else round(float(number), 1)
 
@@ -80,7 +106,7 @@ def _not_found(err: ReplayError) -> HTTPException:
     return HTTPException(status_code=404, detail=str(err))
 
 
-def create_app(replay: Replay, frontend: Path | None = None) -> FastAPI:
+def create_app(replay: Replay, frontend: Path | None = None, live: LiveSource | None = None) -> FastAPI:
     app = FastAPI(title="Delhi PM2.5 forecast (replay of 2025)")
 
     @app.get("/api/health")
@@ -119,6 +145,13 @@ def create_app(replay: Replay, frontend: Path | None = None) -> FastAPI:
         return [ForecastPoint(horizon_h=int(row.horizon_h), valid_utc=row.issued_utc + pd.Timedelta(hours=int(row.horizon_h)),
                               p10=_value(row.p10), p50=_value(row.p50), p90=_value(row.p90), measured=_value(row.measured))
                 for row in rows.itertuples()]
+
+    @app.get("/api/live")
+    def live_forecast() -> LiveForecast:
+        document = None if live is None else live.latest()
+        if document is None:
+            raise HTTPException(status_code=503, detail="no live forecast is available yet")
+        return LiveForecast.model_validate(document)
 
     if frontend is not None and frontend.is_dir():
         app.mount("/", StaticFiles(directory=frontend, html=True), name="site")

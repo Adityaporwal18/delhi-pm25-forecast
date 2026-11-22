@@ -9,13 +9,14 @@ import pytest
 from fastapi.testclient import TestClient
 
 from delhi_pm25.api import create_app
+from delhi_pm25.live_source import LiveSource
 from delhi_pm25.serving import Replay, category
 
 ISSUED = pd.Timestamp("2025-11-01 02:30", tz="UTC")
 
 
 @pytest.fixture
-def client(tmp_path: Path) -> TestClient:
+def replay(tmp_path: Path) -> Replay:
     """A replay with two stations, two issue times, and horizons 0 (now) and 6 hours."""
     rows = []
     for issued in (ISSUED, ISSUED + pd.Timedelta(hours=12)):
@@ -27,7 +28,12 @@ def client(tmp_path: Path) -> TestClient:
     pd.DataFrame(rows).to_parquet(tmp_path / "replay.parquet", index=False)
     pd.DataFrame({"slug": ["a", "b", "c"], "station_name": ["A, Delhi - DPCC", "B, Delhi - IMD", "C (dropped)"],
                   "latitude": [28.6, 28.7, 28.8], "longitude": [77.2, 77.1, 77.0]}).to_csv(tmp_path / "stations.csv", index=False)
-    return TestClient(create_app(Replay.load(tmp_path / "replay.parquet", tmp_path / "stations.csv")))
+    return Replay.load(tmp_path / "replay.parquet", tmp_path / "stations.csv")
+
+
+@pytest.fixture
+def client(replay: Replay) -> TestClient:
+    return TestClient(create_app(replay))
 
 
 @pytest.mark.parametrize(("ug_m3", "label"), [(30.0, "Good"), (30.5, "Satisfactory"), (120.0, "Poor"), (250.1, "Severe")])
@@ -62,3 +68,25 @@ def test_station_forecast_runs_from_now_to_the_last_horizon(client: TestClient) 
 )
 def test_requests_outside_the_replay_get_a_404(client: TestClient, path: str, issued: str) -> None:
     assert client.get(path, params={"issued": issued}).status_code == 404
+
+
+LIVE = {
+    "generated_at_utc": "2026-11-22T04:27:31+00:00", "issued_utc": "2026-11-22T03:30:00+00:00",
+    "stations_reporting": 1, "stations": 1,
+    "training_window": {"first_target_utc": "2023-01-01T01:30:00+00:00", "last_target_utc": "2026-11-16T18:30:00+00:00"},
+    "rows": [{"slug": "a", "horizon_h": 48, "valid_utc": "2026-11-24T03:30:00+00:00", "p10": 79.2, "p50": 145.1, "p90": 240.0, "measured": None}],
+}
+
+
+def test_live_endpoint_serves_the_latest_forecast(replay: Replay, tmp_path: Path) -> None:
+    app = create_app(replay, live=LiveSource(lambda: LIVE, tmp_path / "missing.json"))
+    body = TestClient(app).get("/api/live").json()
+    assert (body["issued_utc"], body["rows"][0]["p50"], body["stations_reporting"]) == ("2026-11-22T03:30:00Z", 145.1, 1)
+
+
+def test_no_live_forecast_yet_is_reported_as_unavailable(replay: Replay, tmp_path: Path) -> None:
+    def unreachable() -> dict[str, object]:
+        raise OSError("GitHub unreachable")
+
+    app = create_app(replay, live=LiveSource(unreachable, tmp_path / "missing.json"))
+    assert TestClient(app).get("/api/live").status_code == 503

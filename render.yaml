@@ -8,3 +8,8 @@ services:
     region: singapore
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
+    # The GitHub Action commits the live forecast every 6 hours; the site reads that file from
+    # GitHub, so those commits need no rebuild.
+    buildFilter:
+      ignoredPaths:
+        - serving/live_forecast.json

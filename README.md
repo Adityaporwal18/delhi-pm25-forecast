@@ -479,6 +479,17 @@ why, when the fetch fails or the data look wrong:
 First live forecast: from 09:00 Delhi time on 22 Nov 2026, 36 of 37 stations reporting. A run
 without the API key was refused and left the published file byte-for-byte unchanged.
 
+**Stage E (built, 22 Nov 2026): a free scheduled refresh.**
+
+`.github/workflows/refresh-live.yml` runs the refresh every 6 hours (00:20, 06:20, 12:20 and
+18:20 UTC) on GitHub's free runners, with the `OPENAQ_API_KEY` repository secret. When the
+forecast changes it commits `serving/live_forecast.json` as "github-actions[bot]", so the commit
+history is the refresh log. When the refresh keeps the old forecast, the run fails with the
+reason in its log and nothing is committed. The site reads the committed file from GitHub
+(`/api/live`, checked at most every 10 minutes, with the copy built into the image as a fallback;
+the later of the two is shown), and `render.yaml` tells Render to ignore commits that change only
+that file. New forecasts therefore appear without a rebuild.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
