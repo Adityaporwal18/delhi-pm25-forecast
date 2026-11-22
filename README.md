@@ -436,6 +436,32 @@ independently (sun and temperature tests, as in stage 2) before they are trusted
   `tests/test_model_spec.py` fails if their spec differs from the evaluation spec in anything
   but the training window.
 
+**Stage C (done, 22 Nov 2026): live features, built by the training code.**
+
+- Timestamps, checked again for the new feed (`reports/live/timestamp_check.csv`). For all 37
+  stations, OpenAQ's 1–3 December 2025 readings are 100% identical to our verified data with no
+  time shift (about 1.4% at ±1 hour). In 2026, station temperature fits Delhi time at 28 of 29
+  stations (NSIT Dwarka's thermometer is too noisy to tell either way), and each station's daily
+  ozone curve lines up with 2025 at zero lag at 36 of 37 (Shadipur is 3 hours off, but its
+  readings match and its temperature fits Delhi time). OpenAQ has no sunlight sensor, so ozone,
+  which sunlight makes, stands in for the stage 2 sunlight check.
+- Live weather comes from Open-Meteo's forecast service with the same ECMWF model and grid
+  cells; its past hours were identical to the training archive (144 of 144 checked).
+- `live.live_features` runs the training functions (to hourly, complete grid, the two cleaning
+  rules, `build_features`) on the last 10 days. A test checks that it gives exactly the
+  training features for the same hour, so there is no second feature path.
+- First live run (22 Nov 2026, 08:00 Delhi time): 34 of 37 stations had PM2.5 for the forecast
+  hour, and readings were about 2 hours old (the slowest station 12 hours). Live NO2 and CO
+  fall in the training data's ranges for the same season, as they should after the unit check.
+
+Where live use can still differ from training (known, small):
+
+- The spike rule needs the hour after a spike, so the newest hour cannot be checked yet.
+- A stuck analyser is blanked once it has been stuck for 6 hours, so the first hours of a new
+  frozen stretch can reach the forecast.
+- A station that has not reported for the forecast hour has a blank "PM2.5 now", as happened
+  in training whenever a reading was missing.
+
 ## Quirks in the source data (handled in cleaning)
 
 - Timestamps are Delhi time but marked `+0000` (UTC): the upstream parser labels local time
@@ -490,6 +516,8 @@ python3 -m venv .venv
 .venv/bin/python scripts/09_error_analysis.py                  # where the model is weakest
 .venv/bin/python scripts/10_horizon_models.py                  # every 6 h ahead + bands + replay file
 .venv/bin/python scripts/11_live_models.py                     # live models: same recipe, all data
+.venv/bin/python scripts/01d_openaq_sensors.py                 # live: OpenAQ sensor per pollutant (needs OPENAQ_API_KEY)
+.venv/bin/python scripts/13_live_features.py                   # live: last 10 days -> features for the latest hour
 .venv/bin/python -m pytest                                     # 274 tests
 (cd frontend && npm install && npm test && npm run build)       # website -> frontend/dist
 .venv/bin/uvicorn delhi_pm25.server:app                        # site + API: http://127.0.0.1:8000
