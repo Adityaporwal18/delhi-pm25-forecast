@@ -5,7 +5,7 @@ import { chartRows } from "./chart";
 import { HorizonButtons, StationSelect, defaultStation } from "./controls";
 import { ForecastChart } from "./ForecastChart";
 import { Legend } from "./Legend";
-import { STALE_AFTER_HOURS, hoursSince, pointsAt, stationPath } from "./live";
+import { STALE_AFTER_HOURS, ageLabel, hoursSince, pointsAt, stationPath } from "./live";
 import { StationMap } from "./StationMap";
 import { delhiLabel } from "./time";
 import { Status, useLoad } from "./useLoad";
@@ -13,14 +13,12 @@ import { Status, useLoad } from "./useLoad";
 interface Props {
   meta: Meta;
   accuracy: Accuracy;
-}
-
-function ageLabel(hours: number): string {
-  return hours < 1 ? "less than an hour ago" : `${Math.round(hours)} hours ago`;
+  /** False while the Accuracy tab is shown: the view stays mounted, hidden, keeping its data. */
+  active: boolean;
 }
 
 /** The next 48 hours, from the latest live forecast (refreshed every 6 hours). */
-export function LiveView({ meta, accuracy }: Props) {
+export function LiveView({ meta, accuracy, active }: Props) {
   const [live, retry] = useLoad(fetchLive, "live");
   if (live.state !== "ready") {
     return (
@@ -32,10 +30,10 @@ export function LiveView({ meta, accuracy }: Props) {
       </main>
     );
   }
-  return <LiveDashboard meta={meta} accuracy={accuracy} live={live.data} />;
+  return <LiveDashboard meta={meta} accuracy={accuracy} active={active} live={live.data} />;
 }
 
-function LiveDashboard({ meta, accuracy, live }: Props & { live: Live }) {
+function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live }) {
   const [horizon, setHorizon] = useState(48);
   const [selected, setSelected] = useState(defaultStation(meta));
   const points = useMemo(() => pointsAt(live.rows, horizon), [live.rows, horizon]);
@@ -47,7 +45,7 @@ function LiveDashboard({ meta, accuracy, live }: Props & { live: Live }) {
   return (
     <main className="main">
       <section className="panel map-panel" aria-label="Map of monitoring stations">
-        <StationMap stations={meta.stations} points={points} selected={selected} onSelect={setSelected} />
+        <StationMap stations={meta.stations} points={points} selected={selected} onSelect={setSelected} active={active} />
       </section>
       <aside className="side">
         <section className="panel" aria-label="About this forecast">

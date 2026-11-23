@@ -1,6 +1,7 @@
 import "leaflet/dist/leaflet.css";
 import { latLngBounds } from "leaflet";
-import { CircleMarker, MapContainer, TileLayer, Tooltip } from "react-leaflet";
+import { useEffect } from "react";
+import { CircleMarker, MapContainer, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { MapPoint, Station } from "./api";
 import { TOKENS } from "./tokens";
 
@@ -11,6 +12,18 @@ interface Props {
   points: ReadonlyMap<string, MapPoint>;
   selected: string;
   onSelect: (slug: string) => void;
+  active: boolean;
+}
+
+/** A map whose tab was hidden must re-measure its box when shown again (the window may have changed size). */
+function KeepSized({ active }: { active: boolean }) {
+  const map = useMap();
+  useEffect(() => {
+    if (active) {
+      map.invalidateSize();
+    }
+  }, [active, map]);
+  return null;
 }
 
 function describe(point: MapPoint | undefined): string {
@@ -20,11 +33,12 @@ function describe(point: MapPoint | undefined): string {
   return `${point.p50} µg/m³ (80% band ${point.p10 ?? "?"}–${point.p90 ?? "?"}), ${point.category ?? ""}`;
 }
 
-export function StationMap({ stations, points, selected, onSelect }: Props) {
+export function StationMap({ stations, points, selected, onSelect, active }: Props) {
   const bounds = latLngBounds(stations.map((station): [number, number] => [station.latitude, station.longitude]));
   return (
     <MapContainer bounds={bounds} boundsOptions={{ padding: [24, 24] }} className="map" scrollWheelZoom>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution={ATTRIBUTION} maxZoom={19} />
+      <KeepSized active={active} />
       {stations.map((station) => {
         const point = points.get(station.slug);
         const isSelected = station.slug === selected;

@@ -25,3 +25,13 @@ export function chartRows(points: readonly ForecastPoint[]): ChartRow[] {
     measured: point.measured,
   }));
 }
+
+/** A tick at every horizon in the data, so none can go missing (e.g. 42 hours). */
+export function axisTicks(rows: readonly ChartRow[]): number[] {
+  return [...new Set(rows.map((row) => row.horizon))].sort((a, b) => a - b);
+}
+
+/** Short tick labels, so all of them fit side by side even on a phone. */
+export function tickLabel(hours: number): string {
+  return hours === 0 ? "now" : `+${hours}`;
+}

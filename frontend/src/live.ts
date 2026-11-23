@@ -26,3 +26,18 @@ export function stationPath(rows: readonly LivePoint[], slug: string): ForecastP
 export function hoursSince(isoUtc: string, nowMs: number): number {
   return (nowMs - Date.parse(isoUtc)) / 3_600_000;
 }
+
+const RELATIVE = new Intl.RelativeTimeFormat("en", { numeric: "always" });
+
+/** "just now", "1 minute ago", "5 hours ago", "1 day ago": singular and plural handled by Intl. */
+export function ageLabel(hours: number): string {
+  const minutes = Math.round(hours * 60);
+  if (minutes < 1) {
+    return "just now";
+  }
+  if (minutes < 60) {
+    return RELATIVE.format(-minutes, "minute");
+  }
+  const wholeHours = Math.round(hours);
+  return wholeHours < 24 ? RELATIVE.format(-wholeHours, "hour") : RELATIVE.format(-Math.round(hours / 24), "day");
+}

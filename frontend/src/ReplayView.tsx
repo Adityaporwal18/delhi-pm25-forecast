@@ -10,7 +10,7 @@ import { delhiDate, delhiHour, delhiLabel, findIssueTime } from "./time";
 import { Status, useLoad } from "./useLoad";
 
 /** The 2025 replay: what the evaluation model forecast at a chosen moment, next to what was measured. */
-export function ReplayView({ meta, accuracy }: { meta: Meta; accuracy: Accuracy }) {
+export function ReplayView({ meta, accuracy, active }: { meta: Meta; accuracy: Accuracy; active: boolean }) {
   const times = meta.issue_times_utc;
   const [issued, setIssued] = useState(findIssueTime(times, "2025-11-01", 8) ?? times[0] ?? "");
   const [horizon, setHorizon] = useState(48);
@@ -32,7 +32,7 @@ export function ReplayView({ meta, accuracy }: { meta: Meta; accuracy: Accuracy 
   return (
     <main className="main">
       <section className="panel map-panel" aria-label="Map of monitoring stations">
-        <StationMap stations={meta.stations} points={bySlug} selected={selected} onSelect={setSelected} />
+        <StationMap stations={meta.stations} points={bySlug} selected={selected} onSelect={setSelected} active={active} />
         {points.state !== "ready" && <Status load={points} what="the map" retry={retryPoints} />}
       </section>
       <aside className="side">

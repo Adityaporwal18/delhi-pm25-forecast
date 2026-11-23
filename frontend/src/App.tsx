@@ -45,9 +45,13 @@ export function App() {
 
 function Shell({ meta, accuracy }: { meta: Meta; accuracy: Accuracy }) {
   const [mode, setMode] = useState<Mode>(initialMode);
+  // A tab is mounted the first time it is opened and then kept, hidden when inactive, so
+  // switching back shows its data and choices at once instead of loading them again.
+  const [opened, setOpened] = useState<ReadonlySet<Mode>>(() => new Set([initialMode()]));
 
   function choose(next: Mode) {
     setMode(next);
+    setOpened((before) => new Set(before).add(next));
     window.history.replaceState(null, "", `#${next}`);
   }
 
@@ -71,7 +75,16 @@ function Shell({ meta, accuracy }: { meta: Meta; accuracy: Accuracy }) {
           ))}
         </div>
       </header>
-      {mode === "live" ? <LiveView meta={meta} accuracy={accuracy} /> : <ReplayView meta={meta} accuracy={accuracy} />}
+      {opened.has("live") && (
+        <div hidden={mode !== "live"}>
+          <LiveView meta={meta} accuracy={accuracy} active={mode === "live"} />
+        </div>
+      )}
+      {opened.has("accuracy") && (
+        <div hidden={mode !== "accuracy"}>
+          <ReplayView meta={meta} accuracy={accuracy} active={mode === "accuracy"} />
+        </div>
+      )}
       <footer className="footer">
         <p>{mode === "live" ? LIVE_NOTE : meta.note}</p>
         <p>{meta.credits}</p>

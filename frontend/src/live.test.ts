@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LivePoint } from "./api";
-import { hoursSince, pointsAt, stationPath } from "./live";
+import { ageLabel, hoursSince, pointsAt, stationPath } from "./live";
 
 // Given: two stations; "b" has the value measured now (horizon 0) and a 48-hour forecast
 const ROWS: LivePoint[] = [
@@ -24,5 +24,20 @@ describe("live forecast helpers", () => {
 
   it("give the forecast's age in hours", () => {
     expect(hoursSince("2026-11-22T17:15:00Z", Date.parse("2026-11-22T20:15:00Z"))).toBe(3);
+  });
+});
+
+describe("the forecast's age, in words", () => {
+  it.each([
+    [0, "just now"],
+    [1 / 60, "1 minute ago"],
+    [25 / 60, "25 minutes ago"],
+    [1, "1 hour ago"],
+    [1.4, "1 hour ago"],
+    [5, "5 hours ago"],
+    [24, "1 day ago"],
+    [50, "2 days ago"],
+  ])("%s hours old reads as %s", (hours, words) => {
+    expect(ageLabel(hours)).toBe(words);
   });
 });
