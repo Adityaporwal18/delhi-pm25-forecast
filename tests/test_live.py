@@ -1,13 +1,14 @@
 """The live path must be the training path: same steps, same features (src/delhi_pm25/live.py)."""
 
 import numpy as np
+import pytest
 import pandas as pd
 
 from delhi_pm25.clean import check_complete_grid, to_hourly
 from delhi_pm25.clean_rules import apply_rules
 from delhi_pm25.config import PipelineConfig
 from delhi_pm25.features import NON_FEATURE_COLUMNS, build_features
-from delhi_pm25.live import LIVE_DAYS, latest_hour, live_features
+from delhi_pm25.live import LIVE_DAYS, NoForecastHour, latest_hour, live_features
 from delhi_pm25.raw_cpcb import MEASUREMENTS
 from delhi_pm25.weather import SOURCES
 
@@ -62,3 +63,12 @@ def test_the_forecast_hour_is_the_latest_hour_most_stations_have_reported(config
     hourly.loc[(hourly["hour_end_utc"] == last) & (hourly["slug"] != "c"), "pm25"] = np.nan
     # When / Then: one station of three is not "most", so the forecast is made an hour earlier
     assert latest_hour(hourly, "pm25") == last - pd.Timedelta(hours=1)
+
+
+def test_a_forecast_needs_an_hour_that_two_thirds_of_the_stations_reported(config: PipelineConfig) -> None:
+    # Given: only one station of three ever reports PM2.5
+    hourly = to_hourly(raw_readings(seed=3), config.hourly, config.ceiling)
+    hourly.loc[hourly["slug"] != "a", "pm25"] = np.nan
+    # When / Then: no hour qualifies, so the refresh stops with a reason instead of crashing
+    with pytest.raises(NoForecastHour, match="two thirds"):
+        latest_hour(hourly, "pm25")

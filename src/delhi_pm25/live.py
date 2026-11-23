@@ -20,14 +20,22 @@ from delhi_pm25.config import PipelineConfig
 from delhi_pm25.features import build_features
 
 LIVE_DAYS: Final = 10
-MIN_REPORTING_SHARE: Final = 0.5
+MIN_REPORTING_SHARE: Final = 2 / 3
+
+
+class NoForecastHour(Exception):
+    """No hour in the live window was reported by enough stations to forecast from."""
 
 
 def latest_hour(hourly: pd.DataFrame, target: str) -> pd.Timestamp:
-    """The latest hour in which at least half the stations reported the target: forecasts start
-    there, so a station that reports early does not leave most stations without a value now."""
+    """The latest hour that at least two thirds of the stations reported: forecasts start there.
+    OpenAQ delivers stations in batches, so the newest hour is often only partly in; starting from
+    it would leave many stations without a value now (and the refresh would refuse to publish)."""
     share = hourly[target].notna().groupby(hourly["hour_end_utc"]).mean()
-    return share[share >= MIN_REPORTING_SHARE].index.max()
+    complete = share[share >= MIN_REPORTING_SHARE]
+    if complete.empty:
+        raise NoForecastHour(f"no hour in the last {LIVE_DAYS} days has {target} from at least two thirds of the stations")
+    return complete.index.max()
 
 
 def live_features(readings: pd.DataFrame, weather: pd.DataFrame, config: PipelineConfig) -> pd.DataFrame:

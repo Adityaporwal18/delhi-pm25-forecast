@@ -9,6 +9,7 @@ import pytest
 
 from delhi_pm25.live_forecast import (
     Freshness,
+    already_published,
     forecast_document,
     order_band,
     previous_issue,
@@ -36,9 +37,7 @@ def test_sound_live_data_raises_no_problem() -> None:
 @pytest.mark.parametrize(
     ("features", "freshness", "message"),
     [
-        pytest.param(latest_features([100.0, np.nan, np.nan], [150.0] * 3), Freshness(NOW, None), "stations", id="too few stations"),
         pytest.param(GOOD, Freshness(ISSUED + pd.Timedelta(hours=13), None), "old", id="stale"),
-        pytest.param(GOOD, Freshness(NOW, ISSUED), "newer", id="nothing new"),
         pytest.param(latest_features([100.0] * 3, [150.0, np.nan, np.nan]), Freshness(NOW, None), "history", id="short history"),
         pytest.param(GOOD, Freshness(ISSUED - pd.Timedelta(hours=2), None), "future", id="clock wrong"),
     ],
@@ -83,3 +82,9 @@ def test_sound_refresh_replaces_the_file_and_is_read_back_as_the_previous_issue(
 
 def test_no_published_file_means_no_previous_issue(tmp_path: Path) -> None:
     assert previous_issue(tmp_path / "missing.json") is None
+
+
+def test_a_forecast_hour_already_published_is_not_news() -> None:
+    # Given: the published file already starts at this forecast hour (a second trigger ran)
+    # When / Then: nothing to publish, which is not a failure
+    assert (already_published(GOOD, Freshness(NOW, ISSUED)), already_published(GOOD, Freshness(NOW, None))) == (True, False)

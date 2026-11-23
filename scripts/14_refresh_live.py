@@ -6,10 +6,12 @@
              after checking that the settings still match the spec they were trained with
   output     serving/live_forecast.json; "generated_at_utc" is the site's "last updated"
 
-It fails safely. If the fetch fails, or problems_with finds the data suspicious (too few stations,
-an old or future forecast hour, nothing newer than the published file, a short history), the
-published file is left untouched and the reason is printed; the exit code is then 1, so a
-scheduled run shows as failed while the site keeps its last good forecast.
+It fails safely. If the fetch fails, no hour was reported by two thirds of the stations, or
+problems_with finds the data suspicious (an old or future forecast hour, a short history),
+the published file is left untouched and the reason is printed; the exit code is then 1, so the
+run shows as failed while the site keeps its last good forecast. A run that finds nothing newer
+than the published forecast (two triggers can start runs close together) changes nothing and
+exits normally.
 
 Usage:  .venv/bin/python scripts/14_refresh_live.py   (needs OPENAQ_API_KEY; about 8 minutes)
 """
@@ -26,9 +28,9 @@ from delhi_pm25.clean import HOUR, IST_OFFSET, GridError
 from delhi_pm25.config import ConfigError, load_config
 from delhi_pm25.features import FeatureError, horizon_view
 from delhi_pm25.guards import InputsOutOfDate
-from delhi_pm25.live import live_features
+from delhi_pm25.live import NoForecastHour, live_features
 from delhi_pm25.live_fetch import fetch_live
-from delhi_pm25.live_forecast import Freshness, forecast_document, previous_issue, problems_with, publish_if_sound
+from delhi_pm25.live_forecast import Freshness, already_published, forecast_document, previous_issue, problems_with, publish_if_sound
 from delhi_pm25.live_inputs import LiveInputError
 from delhi_pm25.model import band_objectives, load_model, order_band, predict
 from delhi_pm25.model_settings import load_model_settings, load_serving_settings
@@ -41,7 +43,7 @@ from delhi_pm25.station_status import status_document
 OUT: Final = SERVING_DIR / "live_forecast.json"
 MODELS: Final = SERVING_DIR / "models"
 LIVE_SPEC: Final = REPORTS_DIR / "live" / "model_spec_live.json"
-FAILURES: Final = (ConfigError, SpecMismatch, LiveInputError, OpenAQFormatError, RawFormatError, GridError,
+FAILURES: Final = (ConfigError, SpecMismatch, NoForecastHour, LiveInputError, OpenAQFormatError, RawFormatError, GridError,
                    InputsOutOfDate, FeatureError, FileNotFoundError)
 
 
@@ -84,7 +86,11 @@ def main() -> int:
         features = live_features(readings, weather, parts.config)
     except FAILURES as err:
         return kept(f"{type(err).__name__}: {err}")
-    problems = problems_with(features, parts.config.target, Freshness(now, previous_issue(OUT)))
+    freshness = Freshness(now, previous_issue(OUT))
+    if already_published(features, freshness):
+        print(f"Nothing new: the published forecast already starts at {features['hour_end_utc'].iloc[0]}; it stays as it is.")
+        return 0
+    problems = problems_with(features, parts.config.target, freshness)
     if problems:
         return kept("; ".join(problems))
     issued = features["hour_end_utc"].iloc[0]

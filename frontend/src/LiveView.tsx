@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type Accuracy, type Live, type Meta, fetchLive } from "./api";
 import { AccuracyPanel } from "./AccuracyPanel";
 import { chartRows } from "./chart";
@@ -41,7 +41,12 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
   const path = useMemo(() => stationPath(live.rows, selected), [live.rows, selected]);
   const ahead = path.find((point) => point.horizon_h === horizon);
   const now = path.find((point) => point.horizon_h === 0);
-  const age = hoursSince(live.generated_at_utc, Date.now());
+  const [nowMs, setNowMs] = useState(Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const age = hoursSince(live.generated_at_utc, nowMs);
   const station = meta.stations.find((candidate) => candidate.slug === selected);
   return (
     <main className="main">

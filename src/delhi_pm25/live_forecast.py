@@ -1,8 +1,8 @@
 """Live forecasts, stage D: from the latest live features to the file the site reads.
 
-Publishing is all or nothing. problems_with lists every reason to distrust a refresh: too few
-stations reporting, a forecast hour that is old or in the future, nothing newer than the file
-already published, or a short history. With any problem, publish_if_sound leaves the published
+Publishing is all or nothing. problems_with lists every reason to distrust a refresh: a forecast hour that is old
+or in the future, or a short history (too few stations reporting stops earlier, in
+live.latest_hour). With any problem, publish_if_sound leaves the published
 file untouched, because a slightly stale forecast is better than a broken page. The file records
 when it was made ("generated_at_utc", the site's "last updated") and the hour the forecast
 starts from ("issued_utc").
@@ -17,9 +17,8 @@ import pandas as pd
 
 from delhi_pm25.model import order_band
 
-__all__ = ["Freshness", "forecast_document", "order_band", "previous_issue", "problems_with", "publish_if_sound"]
+__all__ = ["Freshness", "already_published", "forecast_document", "order_band", "previous_issue", "problems_with", "publish_if_sound"]
 
-MIN_REPORTING_SHARE: Final = 2 / 3
 MIN_HISTORY_SHARE: Final = 2 / 3
 MAX_AGE: Final = pd.Timedelta(hours=12)
 FUTURE_SLACK: Final = pd.Timedelta(hours=1)
@@ -33,20 +32,22 @@ class Freshness:
     previous_issue: pd.Timestamp | None
 
 
+def already_published(features: pd.DataFrame, freshness: Freshness) -> bool:
+    """True when the published file already starts at this forecast hour or later: there is
+    nothing to do (two triggers can start refreshes close together), and that is not a failure."""
+    previous = freshness.previous_issue
+    return previous is not None and features["hour_end_utc"].max() <= previous
+
+
 def problems_with(features: pd.DataFrame, target: str, freshness: Freshness) -> list[str]:
     """Every reason not to publish these live features; an empty list means publish."""
     issued = features["hour_end_utc"].max()
-    reporting = features[f"{target}_lag_0h"].notna().mean()
     history = features[f"{target}_mean_168h"].notna().mean()
-    previous = freshness.previous_issue
     checks = [
-        (reporting < MIN_REPORTING_SHARE,
-         f"only {reporting:.0%} of stations have {target} for the forecast hour (need {MIN_REPORTING_SHARE:.0%})"),
         (history < MIN_HISTORY_SHARE,
          f"only {history:.0%} of stations have a 7-day history (need {MIN_HISTORY_SHARE:.0%}): the fetch looks short"),
         (freshness.now - issued > MAX_AGE, f"the forecast hour {issued} is more than {MAX_AGE} old"),
         (issued > freshness.now + FUTURE_SLACK, f"the forecast hour {issued} is in the future: the clock or time zone is wrong"),
-        (previous is not None and issued <= previous, f"nothing newer than the published forecast (hour {previous})"),
     ]
     return [message for failed, message in checks if failed]
 

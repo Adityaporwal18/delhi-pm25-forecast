@@ -4,6 +4,9 @@
 # fails with the reason in its log and nothing is committed: the site keeps its last good forecast.
 # The site reads the committed file from GitHub, so these commits need no Render rebuild
 # (render.yaml ignores this file).
+# GitHub may start scheduled runs late or drop them, so an outside scheduler (cron-job.org) also
+# starts this workflow through GitHub's API (workflow_dispatch) at the same times. Runs queue one
+# after another (concurrency below); a run that finds nothing newer changes nothing and succeeds.
 name: Refresh live forecast
 
 on:

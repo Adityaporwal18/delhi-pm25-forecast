@@ -472,10 +472,12 @@ updated". Before forecasting it checks that the settings still match the spec th
 were trained with. It publishes nothing, leaving the last good forecast in place and printing
 why, when the fetch fails or the data look wrong:
 
-- fewer than two thirds of the stations have PM2.5 for the forecast hour;
+- no hour in the last 10 days was reported by at least two thirds of the stations (the forecast
+  starts from the latest hour that was);
 - fewer than two thirds have a 7-day history (a short fetch);
-- the forecast hour is more than 12 hours old, or in the future (a clock or time-zone fault);
-- nothing is newer than the forecast already published.
+- the forecast hour is more than 12 hours old, or in the future (a clock or time-zone fault).
+
+A run that finds nothing newer than the published forecast changes nothing and ends normally.
 
 First live forecast: from 09:00 Delhi time on 22 Nov 2026, 36 of 37 stations reporting. A run
 without the API key was refused and left the published file byte-for-byte unchanged.
@@ -499,7 +501,10 @@ late, and a slow spell at OpenAQ then kept it fetching until the 40-minute job l
 The fail-safe worked (nothing was published, the site kept the last good forecast), but no new
 forecast appeared for hours. Since 23 Nov 2026 the refresh runs every 3 hours, fetches four
 stations at a time under one shared rate limit (a full fetch took 2 min 44 s, against about 8
-minutes before), and stops itself with a clear reason after 25 minutes.
+minutes before), and stops itself with a clear reason after 25 minutes. Because GitHub can start
+scheduled runs late or skip them, a free outside scheduler (cron-job.org) also starts the same
+workflow through GitHub's API at the same times. Runs queue one after another; a run that finds
+nothing newer changes nothing and ends normally, so only real problems mark a run as failed.
 
 **Stage F (done, 22 Nov 2026): the website shows both.**
 

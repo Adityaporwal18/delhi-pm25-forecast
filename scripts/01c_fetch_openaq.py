@@ -18,6 +18,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
+from functools import partial
 from pathlib import Path
 from typing import Final
 
@@ -101,7 +102,8 @@ def main() -> int:
         identity = StationIdentity(names.loc[station.slug, "station_id"], names.loc[station.slug, "station_name"].strip())
         try:
             with ThreadPoolExecutor(WORKERS) as pool:
-                found = [p for p in pool.map(lambda day: day_file(session, station.openaq_location_id, day), days) if p is not None]
+                one_day = partial(day_file, session, station.openaq_location_id)
+                found = [p for p in pool.map(one_day, days) if p is not None]
             table = station_table(archive_rows(found), identity)
         except (ArchiveError, OpenAQFormatError, requests.RequestException) as err:
             print(f"STOPPED at {station.slug}: {err}", file=sys.stderr)

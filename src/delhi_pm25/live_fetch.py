@@ -60,7 +60,12 @@ def fetch_readings(key: str, since: pd.Timestamp) -> list[Path]:
         return path
 
     with ThreadPoolExecutor(WORKERS) as pool:
-        written = list(pool.map(one_station, pd.read_csv(SENSORS_CSV).groupby("slug")))
+        futures = [pool.submit(one_station, station) for station in pd.read_csv(SENSORS_CSV).groupby("slug")]
+        try:
+            written = [future.result() for future in futures]
+        except Exception:
+            pool.shutdown(cancel_futures=True)
+            raise
     return [path for path in written if path is not None]
 
 
