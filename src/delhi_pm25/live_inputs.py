@@ -2,8 +2,9 @@
 
 Only the network lives here. Everything after it goes through the training functions
 (live.live_features), so live and training cannot drift apart in how features are made.
-  readings  OpenAQ API, /v3/sensors/{id}/measurements: one call per station and pollutant,
-            spaced to stay under the free key's 60 requests a minute. Sensors are chosen by
+  readings  OpenAQ API, /v3/sensors/{id}/measurements: one call per station and pollutant. Every
+            request, from whichever thread, waits its turn on one RateLimiter (the free key allows
+            60 a minute), and a Deadline stops a fetch that runs too long, with the reason. Sensors are chosen by
             newest_sensors and kept in config/openaq_sensors.csv. The key travels only in the
             OpenAQ session's header, never to another host.
   weather   Open-Meteo's forecast API with the ECMWF IFS model on the training grid cells; its
@@ -11,7 +12,9 @@ Only the network lives here. Everything after it goes through the training funct
 """
 
 import sys
+import threading
 import time
+from collections.abc import Callable
 from typing import Final
 
 import numpy as np
@@ -28,6 +31,7 @@ WEATHER_VARIABLES: Final = SOURCES["actual_ecmwf_ifs"]
 PAGE: Final = 1000
 SPACING_S: Final = 1.05
 ATTEMPTS: Final = 4
+REQUEST_TIMEOUT_S: Final = 30
 
 
 class LiveInputError(Exception):
@@ -99,7 +103,7 @@ def get_json(session: requests.Session, url: str, params: dict[str, object]) -> 
     """GET with retries: waits out rate limits (429) and server errors; other refusals stop."""
     for attempt in range(ATTEMPTS):
         try:
-            response = session.get(url, params=params, timeout=60)
+            response = session.get(url, params=params, timeout=REQUEST_TIMEOUT_S)
         except requests.RequestException as err:
             _wait(f"network error ({type(err).__name__})", 2**attempt * 5)
             continue
@@ -115,30 +119,8 @@ def get_json(session: requests.Session, url: str, params: dict[str, object]) -> 
     raise LiveInputError(f"{url} kept failing after {ATTEMPTS} attempts")
 
 
-def fetch_measurements(session: requests.Session, sensor_id: int, since: pd.Timestamp) -> list[dict[str, object]]:
-    """Every OpenAQ measurement of one sensor from `since` until now, page by page."""
-    results: list[dict[str, object]] = []
-    page_number = 1
-    while True:
-        time.sleep(SPACING_S)
-        params = {"datetime_from": since.strftime("%Y-%m-%dT%H:%M:%SZ"), "limit": PAGE, "page": page_number}
-        try:
-            page = _Page.model_validate(get_json(session, f"{OPENAQ_API}/sensors/{sensor_id}/measurements", params)).results
-        except ValidationError as err:
-            raise LiveInputError(f"unexpected measurements page for sensor {sensor_id}: {err}") from err
-        results += page
-        if len(page) < PAGE:
-            return results
-        page_number += 1
 
 
-def fetch_sensors(session: requests.Session, location_id: int) -> list[dict[str, object]]:
-    """The sensor list of one OpenAQ location (each with its parameter and last report)."""
-    time.sleep(SPACING_S)
-    try:
-        return _Page.model_validate(get_json(session, f"{OPENAQ_API}/locations/{location_id}/sensors", {})).results
-    except ValidationError as err:
-        raise LiveInputError(f"unexpected sensor list for location {location_id}: {err}") from err
 
 
 def check_grid(response: dict[str, object], cell: tuple[float, float]) -> None:
@@ -149,3 +131,71 @@ def check_grid(response: dict[str, object], cell: tuple[float, float]) -> None:
         raise LiveInputError(f"unexpected weather response: {err}") from err
     if abs(grid.latitude - cell[0]) > 1e-3 or abs(grid.longitude - cell[1]) > 1e-3:
         raise LiveInputError(f"weather grid moved: asked for cell {cell}, got ({grid.latitude}, {grid.longitude})")
+
+
+class RateLimiter:
+    """At most one request start per `spacing_s` seconds, shared by every thread."""
+
+    def __init__(self, spacing_s: float, clock: Callable[[], float] = time.monotonic,
+                 sleep: Callable[[float], None] = time.sleep) -> None:
+        self._spacing, self._clock, self._sleep = spacing_s, clock, sleep
+        self._lock = threading.Lock()
+        self._next = 0.0
+
+    def wait(self) -> None:
+        with self._lock:
+            now = self._clock()
+            start = max(now, self._next)
+            self._next = start + self._spacing
+        self._sleep(start - now)
+
+
+class Deadline:
+    """Stops a fetch that runs past its budget, with the reason, before the job's own time limit
+    kills it without one (as happened to a refresh during a slow OpenAQ spell)."""
+
+    def __init__(self, seconds: float, clock: Callable[[], float] = time.monotonic) -> None:
+        self._seconds, self._clock = seconds, clock
+        self._end = clock() + seconds
+
+    def check(self) -> None:
+        if self._clock() > self._end:
+            raise LiveInputError(f"OpenAQ was too slow: the fetch passed its {self._seconds / 60:.0f}-minute budget")
+
+
+class OpenAQ:
+    """The OpenAQ API for several threads at once: one session per thread, one shared rate limit,
+    one deadline. The key travels only in these sessions' header."""
+
+    def __init__(self, key: str, limiter: RateLimiter, deadline: Deadline) -> None:
+        self._key, self._limiter, self._deadline = key, limiter, deadline
+        self._local = threading.local()
+
+    def _get(self, url: str, params: dict[str, object]) -> list[dict[str, object]]:
+        self._deadline.check()
+        self._limiter.wait()
+        session = getattr(self._local, "session", None)
+        if session is None:
+            session = requests.Session()
+            session.headers["X-API-Key"] = self._key
+            self._local.session = session
+        try:
+            return _Page.model_validate(get_json(session, url, params)).results
+        except ValidationError as err:
+            raise LiveInputError(f"unexpected answer from {url}: {err}") from err
+
+    def measurements(self, sensor_id: int, since: pd.Timestamp) -> list[dict[str, object]]:
+        """Every measurement of one sensor from `since` until now, page by page."""
+        results: list[dict[str, object]] = []
+        page_number = 1
+        while True:
+            params = {"datetime_from": since.strftime("%Y-%m-%dT%H:%M:%SZ"), "limit": PAGE, "page": page_number}
+            page = self._get(f"{OPENAQ_API}/sensors/{sensor_id}/measurements", params)
+            results += page
+            if len(page) < PAGE:
+                return results
+            page_number += 1
+
+    def sensors(self, location_id: int) -> list[dict[str, object]]:
+        """The sensor list of one location (each with its parameter and last report)."""
+        return self._get(f"{OPENAQ_API}/locations/{location_id}/sensors", {})

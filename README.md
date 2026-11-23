@@ -1,7 +1,7 @@
 # Delhi PM2.5 forecast — 48 hours ahead, per monitoring station
 
 **Live site: https://delhi-pm25.onrender.com** — the next 48 hours for 37 stations, refreshed
-every 6 hours, and under "Accuracy" the 2025 replay that shows how good the forecasts are. It runs on
+about every 3 hours, and under "Accuracy" the 2025 replay that shows how good the forecasts are. It runs on
 Render's free plan: after 15 quiet minutes it sleeps, and the next visit takes about a minute
 to wake it.
 
@@ -9,7 +9,7 @@ Forecasts **hourly PM2.5** (fine particulate matter, in µg/m³) up to 48 hours 
 37 of Delhi's 39 continuous air-quality monitoring stations, using three years of CPCB
 station data (2023–2025) and Open-Meteo weather.
 
-> **Status (22 Nov 2026): all 7 stages done, plus live forecasts — the site shows the next 48 hours (refreshed every 6 hours) and the 2025 replay that measures how accurate the forecasts are.**
+> **Status (22 Nov 2026): all 7 stages done, plus live forecasts — the site shows the next 48 hours (refreshed about every 3 hours) and the 2025 replay that measures how accurate the forecasts are.**
 > The model beats both baselines on average but not in the smoggiest hours (see Results).
 > The two things a reader should know before any result appears — the missing-data
 > problem and which stations were dropped — are written down now, before modelling.
@@ -482,8 +482,8 @@ without the API key was refused and left the published file byte-for-byte unchan
 
 **Stage E (done, 22 Nov 2026): a free scheduled refresh.**
 
-`.github/workflows/refresh-live.yml` runs the refresh every 6 hours (00:20, 06:20, 12:20 and
-18:20 UTC) on GitHub's free runners, with the `OPENAQ_API_KEY` repository secret. When the
+`.github/workflows/refresh-live.yml` runs the refresh about every 3 hours (at 20 minutes past
+every third hour, UTC; GitHub can start scheduled runs late) on GitHub's free runners, with the `OPENAQ_API_KEY` repository secret. When the
 forecast changes it commits `serving/live_forecast.json` as "github-actions[bot]", so the commit
 history is the refresh log. When the refresh keeps the old forecast, the run fails with the
 reason in its log and nothing is committed. The site reads the committed file from GitHub
@@ -493,6 +493,13 @@ that file. New forecasts therefore appear without a rebuild. The first scheduled
 (started by hand on 22 Nov 2026) took 5½ minutes and published a forecast from 22:00 Delhi
 time with 32 of 37 stations reporting. GitHub pauses scheduled workflows in public
 repositories after 60 days without activity; if that happens, re-enable it in the Actions tab.
+
+The first schedule ran every 6 hours. On 22 Nov 2026 GitHub started one run more than five hours
+late, and a slow spell at OpenAQ then kept it fetching until the 40-minute job limit cancelled it.
+The fail-safe worked (nothing was published, the site kept the last good forecast), but no new
+forecast appeared for hours. Since 23 Nov 2026 the refresh runs every 3 hours, fetches four
+stations at a time under one shared rate limit (a full fetch took 2 min 44 s, against about 8
+minutes before), and stops itself with a clear reason after 25 minutes.
 
 **Stage F (done, 22 Nov 2026): the website shows both.**
 
@@ -514,6 +521,17 @@ Which number comes from which model:
 
 The site's accuracy numbers come from `serving/accuracy_2025.json`, built from the evaluation
 reports by `scripts/15_accuracy_file.py`; `tests/test_accuracy.py` fails if they ever disagree.
+
+**Why a station has no reading now.** Each refresh records, for every station, one of five cases
+(`src/delhi_pm25/station_status.py`): reporting; delayed (nothing has arrived for the hour yet,
+but the station reported within the last 6 hours, usually the feed running late); PM2.5 analyser
+not reporting (the station's other pollutants arrived for the hour, PM2.5 did not); set aside
+(readings arrived but the cleaning rules removed them); silent (nothing for 6 hours or more).
+The map draws stations without a current reading with a dashed outline, and the station chart
+says which case it is. If the PM2.5 analyser is dark while the city median is in the smoggiest
+10% of training hours (224.9 µg/m³ or more), the page adds that analysers often stop reporting
+the highest values, so the station may be worse than its neighbours. The data cannot say why an
+analyser is dark: a deleted extreme reading and routine maintenance look alike.
 
 ![The live view, 22 Nov 2026](docs/site-live-2026-11-22.png)
 
@@ -574,7 +592,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/01d_openaq_sensors.py                 # live: OpenAQ sensor per pollutant (needs OPENAQ_API_KEY)
 .venv/bin/python scripts/14_refresh_live.py                    # live: fetch -> features -> 24 models -> serving/live_forecast.json
 .venv/bin/python scripts/15_accuracy_file.py                   # the site's accuracy numbers, from the evaluation reports
-.venv/bin/python -m pytest                                     # 303 tests
+.venv/bin/python -m pytest                                     # 311 tests
 (cd frontend && npm install && npm test && npm run build)       # website -> frontend/dist
 .venv/bin/uvicorn delhi_pm25.server:app                        # site + API: http://127.0.0.1:8000
 ```
@@ -614,7 +632,7 @@ data/                  downloaded and derived data (not committed; rebuilt by th
 6. Error analysis, with the smoggiest hours as the headline — done
 7. API, map frontend and deployment — done: https://delhi-pm25.onrender.com
 
-Live forecasts (stages A–F) — done: the site shows the next 48 hours, refreshed every 6 hours.
+Live forecasts (stages A–F) — done: the site shows the next 48 hours, refreshed about every 3 hours.
 
 Planned follow-ups: the forecast-weather comparison (does knowing the weather forecast help?),
 and features for sudden smog build-ups.

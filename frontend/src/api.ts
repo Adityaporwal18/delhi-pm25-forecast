@@ -75,6 +75,17 @@ const liveSchema = z.object({
   stations: z.number().int(),
   training_window: z.object({ first_target_utc: z.string(), last_target_utc: z.string() }),
   rows: z.array(livePointSchema),
+  city_median_now: z.number().nullable(),
+  heavy_smog_now: z.boolean(),
+  station_status: z.array(
+    z.object({
+      slug: z.string(),
+      status: z.enum(["reporting", "set_aside", "analyser_dark", "delayed", "silent"]),
+      last_value: z.number().nullable(),
+      last_value_utc: z.string().nullable(),
+      last_reading_utc: z.string().nullable(),
+    }),
+  ),
 });
 const accuracySchema = z.object({
   source: z.string(),

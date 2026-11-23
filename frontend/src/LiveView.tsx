@@ -5,7 +5,7 @@ import { chartRows } from "./chart";
 import { HorizonButtons, StationSelect, defaultStation } from "./controls";
 import { ForecastChart } from "./ForecastChart";
 import { Legend } from "./Legend";
-import { STALE_AFTER_HOURS, ageLabel, hoursSince, pointsAt, stationPath } from "./live";
+import { STALE_AFTER_HOURS, ageLabel, hoursSince, nowText, pointsAt, stationPath, statusCounts } from "./live";
 import { StationMap } from "./StationMap";
 import { delhiLabel } from "./time";
 import { Status, useLoad } from "./useLoad";
@@ -17,7 +17,7 @@ interface Props {
   active: boolean;
 }
 
-/** The next 48 hours, from the latest live forecast (refreshed every 6 hours). */
+/** The next 48 hours, from the latest live forecast (refreshed about every 3 hours). */
 export function LiveView({ meta, accuracy, active }: Props) {
   const [live, retry] = useLoad(fetchLive, "live");
   if (live.state !== "ready") {
@@ -36,7 +36,8 @@ export function LiveView({ meta, accuracy, active }: Props) {
 function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live }) {
   const [horizon, setHorizon] = useState(48);
   const [selected, setSelected] = useState(defaultStation(meta));
-  const points = useMemo(() => pointsAt(live.rows, horizon), [live.rows, horizon]);
+  const points = useMemo(() => pointsAt(live.rows, horizon, live.station_status), [live.rows, horizon, live.station_status]);
+  const state = live.station_status.find((candidate) => candidate.slug === selected);
   const path = useMemo(() => stationPath(live.rows, selected), [live.rows, selected]);
   const ahead = path.find((point) => point.horizon_h === horizon);
   const now = path.find((point) => point.horizon_h === 0);
@@ -54,12 +55,18 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
             {live.stations_reporting} of {live.stations} stations.
           </p>
           <p className="caption">
-            Last updated {delhiLabel(live.generated_at_utc)} ({ageLabel(age)}). A new forecast is made every 6 hours.
+            Last updated {delhiLabel(live.generated_at_utc)} ({ageLabel(age)}). A new forecast is made about every 3 hours.
           </p>
+          {live.station_status.length > 0 && (
+            <p className="caption">
+              {statusCounts(live.station_status)}. A dashed outline on the map marks a station with no current PM2.5
+              reading.
+            </p>
+          )}
           {age > STALE_AFTER_HOURS && (
             <p className="warning" role="status">
-              This forecast is older than the 6-hour schedule allows: the latest refreshes did not publish (missing or
-              doubtful data), so the last good forecast is shown.
+              This forecast is more than {STALE_AFTER_HOURS} hours old: the latest refreshes did not publish (missing or
+              doubtful data, or a delayed schedule), so the last good forecast is shown.
             </p>
           )}
         </section>
@@ -75,11 +82,20 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
             <p className="summary">
               <span className="value">{ahead.p50}</span> µg/m³ expected for {delhiLabel(ahead.valid_utc)}
               <span className="caption block">
-                80% band {ahead.p10}–{ahead.p90} · now: {now?.measured ?? "no reading yet"}
+                80% band {ahead.p10}–{ahead.p90} · {nowText(state, now?.measured ?? null)}
               </span>
             </p>
           ) : (
             <p className="caption">No live forecast for this station right now.</p>
+          )}
+          {state !== undefined && state.status !== "reporting" && (
+            <p className="caption">Made without this station's current reading: from the city median and its older readings.</p>
+          )}
+          {state?.status === "analyser_dark" && live.heavy_smog_now && (
+            <p className="warning">
+              In heavy smog, analysers often stop reporting the highest values (see the README's most important
+              limitation), so this station may be worse than its neighbours.
+            </p>
           )}
           {path.length > 0 && <ForecastChart rows={chartRows(path)} categories={meta.categories} />}
           <p className="caption">

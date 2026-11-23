@@ -1,6 +1,6 @@
 """Where the site gets the latest live forecast, without redeploying.
 
-A GitHub Action commits serving/live_forecast.json every 6 hours (scripts/14_refresh_live.py).
+A GitHub Action commits serving/live_forecast.json about every 3 hours (scripts/14_refresh_live.py).
 The site reads that file from GitHub, asking at most once per CACHE_SECONDS, and keeps the copy
 built into its image as a fallback, always showing whichever of the two was issued later. A new
 forecast therefore appears within minutes of the commit with no rebuild, and a GitHub outage
@@ -11,7 +11,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal
 
 import requests
 from pydantic import BaseModel
@@ -48,8 +48,19 @@ class LivePoint(BaseModel):
     measured: float | None
 
 
+class StationState(BaseModel):
+    """Why a station has (or lacks) a value for the forecast hour (station_status.py)."""
+
+    slug: str
+    status: Literal["reporting", "set_aside", "analyser_dark", "delayed", "silent"]
+    last_value: float | None
+    last_value_utc: datetime | None
+    last_reading_utc: datetime | None
+
+
 class LiveDocument(BaseModel):
-    """serving/live_forecast.json as scripts/14_refresh_live.py writes it."""
+    """serving/live_forecast.json as scripts/14_refresh_live.py writes it. Files written before
+    the station status existed still load, with no status."""
 
     generated_at_utc: datetime
     issued_utc: datetime
@@ -57,6 +68,9 @@ class LiveDocument(BaseModel):
     stations: int
     training_window: LiveWindow
     rows: list[LivePoint]
+    city_median_now: float | None = None
+    heavy_smog_now: bool = False
+    station_status: list[StationState] = []
 
 
 class LiveSource:

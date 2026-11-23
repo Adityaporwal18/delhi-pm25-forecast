@@ -109,3 +109,16 @@ def test_accuracy_endpoint_serves_the_held_out_2025_numbers(client: TestClient) 
     body = client.get("/api/accuracy").json()
     assert (body["horizons"][0]["model_mae"], body["horizons"][0]["inside_band_smoggiest_10pct"],
             body["smoggiest_10pct_48h"]["model_mae"]) == (34.7, 59.3, 106.0)
+
+
+def test_live_files_written_before_station_status_still_load(replay: Replay, tmp_path: Path) -> None:
+    body = TestClient(create_app(replay, live=LiveSource(lambda: LIVE, tmp_path / "missing.json"))).get("/api/live").json()
+    assert (body["station_status"], body["heavy_smog_now"], body["city_median_now"]) == ([], False, None)
+
+
+def test_station_status_reaches_the_site(replay: Replay, tmp_path: Path) -> None:
+    status = {"slug": "a", "status": "analyser_dark", "last_value": 300.0,
+              "last_value_utc": "2026-11-22T12:30:00+00:00", "last_reading_utc": "2026-11-22T15:45:00+00:00"}
+    document = LIVE | {"station_status": [status], "city_median_now": 310.0, "heavy_smog_now": True}
+    body = TestClient(create_app(replay, live=LiveSource(lambda: document, tmp_path / "missing.json"))).get("/api/live").json()
+    assert (body["station_status"][0]["status"], body["heavy_smog_now"]) == ("analyser_dark", True)

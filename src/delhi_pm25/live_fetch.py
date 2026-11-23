@@ -1,11 +1,15 @@
 """Live forecasts: fetch the last LIVE_DAYS of readings and weather for our stations.
 
-Readings come from OpenAQ (config/openaq_sensors.csv; needs the free key), are written in the
-CPCB file layout (data/live/raw/<slug>.csv) and read back with the training loader, so they
-reach the features exactly as training data did. Weather comes from Open-Meteo's forecast API
-on the stations' training grid cells.
+Readings come from OpenAQ (config/openaq_sensors.csv; needs the free key), a few stations at a
+time: slow answers overlap instead of adding up, while one shared rate limiter keeps every thread
+together under the free key's 60 requests a minute. The whole fetch has a FETCH_MINUTES budget,
+so a slow spell stops it with a clear reason, well inside the scheduled job's 40-minute limit.
+Readings are written in the CPCB file layout (data/live/raw/<slug>.csv) and read back with the
+training loader, so they reach the features exactly as training data did. Weather comes from
+Open-Meteo's forecast API on the stations' training grid cells.
 """
 
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Final
 
@@ -13,36 +17,51 @@ import pandas as pd
 import requests
 
 from delhi_pm25.live import LIVE_DAYS
-from delhi_pm25.live_inputs import FORECAST_API, WEATHER_VARIABLES, check_grid, fetch_measurements, get_json, weather_rows
+from delhi_pm25.live_inputs import (
+    FORECAST_API,
+    SPACING_S,
+    WEATHER_VARIABLES,
+    Deadline,
+    OpenAQ,
+    RateLimiter,
+    check_grid,
+    get_json,
+    weather_rows,
+)
 from delhi_pm25.openaq import StationIdentity, api_rows, station_table
 from delhi_pm25.paths import LIVE_DIR, PROJECT_ROOT, RAW_WEATHER_DIR, STATIONS_CSV
 from delhi_pm25.raw_cpcb import load_raw
 
 SENSORS_CSV: Final = PROJECT_ROOT / "config" / "openaq_sensors.csv"
 CELLS_CSV: Final = RAW_WEATHER_DIR / "station_cells.csv"
+WORKERS: Final = 4
+FETCH_MINUTES: Final = 25
 
 
 def fetch_readings(key: str, since: pd.Timestamp) -> list[Path]:
     """Each station's recent readings in the CPCB file layout; returns the files written."""
+    client = OpenAQ(key, RateLimiter(SPACING_S), Deadline(FETCH_MINUTES * 60))
     names = pd.read_csv(STATIONS_CSV).set_index("slug")
-    session = requests.Session()
-    session.headers["X-API-Key"] = key
-    paths = []
-    for slug, group in pd.read_csv(SENSORS_CSV).groupby("slug"):
-        rows = pd.concat([api_rows(fetch_measurements(session, int(sensor), since)) for sensor in group["sensor_id"]],
+
+    def one_station(station: tuple[str, pd.DataFrame]) -> Path | None:
+        slug, sensors = station
+        rows = pd.concat([api_rows(client.measurements(int(sensor), since)) for sensor in sensors["sensor_id"]],
                          ignore_index=True)
         if rows.empty:
             print(f"{slug}: no readings since {since:%Y-%m-%d %H:%M} UTC", flush=True)
-            continue
+            return None
         identity = StationIdentity(names.loc[slug, "station_id"], names.loc[slug, "station_name"].strip())
         table = station_table(rows, identity)
         path = LIVE_DIR / "raw" / f"{slug}.csv"
         path.parent.mkdir(parents=True, exist_ok=True)
         table.to_csv(path.with_suffix(".part"), index=False)
         path.with_suffix(".part").rename(path)
-        paths.append(path)
         print(f"{slug}: {len(table)} readings, newest {table['Timestamp'].max()[:16]} Delhi time", flush=True)
-    return paths
+        return path
+
+    with ThreadPoolExecutor(WORKERS) as pool:
+        written = list(pool.map(one_station, pd.read_csv(SENSORS_CSV).groupby("slug")))
+    return [path for path in written if path is not None]
 
 
 def fetch_weather(slugs: list[str]) -> pd.DataFrame:

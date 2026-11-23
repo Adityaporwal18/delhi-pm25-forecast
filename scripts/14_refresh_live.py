@@ -1,4 +1,4 @@
-"""Live forecasts, stage D: refresh the forecast the site shows. One script, meant to run every 6 hours.
+"""Live forecasts, stage D: refresh the forecast the site shows. One script, run about every 3 hours.
 
   fetch      the last 10 days of OpenAQ readings and Open-Meteo weather (src/delhi_pm25/live_fetch.py)
   features   the training functions (live.live_features), for the latest hour most stations reported
@@ -36,6 +36,7 @@ from delhi_pm25.model_spec import ModelSpec, SpecMismatch, SpecParts, assert_sam
 from delhi_pm25.openaq import OpenAQFormatError
 from delhi_pm25.paths import PIPELINE_TOML, REPORTS_DIR, SERVING_DIR
 from delhi_pm25.raw_cpcb import RawFormatError
+from delhi_pm25.station_status import status_document
 
 OUT: Final = SERVING_DIR / "live_forecast.json"
 MODELS: Final = SERVING_DIR / "models"
@@ -91,6 +92,7 @@ def main() -> int:
     table = forecasts(features, parts)
     document = forecast_document(table, issued, now) | {
         "stations_reporting": reporting, "stations": len(features), "training_window": asdict(live.window)}
+    document |= status_document(readings, features, parts.config)
     publish_if_sound(document, [], OUT)
     print(f"Published {OUT.relative_to(SERVING_DIR.parent)}: forecast from {(issued + IST_OFFSET).tz_localize(None):%d %b %H:%M} "
           f"Delhi time, {reporting} of {len(features)} stations reporting, {len(table)} rows")

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LivePoint } from "./api";
-import { ageLabel, hoursSince, pointsAt, stationPath } from "./live";
+import { type StationState, ageLabel, hoursSince, nowText, pointsAt, stationPath, statusCounts } from "./live";
 
 // Given: two stations; "b" has the value measured now (horizon 0) and a 48-hour forecast
 const ROWS: LivePoint[] = [
@@ -39,5 +39,28 @@ describe("the forecast's age, in words", () => {
     [50, "2 days ago"],
   ])("%s hours old reads as %s", (hours, words) => {
     expect(ageLabel(hours)).toBe(words);
+  });
+});
+
+describe("why a station has no reading now", () => {
+  const reporting: StationState = { slug: "a", status: "reporting", last_value: 170, last_value_utc: "2026-11-22T16:30:00Z", last_reading_utc: "2026-11-22T16:30:00Z" };
+  const delayed: StationState = { slug: "b", status: "delayed", last_value: 182, last_value_utc: "2026-11-22T16:15:00Z", last_reading_utc: "2026-11-22T16:15:00Z" };
+  const dark: StationState = { slug: "c", status: "analyser_dark", last_value: 300, last_value_utc: "2026-11-22T12:30:00Z", last_reading_utc: "2026-11-22T16:15:00Z" };
+
+  it("counts the stations by status", () => {
+    expect(statusCounts([reporting, reporting, delayed, dark])).toBe("2 reporting · 1 delayed · 1 PM2.5 analyser not reporting");
+  });
+
+  it("explains the missing reading in words", () => {
+    expect([nowText(reporting, 170), nowText(delayed, null), nowText(dark, null)]).toEqual([
+      "now: 170",
+      "now: not received yet (the feed is running late; latest PM2.5 182 at Sun 22 Nov 2026, 21:45)",
+      "now: the PM2.5 analyser has not reported since Sun 22 Nov 2026, 18:00, though the station's other pollutants have",
+    ]);
+  });
+
+  it("marks stations without a reading now for the map", () => {
+    const points = pointsAt(ROWS, 48, [delayed]);
+    expect([points.get("b")?.quiet, points.get("a")?.quiet]).toEqual([true, false]);
   });
 });

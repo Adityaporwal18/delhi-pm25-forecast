@@ -20,7 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from delhi_pm25.accuracy import AccuracySummary
-from delhi_pm25.live_source import LivePoint, LiveSource, LiveWindow
+from delhi_pm25.live_source import LivePoint, LiveSource, LiveWindow, StationState
 from delhi_pm25.serving import CATEGORIES, CREDITS, Replay, ReplayError, category
 
 NOTE: Final = (
@@ -83,6 +83,9 @@ class LiveForecastOut(BaseModel):
     stations: int
     training_window: LiveWindow
     rows: list[LivePointOut]
+    city_median_now: float | None
+    heavy_smog_now: bool
+    station_status: list[StationState]
 
 
 def _coloured(point: LivePoint) -> LivePointOut:

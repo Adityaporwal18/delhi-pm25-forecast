@@ -12,7 +12,7 @@ const MODES: readonly { mode: Mode; label: string }[] = [
 ];
 
 const LIVE_NOTE =
-  "Live forecast for the next 48 hours, refreshed every 6 hours. Colours are a PM2.5-based category (CPCB PM2.5 " +
+  "Live forecast for the next 48 hours, refreshed about every 3 hours. Colours are a PM2.5-based category (CPCB PM2.5 " +
   "bands, which CPCB defines on 24-hour averages), not AQI.";
 
 function initialMode(): Mode {
@@ -64,7 +64,7 @@ function Shell({ meta, accuracy }: { meta: Meta; accuracy: Accuracy }) {
           </h1>
           <p className="caption">
             {meta.stations.length} CPCB monitoring stations ·{" "}
-            {mode === "live" ? "live forecast, refreshed every 6 hours" : "replay of the held-out 2025 test year"}
+            {mode === "live" ? "live forecast, refreshed about every 3 hours" : "replay of the held-out 2025 test year"}
           </p>
         </div>
         <div className="segmented mode-switch" role="group" aria-label="View">

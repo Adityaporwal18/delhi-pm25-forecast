@@ -1,4 +1,4 @@
-# Refreshes the live forecast every 6 hours (scripts/14_refresh_live.py) and commits
+# Refreshes the live forecast about every 3 hours (scripts/14_refresh_live.py) and commits
 # serving/live_forecast.json when it changed. The commit history doubles as a log.
 # If the refresh keeps the published forecast (fetch failed or the data looked wrong), the run
 # fails with the reason in its log and nothing is committed: the site keeps its last good forecast.
@@ -8,7 +8,8 @@ name: Refresh live forecast
 
 on:
   schedule:
-    - cron: "20 */6 * * *"   # 00:20, 06:20, 12:20, 18:20 UTC
+    # Every 3 hours (GitHub may start scheduled runs late, so a missed slot is replaced sooner).
+    - cron: "20 */3 * * *"   # 00:20, 03:20, 06:20, ... UTC
   workflow_dispatch: {}
 
 permissions:

@@ -7,9 +7,12 @@ import { TOKENS } from "./tokens";
 
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
+/** `quiet`: the station has no reading for the forecast hour (live view); drawn with a dashed outline. */
+type Marker = MapPoint & { quiet?: boolean };
+
 interface Props {
   stations: readonly Station[];
-  points: ReadonlyMap<string, MapPoint>;
+  points: ReadonlyMap<string, Marker>;
   selected: string;
   onSelect: (slug: string) => void;
   active: boolean;
@@ -26,11 +29,12 @@ function KeepSized({ active }: { active: boolean }) {
   return null;
 }
 
-function describe(point: MapPoint | undefined): string {
+function describe(point: Marker | undefined): string {
   if (point === undefined || point.p50 === null) {
     return "no forecast";
   }
-  return `${point.p50} µg/m³ (80% band ${point.p10 ?? "?"}–${point.p90 ?? "?"}), ${point.category ?? ""}`;
+  const quiet = point.quiet === true ? " · no current PM2.5 reading" : "";
+  return `${point.p50} µg/m³ (80% band ${point.p10 ?? "?"}–${point.p90 ?? "?"}), ${point.category ?? ""}${quiet}`;
 }
 
 export function StationMap({ stations, points, selected, onSelect, active }: Props) {
@@ -52,6 +56,7 @@ export function StationMap({ stations, points, selected, onSelect, active }: Pro
               weight: isSelected ? 3 : 1.5,
               fillColor: point?.colour ?? TOKENS.ink600,
               fillOpacity: 0.95,
+              ...(point?.quiet === true ? { dashArray: "3 3", weight: isSelected ? 3 : 2, color: isSelected ? TOKENS.text : TOKENS.textSubtle } : {}),
             }}
             eventHandlers={{ click: () => onSelect(station.slug) }}
           >

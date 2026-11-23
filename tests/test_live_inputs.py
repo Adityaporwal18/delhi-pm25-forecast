@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from delhi_pm25.live_inputs import LiveInputError, check_grid, newest_sensors, weather_rows
+from delhi_pm25.live_inputs import Deadline, LiveInputError, RateLimiter, check_grid, newest_sensors, weather_rows
 from delhi_pm25.weather import SOURCES
 
 
@@ -39,3 +39,37 @@ def test_weather_from_another_grid_cell_is_refused() -> None:
     # When / Then
     with pytest.raises(LiveInputError, match="grid"):
         check_grid(answer, (28.576448, 77.18678))
+
+
+class FakeClock:
+    """A clock that only moves when told to, and records the sleeps asked of it."""
+
+    def __init__(self) -> None:
+        self.now = 0.0
+        self.slept: list[float] = []
+
+    def __call__(self) -> float:
+        return self.now
+
+    def sleep(self, seconds: float) -> None:
+        self.slept.append(seconds)
+
+
+def test_the_rate_limiter_spaces_request_starts_across_threads() -> None:
+    # Given: one limiter shared by every fetching thread, one request start per second
+    clock = FakeClock()
+    limiter = RateLimiter(1.0, clock, clock.sleep)
+    # When: three requests ask to start at the same moment
+    for _ in range(3):
+        limiter.wait()
+    # Then: they start one second apart
+    assert clock.slept == [0.0, 1.0, 2.0]
+
+
+def test_a_fetch_past_its_time_budget_stops_with_the_reason() -> None:
+    clock = FakeClock()
+    deadline = Deadline(25 * 60, clock)
+    deadline.check()
+    clock.now = 25 * 60 + 1
+    with pytest.raises(LiveInputError, match="25-minute"):
+        deadline.check()

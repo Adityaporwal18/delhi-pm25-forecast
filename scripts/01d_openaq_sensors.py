@@ -14,9 +14,8 @@ import time
 from typing import Final
 
 import pandas as pd
-import requests
 
-from delhi_pm25.live_inputs import LIVE_PARAMETERS, LiveInputError, fetch_sensors, newest_sensors
+from delhi_pm25.live_inputs import LIVE_PARAMETERS, SPACING_S, Deadline, LiveInputError, OpenAQ, RateLimiter, newest_sensors
 from delhi_pm25.paths import PROJECT_ROOT
 
 LOCATIONS_CSV: Final = PROJECT_ROOT / "config" / "openaq_locations.csv"
@@ -28,13 +27,12 @@ def main() -> int:
     if not key:
         print("STOPPED: set OPENAQ_API_KEY (free key from explore.openaq.org/register)", file=sys.stderr)
         return 1
-    session = requests.Session()
-    session.headers["X-API-Key"] = key
+    client = OpenAQ(key, RateLimiter(SPACING_S), Deadline(60 * 60))
     rows, gaps = [], []
     started = time.monotonic()
     for station in pd.read_csv(LOCATIONS_CSV).itertuples():
         try:
-            chosen = newest_sensors(fetch_sensors(session, station.openaq_location_id), LIVE_PARAMETERS)
+            chosen = newest_sensors(client.sensors(station.openaq_location_id), LIVE_PARAMETERS)
         except LiveInputError as err:
             print(f"STOPPED at {station.slug}: {err}", file=sys.stderr)
             return 1
