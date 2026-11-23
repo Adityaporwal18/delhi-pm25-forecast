@@ -8,8 +8,9 @@
 
 It fails safely. If the fetch fails, no hour was reported by two thirds of the stations, or
 problems_with finds the data suspicious (an old or future forecast hour, a short history),
-the published file is left untouched and the reason is printed; the exit code is then 1, so the
-run shows as failed while the site keeps its last good forecast. A run that finds nothing newer
+the published file is left untouched and the reason is printed. The run counts as failed (exit 1)
+only once the published forecast is more than 12 hours old (the site then warns too); before that
+the job simply retries half an hour later. A run that finds nothing newer
 than the published forecast (two triggers can start runs close together) changes nothing and
 exits normally.
 
@@ -30,7 +31,16 @@ from delhi_pm25.features import FeatureError, horizon_view
 from delhi_pm25.guards import InputsOutOfDate
 from delhi_pm25.live import NoForecastHour, live_features
 from delhi_pm25.live_fetch import fetch_live
-from delhi_pm25.live_forecast import Freshness, already_published, forecast_document, previous_issue, problems_with, publish_if_sound
+from delhi_pm25.live_forecast import (
+    STALE_AFTER,
+    Freshness,
+    already_published,
+    forecast_document,
+    previous_issue,
+    problems_with,
+    publish_if_sound,
+    published_age,
+)
 from delhi_pm25.live_inputs import LiveInputError
 from delhi_pm25.model import band_objectives, load_model, order_band, predict
 from delhi_pm25.model_settings import load_model_settings, load_serving_settings
@@ -70,29 +80,36 @@ def forecasts(features: pd.DataFrame, parts: SpecParts) -> pd.DataFrame:
     return pd.concat(tables, ignore_index=True).sort_values(["slug", "horizon_h"], ignore_index=True)
 
 
-def kept(reason: str) -> int:
+def kept(reason: str, age: pd.Timedelta | None) -> int:
+    """Leave the published forecast as it is. The run counts as failed (exit 1) only once the site's
+    forecast is stale: the job retries half an hour later, so a short outage at OpenAQ should not
+    fill the Actions page, or an inbox, with failures."""
     print(f"KEPT the published forecast: {reason}", file=sys.stderr)
+    if age is not None and age < STALE_AFTER:
+        print(f"The published forecast is {age} old, still fresh enough: not marked as failed.", file=sys.stderr)
+        return 0
     return 1
 
 
 def main() -> int:
+    now = pd.Timestamp.now(tz="UTC")
+    age = published_age(OUT, now)
     key = os.environ.get("OPENAQ_API_KEY", "")
     if not key:
-        return kept("OPENAQ_API_KEY is not set")
-    now = pd.Timestamp.now(tz="UTC")
+        return kept("OPENAQ_API_KEY is not set", age)
     try:
         parts, live = checked_setup()
         readings, weather = fetch_live(key, now)
         features = live_features(readings, weather, parts.config)
     except FAILURES as err:
-        return kept(f"{type(err).__name__}: {err}")
+        return kept(f"{type(err).__name__}: {err}", age)
     freshness = Freshness(now, previous_issue(OUT))
     if already_published(features, freshness):
         print(f"Nothing new: the published forecast already starts at {features['hour_end_utc'].iloc[0]}; it stays as it is.")
         return 0
     problems = problems_with(features, parts.config.target, freshness)
     if problems:
-        return kept("; ".join(problems))
+        return kept("; ".join(problems), age)
     issued = features["hour_end_utc"].iloc[0]
     reporting = int(features[f"{parts.config.target}_lag_0h"].notna().sum())
     table = forecasts(features, parts)

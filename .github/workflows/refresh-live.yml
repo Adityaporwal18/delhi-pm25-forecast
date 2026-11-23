@@ -11,8 +11,11 @@ name: Refresh live forecast
 
 on:
   schedule:
-    # Every 3 hours (GitHub may start scheduled runs late, so a missed slot is replaced sooner).
-    - cron: "20 */3 * * *"   # 00:20, 03:20, 06:20, ... UTC
+    # Twice an hour: GitHub starts scheduled runs late or drops them (on 23 Nov 2026 it ran none
+    # for 12 hours). Each run first checks, in seconds, whether the published forecast is at least
+    # 2 h 45 min old (scripts/16_refresh_due.py) and refreshes only then: forecasts still come about
+    # every 3 hours, and a missed or failed refresh is retried half an hour later.
+    - cron: "17,47 * * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -29,20 +32,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Is a refresh due? (standard library only, before installing anything)
+        id: due
+        env:
+          PYTHONPATH: src
+        run: python3 scripts/16_refresh_due.py >> "$GITHUB_OUTPUT"
+
       - uses: actions/setup-python@v5
+        if: steps.due.outputs.due == 'true'
         with:
           python-version: "3.14"
           cache: pip
 
       - name: Install the pinned requirements
+        if: steps.due.outputs.due == 'true'
         run: pip install -r requirements.txt
 
       - name: Refresh the forecast (keeps the last good one if anything looks wrong)
+        if: steps.due.outputs.due == 'true'
         env:
           OPENAQ_API_KEY: ${{ secrets.OPENAQ_API_KEY }}
         run: python scripts/14_refresh_live.py
 
       - name: Commit the new forecast
+        if: steps.due.outputs.due == 'true'
         run: |
           if git diff --quiet -- serving/live_forecast.json; then
             echo "The forecast file did not change; nothing to commit."

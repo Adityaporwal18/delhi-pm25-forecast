@@ -484,11 +484,11 @@ without the API key was refused and left the published file byte-for-byte unchan
 
 **Stage E (done, 22 Nov 2026): a free scheduled refresh.**
 
-`.github/workflows/refresh-live.yml` runs the refresh about every 3 hours (at 20 minutes past
-every third hour, UTC; GitHub can start scheduled runs late) on GitHub's free runners, with the `OPENAQ_API_KEY` repository secret. When the
+`.github/workflows/refresh-live.yml` runs on GitHub's free runners twice an hour and refreshes
+whenever the published forecast is at least 2 h 45 min old (so about every 3 hours), with the `OPENAQ_API_KEY` repository secret. When the
 forecast changes it commits `serving/live_forecast.json` as "github-actions[bot]", so the commit
-history is the refresh log. When the refresh keeps the old forecast, the run fails with the
-reason in its log and nothing is committed. The site reads the committed file from GitHub
+history is the refresh log. When the refresh keeps the old forecast, the reason is in the
+run's log and nothing is committed. The site reads the committed file from GitHub
 (`/api/live`, checked at most every 10 minutes, with the copy built into the image as a fallback;
 the later of the two is shown), and `render.yaml` tells Render to ignore commits that change only
 that file. New forecasts therefore appear without a rebuild. The first scheduled-style run
@@ -501,10 +501,14 @@ late, and a slow spell at OpenAQ then kept it fetching until the 40-minute job l
 The fail-safe worked (nothing was published, the site kept the last good forecast), but no new
 forecast appeared for hours. Since 23 Nov 2026 the refresh runs every 3 hours, fetches four
 stations at a time under one shared rate limit (a full fetch took 2 min 44 s, against about 8
-minutes before), and stops itself with a clear reason after 25 minutes. Because GitHub can start
-scheduled runs late or skip them, a free outside scheduler (cron-job.org) also starts the same
-workflow through GitHub's API at the same times. Runs queue one after another; a run that finds
-nothing newer changes nothing and ends normally, so only real problems mark a run as failed.
+minutes before), and stops itself with a clear reason after 25 minutes. GitHub can start
+scheduled runs late or skip them (on 23 Nov 2026 it ran none for 12 hours), so since then the job
+is scheduled twice an hour and first checks, in seconds, whether a refresh is due
+(`scripts/16_refresh_due.py`): a missed or failed refresh is retried half an hour later. A run that
+keeps the old forecast counts as failed only once the site's forecast is more than 12 hours old,
+when the site warns too, and a run that finds nothing newer changes nothing. An outside scheduler
+(for example cron-job.org, starting the workflow through GitHub's API) could be added as a backup;
+runs queue one after another.
 
 **Stage F (done, 22 Nov 2026): the website shows both.**
 

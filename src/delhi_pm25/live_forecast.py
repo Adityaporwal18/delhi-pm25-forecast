@@ -17,11 +17,14 @@ import pandas as pd
 
 from delhi_pm25.model import order_band
 
-__all__ = ["Freshness", "already_published", "forecast_document", "order_band", "previous_issue", "problems_with", "publish_if_sound"]
+__all__ = ["STALE_AFTER", "Freshness", "already_published", "forecast_document", "order_band", "previous_issue", "problems_with", "publish_if_sound", "published_age"]
 
 MIN_HISTORY_SHARE: Final = 2 / 3
 MAX_AGE: Final = pd.Timedelta(hours=12)
 FUTURE_SLACK: Final = pd.Timedelta(hours=1)
+# The website warns when the forecast is older than this (STALE_AFTER_HOURS in frontend/src/live.ts;
+# tests/test_live_forecast.py keeps the two equal).
+STALE_AFTER: Final = pd.Timedelta(hours=12)
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,3 +85,12 @@ def previous_issue(path: Path) -> pd.Timestamp | None:
     except (FileNotFoundError, json.JSONDecodeError):
         return None
     return None if issued is None else pd.Timestamp(issued)
+
+
+def published_age(path: Path, now: pd.Timestamp) -> pd.Timedelta | None:
+    """How long ago the published file was made; None if there is none (or it cannot be read)."""
+    try:
+        made = json.loads(path.read_text()).get("generated_at_utc")
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    return None if made is None else now - pd.Timestamp(made)

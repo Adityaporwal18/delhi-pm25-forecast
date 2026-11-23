@@ -1,6 +1,7 @@
 """Tests for turning live features into the published forecast, failing safely (src/delhi_pm25/live_forecast.py)."""
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,7 @@ import pandas as pd
 import pytest
 
 from delhi_pm25.live_forecast import (
+    STALE_AFTER,
     Freshness,
     already_published,
     forecast_document,
@@ -15,7 +17,9 @@ from delhi_pm25.live_forecast import (
     previous_issue,
     problems_with,
     publish_if_sound,
+    published_age,
 )
+from delhi_pm25.paths import PROJECT_ROOT
 
 NOW = pd.Timestamp("2026-11-22 04:30", tz="UTC")
 ISSUED = pd.Timestamp("2026-11-22 02:30", tz="UTC")
@@ -88,3 +92,13 @@ def test_a_forecast_hour_already_published_is_not_news() -> None:
     # Given: the published file already starts at this forecast hour (a second trigger ran)
     # When / Then: nothing to publish, which is not a failure
     assert (already_published(GOOD, Freshness(NOW, ISSUED)), already_published(GOOD, Freshness(NOW, None))) == (True, False)
+
+
+def test_the_published_forecast_s_age_and_the_stale_line_match_the_site(tmp_path: Path) -> None:
+    # Given: a forecast made at NOW, and the stale line the website warns at
+    path = tmp_path / "live_forecast.json"
+    path.write_text(json.dumps({"generated_at_utc": NOW.isoformat()}))
+    site = re.search(r"STALE_AFTER_HOURS = (\d+)", (PROJECT_ROOT / "frontend" / "src" / "live.ts").read_text())
+    # When / Then: two hours later it is two hours old, and both sides call it stale at the same age
+    assert site is not None
+    assert (published_age(path, NOW + pd.Timedelta(hours=2)), STALE_AFTER) == (pd.Timedelta(hours=2), pd.Timedelta(hours=int(site.group(1))))
