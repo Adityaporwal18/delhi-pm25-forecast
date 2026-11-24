@@ -50,44 +50,74 @@ Moderate `#ffff00`, Poor `#ff9900`, Very Poor `#ff0000`, Severe `#c00000`.
 
 ## 3. Typography
 
-### Scale
+### Faces (self-hosted, Latin subset only, about 57 KB in total, `font-display: swap`)
 
-| Token | Size / line height | Weight | Use |
+- Display: **Bricolage Grotesque 700**. Headline, panel headings, the forecast number, and the
+  accuracy figures: a grotesque with character in its numerals.
+- Text: **Atkinson Hyperlegible 400 and 700** (designed by the Braille Institute for legibility:
+  distinct 0/O, 1/l/I). Everything else. Its slashed zero is intended.
+
+### Scale (about 1.25 from the 15px body)
+
+| Token | Size / line height | Face | Use |
 |---|---|---|---|
-| `--type-title` | 28px / 34px | 700 | page title (20px / 26px below 768px) |
-| `--type-heading` | 18px / 24px | 600 | panel headings |
-| `--type-body` | 15px / 22px | 400 | body, controls |
-| `--type-value` | 32px / 36px | 700 | the headline forecast number |
-| `--type-caption` | 13px / 18px | 400 | captions, legend, footer |
-
-### Font Stack
-
-System UI stack (no web-font download): `system-ui, -apple-system, "Segoe UI", Roboto,
-"Helvetica Neue", Arial, sans-serif`. Numbers use `font-variant-numeric: tabular-nums`.
+| focal | 64px / 0.95, -0.035em | display | the station's forecast number (52px below 768px) |
+| title | 30px / 1.1 | display | page title (22px below 768px) |
+| heading | 19px / 1.25 | display | panel headings, station name |
+| fact | 19px | display | figures inside the accuracy panel |
+| lead | 17px / 1.45 | text | introductory sentences |
+| body | 15px / 1.5 | text | status line, body |
+| small | 13-14px / 1.45 | text | captions, caveats, legend |
+| overline | 11px, 700, uppercase, 0.09em | text | labels; never applied to units |
 
 ### Rules
 
-- Values always carry their unit (µg/m³) and times their zone (Delhi time).
+- Numbers on screen are rounded to what the data supports: whole µg/m³ for forecasts and bands.
+- Units are never upper-cased: an upper-case micro sign reads as M (milligrams).
 
 ## 4. Spacing & Layout
 
 ### Base Unit
 
 4px. Scale: 4, 8, 12, 16, 24, 32 (`--space-1` … `--space-6`). Radii: panels 12px, controls
-8px, chips 999px.
+8px, chips and tags 999px.
 
 ### Grid
 
-- ≥ 1024px: header; a two-column main area (map `minmax(0, 1fr)`, side panel 400px); footer.
-  The map fills the viewport height minus header and footer (at least 520px).
-- < 1024px: one column — header, controls, map (55vh, at least 320px), chart, legend, footer.
+- ≥ 1200px: header; a full-width **status line** (the forecast's time, stations reporting, last
+  update; or what the replay shows); then three columns: map `minmax(0, 1fr)` | station 336px |
+  context 340px. The map fills the window below the status line, with the colour key laid over
+  its bottom-left corner.
+- < 1200px: one column (status line, map, station, context). Phones are revisited in stage 5 of
+  the design pass.
 
 ### Rules
 
-- One scroll container (the page). The map never traps scrolling: wheel zoom is on, and the
-  page scrolls around it.
+- **The fold rule:** on desktop (checked at 1366×768, the commonest laptop screen in India),
+  these stay visible without scrolling: the status line's "N of 37 stations", the "not a
+  measurement of this forecast" paragraph, the heavy-smog numbers, and "This is not the AQI".
+- One scroll container (the page).
 
 ## 5. Components
+
+Three surface weights, so that the station panel leads:
+- **Primary** (the station's forecast card): lighter top gradient, `--ink-700` border, 24px
+  padding, deep shadow. One per view.
+- **Panel** (accuracy, controls): `--ink-900` with a 1px border.
+- **Quiet** (status line): no box; text only.
+
+### Focal value
+The forecast number in the focal style, the unit (µg/m³) at 17px, and a **category chip** (the
+CPCB colour swatch and its name), then when it is for and the 80% band.
+
+### Status line
+Full width under the header: a violet **tag** ("Live", "Replay of 2025"), then facts separated by
+middle dots. A stale forecast adds a Warning below it.
+
+### Map legend (overlay)
+232px, bottom-left of the map, near-opaque `--ink-950`: overline title with the unit in normal
+case, six swatches with ranges, and the "This is not the AQI" caption.
+
 
 ### Panel
 Surface `--ink-900`, 1px `--ink-800` border, 12px radius, inset top highlight

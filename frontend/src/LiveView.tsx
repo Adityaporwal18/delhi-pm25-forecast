@@ -3,6 +3,7 @@ import { type Accuracy, type Live, type Meta, fetchLive } from "./api";
 import { AccuracyPanel } from "./AccuracyPanel";
 import { chartRows } from "./chart";
 import { HorizonButtons, StationSelect, defaultStation } from "./controls";
+import { Focal, ug } from "./Focal";
 import { ForecastChart } from "./ForecastChart";
 import { Legend } from "./Legend";
 import { STALE_AFTER_HOURS, ageLabel, hoursSince, nowText, pointsAt, stationPath, statusCounts } from "./live";
@@ -48,48 +49,52 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
   }, []);
   const age = hoursSince(live.generated_at_utc, nowMs);
   const station = meta.stations.find((candidate) => candidate.slug === selected);
+  const marker = points.get(selected);
   return (
     <main className="main">
+      <section className="status-strip" aria-label="About this forecast">
+        <p className="strip-line">
+          <span className="tag">Live</span>
+          From <strong>{delhiLabel(live.issued_utc)}</strong> Delhi time, with readings from{" "}
+          <strong>
+            {live.stations_reporting} of {live.stations} stations
+          </strong>
+          <span className="sep">·</span>
+          last updated {delhiLabel(live.generated_at_utc)} ({ageLabel(age)}); a new forecast about every 3 hours
+          {live.station_status.length > 0 && (
+            <>
+              <span className="sep">·</span>
+              {statusCounts(live.station_status)} (dashed outline on the map: no current PM2.5 reading)
+            </>
+          )}
+        </p>
+        {age > STALE_AFTER_HOURS && (
+          <p className="warning" role="status">
+            This forecast is more than {STALE_AFTER_HOURS} hours old: the latest refreshes did not publish (missing or
+            doubtful data, or a delayed schedule), so the last good forecast is shown.
+          </p>
+        )}
+      </section>
       <section className="panel map-panel" aria-label="Map of monitoring stations">
         <StationMap stations={meta.stations} points={points} selected={selected} onSelect={setSelected} active={active} />
+        <Legend categories={meta.categories} />
       </section>
-      <aside className="side">
-        <section className="panel" aria-label="About this forecast">
-          <p className="lead">
-            Forecast from <strong>{delhiLabel(live.issued_utc)}</strong> (Delhi time), with readings from{" "}
-            {live.stations_reporting} of {live.stations} stations.
-          </p>
-          <p className="caption">
-            Last updated {delhiLabel(live.generated_at_utc)} ({ageLabel(age)}). A new forecast is made about every 3 hours.
-          </p>
-          {live.station_status.length > 0 && (
-            <p className="caption">
-              {statusCounts(live.station_status)}. A dashed outline on the map marks a station with no current PM2.5
-              reading.
-            </p>
-          )}
-          {age > STALE_AFTER_HOURS && (
-            <p className="warning" role="status">
-              This forecast is more than {STALE_AFTER_HOURS} hours old: the latest refreshes did not publish (missing or
-              doubtful data, or a delayed schedule), so the last good forecast is shown.
-            </p>
-          )}
-        </section>
+      <div className="station-col">
         <section className="panel controls single" aria-label="Hours ahead and station">
           <HorizonButtons horizons={meta.horizons_h} value={horizon} onChange={setHorizon} />
           <StationSelect stations={meta.stations} value={selected} onChange={setSelected} />
         </section>
-        <section className="panel chart-card" aria-labelledby="live-chart-title">
-          <h2 id="live-chart-title" className="heading">
+        <section className="panel primary" aria-labelledby="live-chart-title">
+          <h2 id="live-chart-title" className="station-name">
             {station?.name ?? selected}
           </h2>
           {ahead !== undefined && ahead.p50 !== null ? (
-            <p className="summary">
-              <span className="value">{ahead.p50}</span> µg/m³ expected for {delhiLabel(ahead.valid_utc)}
-              <span className="caption block">
-                80% band {ahead.p10}–{ahead.p90} · {nowText(state, now?.measured ?? null)}
-              </span>
-            </p>
+            <Focal
+              value={ahead.p50}
+              when={`expected ${delhiLabel(ahead.valid_utc)}`}
+              detail={`80% band ${ug(ahead.p10)}–${ug(ahead.p90)} · ${nowText(state, now?.measured ?? null)}`}
+              category={marker ?? null}
+            />
           ) : (
             <p className="caption">No live forecast for this station right now.</p>
           )}
@@ -108,8 +113,9 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
             latest reading, when the station has one.
           </p>
         </section>
+      </div>
+      <aside className="context-col">
         <AccuracyPanel accuracy={accuracy} framing="expected" />
-        <Legend categories={meta.categories} />
       </aside>
     </main>
   );

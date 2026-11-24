@@ -4,8 +4,10 @@
   --ink-900: #1f1633;
   --ink-850: #261c3d;
   --ink-800: #362d59;
+  --ink-700: #4a3d78;
   --ink-600: #79628c;
   --violet-500: #6a5fc1;
+  --violet-300: #a99cf0;
   --violet-700: #422082;
   --focus: #fa7faa;
   --text: #ffffff;
@@ -19,7 +21,8 @@
   --space-6: 32px;
   --radius-panel: 12px;
   --radius-control: 8px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
 }
 
@@ -30,76 +33,231 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font: 400 15px/22px var(--font);
+  font: 400 15px/1.5 var(--font-body);
   color: var(--text);
   background:
-    radial-gradient(1100px 520px at 8% -12%, rgba(106, 95, 193, 0.28), transparent 62%),
-    radial-gradient(800px 420px at 100% 0%, rgba(66, 32, 130, 0.22), transparent 60%),
+    radial-gradient(1100px 520px at 8% -12%, rgba(106, 95, 193, 0.24), transparent 62%),
+    radial-gradient(800px 420px at 100% 0%, rgba(66, 32, 130, 0.2), transparent 60%),
     var(--ink-950);
 }
+
+/* ---- Type scale (ratio about 1.25 from the 15px body) ---- */
+
+.title {
+  margin: 0;
+  font: 700 30px/1.1 var(--font-display);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.title-soft {
+  color: var(--text-subtle);
+}
+
+.heading,
+.station-name {
+  margin: 0 0 var(--space-2);
+  font: 700 19px/1.25 var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.overline {
+  margin: 0 0 var(--space-2);
+  font: 700 11px/1.3 var(--font-body);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+/* Units are never capitalised: an upper-case micro sign (µ) reads as M, i.e. milligrams. */
+.overline .unit {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.lead {
+  margin: 0 0 var(--space-2);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.lead strong {
+  color: var(--text);
+}
+
+.caption {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-subtle);
+}
+
+.caption + .caption {
+  margin-top: var(--space-1);
+}
+
+/* The forecast value: the one thing the eye should land on first. */
+.focal {
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.focal-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.focal-value {
+  font: 700 64px/0.95 var(--font-display);
+  letter-spacing: -0.035em;
+}
+
+.focal-unit {
+  font-size: 17px;
+  color: var(--text-muted);
+}
+
+.focal-when {
+  margin: var(--space-2) 0 var(--space-1);
+  color: var(--text-muted);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 6px;
+  border: 1px solid var(--ink-700);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  align-self: center;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  flex: none;
+}
+
+/* ---- Page frame ---- */
 
 .page {
   display: grid;
   gap: var(--space-4);
-  padding: var(--space-4);
-  max-width: 1600px;
+  padding: var(--space-4) var(--space-5);
+  max-width: 1680px;
   margin: 0 auto;
 }
 
 .header {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.title {
-  margin: 0;
-  text-wrap: balance;
-  font-size: 28px;
-  line-height: 34px;
-  font-weight: 700;
+.header .caption {
+  margin-top: var(--space-1);
 }
 
-.title-soft {
-  color: var(--text-subtle);
-  font-weight: 600;
-}
-
-.notice {
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--ink-800);
-  border-radius: 999px;
-  background: var(--ink-850);
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
+/* Narrow screens: one column. Stage 5 of the design pass revisits phones. */
 .main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "status" "map" "station" "context";
   gap: var(--space-4);
   align-items: start;
 }
+
+.main.single {
+  grid-template-areas: none;
+}
+
+/* One line of facts about the forecast shown, above everything it describes. */
+.status-strip {
+  grid-area: status;
+}
+
+.strip-line {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.strip-line strong {
+  color: var(--text);
+}
+
+.tag {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--violet-500);
+  color: var(--text);
+  font: 700 11px/20px var(--font-body);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+.sep {
+  margin: 0 var(--space-2);
+  color: var(--ink-600);
+}
+
+.station-col {
+  grid-area: station;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.context-col {
+  grid-area: context;
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+/* ---- Surfaces: three weights so the station panel leads ---- */
 
 .panel {
   position: relative;
   background: var(--ink-900);
   border: 1px solid var(--ink-800);
   border-radius: var(--radius-panel);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 10px 30px rgba(0, 0, 0, 0.35);
   padding: var(--space-4);
 }
 
+.panel.primary {
+  background: linear-gradient(180deg, #2a2047 0%, var(--ink-900) 70%);
+  border-color: var(--ink-700);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.panel.quiet {
+  background: transparent;
+  border-color: transparent;
+  padding: var(--space-1) var(--space-1) var(--space-2);
+}
+
 .map-panel {
+  grid-area: map;
   padding: 0;
   overflow: hidden;
-  height: max(520px, calc(100vh - 170px));
-  position: sticky;
-  top: var(--space-4);
+  height: max(320px, 55vh);
 }
 
 .map {
@@ -110,8 +268,8 @@ body {
 
 .map-panel .status {
   position: absolute;
-  left: var(--space-3);
-  bottom: var(--space-3);
+  top: var(--space-3);
+  right: var(--space-3);
   z-index: 500;
   margin: 0;
   padding: var(--space-2) var(--space-3);
@@ -120,15 +278,52 @@ body {
   border-radius: var(--radius-control);
 }
 
-.side {
-  display: grid;
-  gap: var(--space-4);
+/* The colour key sits on the map's bottom-left corner, so its caveat stays in view. */
+.map-legend {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  z-index: 500;
+  width: 232px;
+  padding: var(--space-3);
+  background: rgba(21, 15, 35, 0.9);
+  border: 1px solid var(--ink-800);
+  border-radius: var(--radius-control);
 }
+
+.map-legend ul {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+}
+
+.map-legend li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.map-legend .caption {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.range {
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Controls ---- */
 
 .controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--space-3);
+  padding: var(--space-3);
 }
 
 .field {
@@ -141,6 +336,10 @@ body {
 
 .field:nth-child(n + 3) {
   grid-column: 1 / -1;
+}
+
+.controls.single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 input,
@@ -177,7 +376,7 @@ select:hover,
 }
 
 .segmented button {
-  padding: var(--space-2) 0;
+  padding: 6px 0;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
@@ -189,10 +388,20 @@ select:hover,
 .segmented button[aria-pressed="true"] {
   background: var(--violet-500);
   border-color: var(--violet-500);
+  font-weight: 700;
 }
 
 .segmented button:active {
   background: var(--violet-700);
+}
+
+.mode-switch {
+  grid-template-columns: repeat(2, auto);
+}
+
+.mode-switch button {
+  padding: var(--space-2) var(--space-4);
+  font-weight: 700;
 }
 
 .button {
@@ -204,63 +413,38 @@ select:hover,
   outline-offset: 2px;
 }
 
-.heading {
-  margin: 0 0 var(--space-2);
-  font-size: 18px;
-  line-height: 24px;
-  font-weight: 600;
-}
+/* ---- Accuracy facts and caveats ---- */
 
-.summary {
-  margin: 0 0 var(--space-3);
-  color: var(--text-muted);
-}
-
-.value {
-  font-size: 32px;
-  line-height: 36px;
-  font-weight: 700;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-.caption {
-  margin: 0;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-subtle);
-}
-
-.block {
-  display: block;
-  margin-top: var(--space-1);
-}
-
-.legend ul {
+.facts {
   list-style: none;
-  margin: 0 0 var(--space-3);
+  margin: var(--space-3) 0;
   padding: 0;
   display: grid;
   gap: var(--space-2);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
-.legend li {
-  display: grid;
-  grid-template-columns: 14px 1fr auto;
-  align-items: center;
-  gap: var(--space-2);
+.fact {
+  font: 700 19px/1 var(--font-display);
+  color: var(--text);
 }
 
-.swatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+/* A caveat the reader must not miss: the heavy-smog weakness, or a stale forecast. */
+.warning {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--focus);
+  background: rgba(250, 127, 170, 0.07);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
-.range {
-  color: var(--text-subtle);
-  font-variant-numeric: tabular-nums;
+.warning strong {
+  color: var(--text);
 }
 
 .status {
@@ -275,13 +459,15 @@ select:hover,
   display: grid;
   gap: var(--space-1);
   font-size: 13px;
-  line-height: 18px;
+  line-height: 1.45;
   color: var(--text-subtle);
 }
 
 .footer p {
   margin: 0;
 }
+
+/* ---- Map details ---- */
 
 /* OpenStreetMap's light tiles, inverted to sit in the dark theme; markers are not filtered. */
 .leaflet-tile-pane {
@@ -293,6 +479,7 @@ select:hover,
   color: var(--text);
   border: 1px solid var(--ink-800);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  font-family: var(--font-body);
 }
 
 .leaflet-container .leaflet-control-attribution {
@@ -304,66 +491,33 @@ select:hover,
   color: var(--text);
 }
 
-.mode-switch {
-  grid-template-columns: repeat(2, auto);
-}
+/* ---- Desktop: map | station | context, every caveat above the fold ---- */
 
-.mode-switch button {
-  padding: var(--space-2) var(--space-4);
-  font-weight: 600;
-}
-
-.main.single,
-.controls.single {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.lead {
-  margin: 0 0 var(--space-1);
-  color: var(--text-muted);
-}
-
-.facts {
-  list-style: none;
-  margin: var(--space-3) 0;
-  padding: 0;
-  display: grid;
-  gap: var(--space-2);
-  color: var(--text-muted);
-}
-
-.fact {
-  font-weight: 700;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-/* A caveat the reader must not miss: the heavy-smog weakness, or a stale forecast. */
-.warning {
-  margin: var(--space-2) 0 0;
-  padding-left: var(--space-3);
-  border-left: 3px solid var(--focus);
-  color: var(--text-muted);
-}
-
-@media (max-width: 1023px) {
+@media (min-width: 1200px) {
   .main {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 336px 340px;
+    grid-template-areas: "status status status" "map station context";
   }
+
+  /* Fills the window below the header and status line, so the legend's caveat is always in view. */
   .map-panel {
-    position: relative;
-    top: 0;
-    height: max(320px, 55vh);
+    position: sticky;
+    top: var(--space-4);
+    height: max(460px, calc(100vh - 168px));
   }
 }
 
 @media (max-width: 767px) {
   .title {
-    font-size: 20px;
-    line-height: 26px;
+    font-size: 22px;
   }
+
   .page {
     padding: var(--space-3);
+  }
+
+  .focal-value {
+    font-size: 52px;
   }
 }
 

@@ -26,7 +26,7 @@ export function ForecastChart({ rows, categories }: { rows: readonly ChartRow[];
   const highest = Math.max(100, ...rows.flatMap((row) => [row.band?.[1] ?? 0, row.measured ?? 0, row.median ?? 0]));
   const top = Math.ceil((highest * 1.1) / 50) * 50;
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={210}>
       <ComposedChart data={[...rows]} margin={{ top: 8, right: 12, bottom: 18, left: 0 }}>
         {categoryBands(categories, top)}
         <CartesianGrid stroke={TOKENS.ink800} strokeDasharray="3 3" />

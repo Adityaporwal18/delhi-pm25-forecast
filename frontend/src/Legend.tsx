@@ -6,11 +6,12 @@ function range(categories: readonly Category[], index: number): string {
   return upper === null ? `above ${lower}` : `${lower}–${upper}`;
 }
 
+/** The colour key, laid over the map's bottom-left corner so its caveat stays in view. */
 export function Legend({ categories }: { categories: readonly Category[] }) {
   return (
-    <section className="panel legend" aria-labelledby="legend-title">
-      <h2 id="legend-title" className="heading">
-        PM2.5-based category (µg/m³)
+    <section className="map-legend" aria-labelledby="legend-title">
+      <h2 id="legend-title" className="overline">
+        PM2.5-based category <span className="unit">(µg/m³)</span>
       </h2>
       <ul>
         {categories.map((category, index) => (

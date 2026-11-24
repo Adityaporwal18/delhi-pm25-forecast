@@ -3,6 +3,7 @@ import { type Accuracy, type Meta, fetchForecast, fetchMap } from "./api";
 import { AccuracyPanel } from "./AccuracyPanel";
 import { chartRows } from "./chart";
 import { HorizonButtons, StationSelect, defaultStation } from "./controls";
+import { Focal, ug } from "./Focal";
 import { ForecastChart } from "./ForecastChart";
 import { Legend } from "./Legend";
 import { StationMap } from "./StationMap";
@@ -31,11 +32,19 @@ export function ReplayView({ meta, accuracy, active }: { meta: Meta; accuracy: A
 
   return (
     <main className="main">
+      <section className="status-strip" aria-label="About this replay">
+        <p className="strip-line">
+          <span className="tag">Replay of 2025</span>
+          What the evaluation model forecast at <strong>{delhiLabel(issued)}</strong> (Delhi time), next to what was
+          measured later.
+        </p>
+      </section>
       <section className="panel map-panel" aria-label="Map of monitoring stations">
         <StationMap stations={meta.stations} points={bySlug} selected={selected} onSelect={setSelected} active={active} />
+        <Legend categories={meta.categories} />
         {points.state !== "ready" && <Status load={points} what="the map" retry={retryPoints} />}
       </section>
-      <aside className="side">
+      <div className="station-col">
         <section className="panel controls" aria-label="Forecast time and station">
           <label className="field">
             <span>Forecast made on</span>
@@ -58,17 +67,17 @@ export function ReplayView({ meta, accuracy, active }: { meta: Meta; accuracy: A
           <HorizonButtons horizons={meta.horizons_h} value={horizon} onChange={setHorizon} />
           <StationSelect stations={meta.stations} value={selected} onChange={setSelected} />
         </section>
-        <section className="panel chart-card" aria-labelledby="chart-title">
-          <h2 id="chart-title" className="heading">
+        <section className="panel primary" aria-labelledby="chart-title">
+          <h2 id="chart-title" className="station-name">
             {station?.name ?? selected}
           </h2>
           {ahead !== undefined && ahead.p50 !== null && (
-            <p className="summary">
-              <span className="value">{ahead.p50}</span> µg/m³ forecast for {delhiLabel(ahead.valid_utc)}
-              <span className="caption block">
-                80% band {ahead.p10}–{ahead.p90} · measured then: {ahead.measured ?? "no reading"}
-              </span>
-            </p>
+            <Focal
+              value={ahead.p50}
+              when={`forecast for ${delhiLabel(ahead.valid_utc)}`}
+              detail={`80% band ${ug(ahead.p10)}–${ug(ahead.p90)} · measured then: ${ahead.measured === null ? "no reading" : ug(ahead.measured)}`}
+              category={bySlug.get(selected) ?? null}
+            />
           )}
           {forecast.state === "ready" ? (
             <ForecastChart rows={chartRows(forecast.data)} categories={meta.categories} />
@@ -77,8 +86,9 @@ export function ReplayView({ meta, accuracy, active }: { meta: Meta; accuracy: A
           )}
           <p className="caption">Line: median forecast · shaded: 80% band · dots: what was measured.</p>
         </section>
+      </div>
+      <aside className="context-col">
         <AccuracyPanel accuracy={accuracy} framing="measured" />
-        <Legend categories={meta.categories} />
       </aside>
     </main>
   );
