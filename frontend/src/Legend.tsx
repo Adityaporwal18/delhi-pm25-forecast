@@ -1,4 +1,7 @@
 import type { Category } from "./api";
+import { MAX_RADIUS, markerRadius } from "./markers";
+
+const SIZE_SAMPLES = [50, 150, 300] as const;
 
 function range(categories: readonly Category[], index: number): string {
   const lower = index === 0 ? 0 : (categories[index - 1]?.upper_ug_m3 ?? 0);
@@ -22,6 +25,17 @@ export function Legend({ categories }: { categories: readonly Category[] }) {
           </li>
         ))}
       </ul>
+      <div className="size-key" aria-label="Dot area is proportional to the forecast">
+        {SIZE_SAMPLES.map((value) => (
+          <span key={value} className="size-sample">
+            <svg width={2 * MAX_RADIUS} height={2 * MAX_RADIUS} aria-hidden="true">
+              <circle cx={MAX_RADIUS} cy={MAX_RADIUS} r={markerRadius(value)} className="size-dot" />
+            </svg>
+            {value}
+          </span>
+        ))}
+        <span className="size-note">dot area ∝ forecast · red ring: above 250 (top 3 numbered) · dashed: no current reading</span>
+      </div>
       <p className="caption">
         CPCB defines these bands on 24-hour averages; here they colour hourly forecasts. This is not the AQI.
       </p>

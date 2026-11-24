@@ -312,6 +312,34 @@ body {
   line-height: 1.4;
 }
 
+.size-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 2px var(--space-2);
+  margin-bottom: var(--space-2);
+  font-size: 12px;
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.size-sample {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.size-dot {
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 1.5;
+}
+
+.size-note {
+  flex-basis: 100%;
+  line-height: 1.35;
+}
+
 .range {
   color: var(--text-subtle);
   font-variant-numeric: tabular-nums;
@@ -489,6 +517,49 @@ select:hover,
 
 .leaflet-container .leaflet-control-attribution a {
   color: var(--text);
+}
+
+/* Severe (above 250): a ring that pulses outward; still for reduced motion. */
+.severe-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: severe-pulse 1.8s ease-out infinite;
+}
+
+@keyframes severe-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  70% { transform: scale(1.45); opacity: 0; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .severe-halo { animation: none; }
+}
+
+.map-label-anchor {
+  background: none;
+  border: 0;
+}
+
+.map-label {
+  position: absolute;
+  left: var(--offset);
+  top: 0;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(21, 15, 35, 0.85);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.map-label.value {
+  color: #ff8a8a;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---- Desktop: map | station | context, every caveat above the fold ---- */

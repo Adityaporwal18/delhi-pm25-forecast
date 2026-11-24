@@ -134,8 +134,14 @@ hover (`--ink-800` fill), focus-visible ring, active (`--violet-700`).
 
 ### Station marker (map)
 Circle filled with the station's category colour (`--ink-600` when blank), 1.5px `--ink-950`
-outline. Selected: radius 11 instead of 8, 3px white outline. Hover: tooltip with station name,
-forecast and band. Keyboard users choose stations with the station `<select>`.
+outline. Size encodes the forecast: area ∝ µg/m³ (radius = 13 × √(value / 250)), clamped to
+4–21px (`markers.ts`); bigger dots are drawn first so small ones stay on top. Above 250 (Severe):
+a 2px `#ff5a5a` ring that pulses outward (1.8s; still under reduced motion); the three highest
+Severe stations also get their number written beside the dot. Selected: same size (size means
+value), a separate 2.5px white ring 4px outside the dot, the station's short name beside it, and
+drawn last. No current reading: dashed `--text-subtle` outline. Hover: tooltip with station name,
+forecast and band. Keyboard users choose stations with the station `<select>`. No interpolated
+field between stations (only a labelled mockup exists: `docs/design/stage2-interpolation-mockup.png`).
 
 ### Forecast chart card
 Recharts: the 80% band as an area (`--band`), the median as a `--violet-300` line starting from
@@ -144,8 +150,9 @@ X axis: hours ahead ("now", +6 h … +48 h). States: loading (caption "Loading f
 empty (station has no forecast: caption), error (message and Retry button).
 
 ### Legend
-Six swatches with names and µg/m³ ranges, titled "PM2.5-based category (µg/m³)", plus a
-one-line note on the 24-hour-average definition.
+Six swatches with names and µg/m³ ranges, titled "PM2.5-based category (µg/m³)", a size key
+(outline circles for 50, 150, 300 with a note on the ring and the dashed outline), plus a
+one-line note on the 24-hour-average definition ending "This is not the AQI."
 
 ### Notice
 A pill-shaped badge "Replay of 2025, not a live forecast" in the header.
@@ -178,6 +185,8 @@ Credits (from `/api/meta`) and the replay note, `--type-caption`, `--text-subtle
 - 120ms ease-out colour and border transitions on hover/focus of controls only.
 - No chart or map animation: values change instantly when the time or horizon changes, so
   what is shown always matches the controls. `prefers-reduced-motion` removes the transitions.
+- One exception: the Severe ring's pulse (1.8s ease-out, looping), which carries no value.
+  `prefers-reduced-motion` stops it and leaves a still ring.
 
 ## 7. Accessibility & Accepted Debt
 

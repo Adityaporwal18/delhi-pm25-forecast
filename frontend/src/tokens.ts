@@ -9,4 +9,6 @@ export const TOKENS = {
   text: "#ffffff",
   textSubtle: "#b9b1cc",
   measured: "#ffffff",
+  /** Ring around stations forecast above 250 µg/m³ (Severe); brighter than the maroon fill so it reads on the dark map. */
+  severeRing: "#ff5a5a",
 } as const;
