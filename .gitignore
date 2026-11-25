@@ -31,3 +31,6 @@ frontend/dist/
 # Visual-QA screenshots and page snapshots
 .playwright-mcp/
 !data/raw/cpcb/manifest_openaq.csv
+
+# Personal project guide and interview notes (kept local on purpose)
+PROJECT_GUIDE.md
