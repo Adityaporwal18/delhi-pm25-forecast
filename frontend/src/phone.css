@@ -1,56 +1,38 @@
-/* Phones (design stage 5): one stacked column. Nothing covers the map, and every caveat stays in
-   the normal scroll, never collapsed: status line ("N of 37 stations") → time bar → map → legend
-   ("This is not the AQI") → station → accuracy (held-out 2025 numbers and the heavy-smog caveat). */
+/* Phones (design stage 5, kept in the newsprint redesign): one stacked column. Nothing covers
+   the map, and every caveat stays in the normal scroll, never collapsed: status line ("N of 37
+   stations") → time bar → map → colour key ("This is not the AQI") → station → accuracy. */
 @media (max-width: 767px) {
-  .title {
-    font-size: 22px;
+  .page {
+    padding: var(--space-3) var(--space-3) 0;
   }
 
-  .page {
-    padding: var(--space-3);
+  .title {
+    font-size: 28px;
+  }
+
+  .mode-switch {
+    gap: var(--space-4);
   }
 
   .focal-value {
-    font-size: 52px;
+    font-size: 60px;
   }
 
-  .map-panel {
-    display: flex;
-    flex-direction: column;
-    height: auto;
+  .map-frame {
+    order: 1;
+    height: min(60vh, 440px);
+    min-height: 300px;
   }
 
-  .map {
-    height: min(62vh, 480px);
-    min-height: 340px;
-  }
-
-  .time-bar {
-    order: -1;
-    position: static;
-    border: 0;
-    border-bottom: 1px solid var(--ink-800);
-    border-radius: 0;
-    background: transparent;
+  /* On a phone the map comes straight after the time bar; the key follows it. */
+  .legend {
+    order: 2;
+    border-top: 1px solid var(--ink);
+    border-bottom: 0;
   }
 
   .scrubber {
     flex-basis: 100%;
-  }
-
-  .map-legend {
-    position: static;
-    width: auto;
-    border: 0;
-    border-top: 1px solid var(--ink-800);
-    border-radius: 0;
-    background: transparent;
-  }
-
-  .map-panel .status {
-    position: static;
-    order: -2;
-    margin: var(--space-3);
   }
 }
 
@@ -69,7 +51,7 @@
   .scrubber input[type="range"]::-webkit-slider-thumb {
     width: 24px;
     height: 24px;
-    margin-top: -10px;
+    margin-top: -11px;
   }
 
   .scrubber input[type="range"]::-moz-range-thumb {
@@ -79,5 +61,9 @@
 
   .ticks span {
     width: 24px;
+  }
+
+  .view-switch button {
+    padding: 12px 14px 11px;
   }
 }

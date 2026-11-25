@@ -58,14 +58,11 @@ function Shell({ meta, accuracy }: { meta: Meta; accuracy: Accuracy }) {
   return (
     <Page>
       <header className="header">
-        <div>
+        <div className="nameplate">
+          <p className="kicker">Delhi · hourly PM2.5 · {meta.stations.length} CPCB monitoring stations</p>
           <h1 className="title">
             Delhi PM2.5 forecast <span className="title-soft">— 48 hours ahead</span>
           </h1>
-          <p className="caption">
-            {meta.stations.length} CPCB monitoring stations ·{" "}
-            {mode === "live" ? "live forecast, refreshed about every 3 hours" : "replay of the held-out 2025 test year"}
-          </p>
         </div>
         <div className="segmented mode-switch" role="group" aria-label="View">
           {MODES.map((item) => (

@@ -1,7 +1,6 @@
 import type { Category } from "./api";
-import { MAX_RADIUS, markerRadius } from "./markers";
 
-const SIZE_SAMPLES = [50, 150, 300] as const;
+export type MapView = "2d" | "3d";
 
 function range(categories: readonly Category[], index: number): string {
   const lower = index === 0 ? 0 : (categories[index - 1]?.upper_ug_m3 ?? 0);
@@ -9,35 +8,46 @@ function range(categories: readonly Category[], index: number): string {
   return upper === null ? `above ${lower}` : `${lower}–${upper}`;
 }
 
-/** The colour key, laid over the map's bottom-left corner so its caveat stays in view. */
-export function Legend({ categories }: { categories: readonly Category[] }) {
+const ENCODING: Record<MapView, string> = {
+  "2d": "Dot area ∝ forecast · red ring: above 250 (top 3 numbered) · dashed outline: no current reading.",
+  "3d": "Column height ∝ forecast; the disc at its foot marks the station. Perspective shrinks far columns, so compare values in 2D.",
+};
+
+interface Props {
+  categories: readonly Category[];
+  view: MapView;
+  onView: (view: MapView) => void;
+}
+
+/** The colour key and the 2D/3D switch, between the time bar and the map: it never covers a station. */
+export function Legend({ categories, view, onView }: Props) {
   return (
-    <section className="map-legend" aria-labelledby="legend-title">
-      <h2 id="legend-title" className="overline">
-        PM2.5-based category <span className="unit">(µg/m³)</span>
-      </h2>
-      <ul>
+    <section className="legend" aria-labelledby="legend-title">
+      <div className="legend-head">
+        <h2 id="legend-title" className="kicker">
+          PM2.5-based category <span className="unit">(µg/m³, hourly)</span>
+        </h2>
+        <div className="view-switch" role="group" aria-label="Map view">
+          <button type="button" aria-pressed={view === "2d"} onClick={() => onView("2d")}>
+            2D map
+          </button>
+          <button type="button" aria-pressed={view === "3d"} onClick={() => onView("3d")} title="Loads about 0.25 MB the first time">
+            3D
+          </button>
+        </div>
+      </div>
+      <ol className="scale">
         {categories.map((category, index) => (
           <li key={category.label}>
-            <span className="swatch" style={{ background: category.colour }} aria-hidden="true" />
-            <span>{category.label}</span>
-            <span className="range">{range(categories, index)}</span>
+            <span className="scale-bar" style={{ background: category.colour }} aria-hidden="true" />
+            <span className="scale-name">{category.label}</span>
+            <span className="scale-range">{range(categories, index)}</span>
           </li>
         ))}
-      </ul>
-      <div className="size-key" aria-label="Dot area is proportional to the forecast">
-        {SIZE_SAMPLES.map((value) => (
-          <span key={value} className="size-sample">
-            <svg width={2 * MAX_RADIUS} height={2 * MAX_RADIUS} aria-hidden="true">
-              <circle cx={MAX_RADIUS} cy={MAX_RADIUS} r={markerRadius(value)} className="size-dot" />
-            </svg>
-            {value}
-          </span>
-        ))}
-        <span className="size-note">dot area ∝ forecast · red ring: above 250 (top 3 numbered) · dashed: no current reading</span>
-      </div>
-      <p className="caption">
-        CPCB defines these bands on 24-hour averages; here they colour hourly forecasts. This is not the AQI.
+      </ol>
+      <p className="legend-notes">
+        {ENCODING[view]} CPCB defines these bands on 24-hour averages; here they colour hourly forecasts.{" "}
+        <strong>This is not the AQI.</strong>
       </p>
     </section>
   );

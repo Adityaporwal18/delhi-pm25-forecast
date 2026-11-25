@@ -70,7 +70,7 @@ export function StationMap({ stations, points, selected, onSelect, active }: Pro
   const labelled = new Set(valueLabels(stations.map((station) => station.slug), valueOf, selected));
   const span = { west: bounds.getWest(), east: bounds.getEast() };
   return (
-    <MapContainer bounds={bounds} boundsOptions={{ paddingTopLeft: [28, 80], paddingBottomRight: [28, 28] }} className="map" scrollWheelZoom>
+    <MapContainer bounds={bounds} boundsOptions={{ padding: [20, 20] }} zoomSnap={0.25} className="map" scrollWheelZoom>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution={ATTRIBUTION} maxZoom={19} />
       <KeepSized active={active} />
       {ordered.map((station) => {
@@ -94,18 +94,18 @@ export function StationMap({ stations, points, selected, onSelect, active }: Pro
               center={at}
               radius={radius}
               pathOptions={{
-                color: TOKENS.ink950,
+                color: TOKENS.ink,
                 weight: 1.5,
-                fillColor: point?.colour ?? TOKENS.ink600,
+                fillColor: point?.colour ?? TOKENS.paperLo,
                 fillOpacity: 0.9,
-                ...(point?.quiet === true ? { dashArray: "3 3", weight: 2, color: TOKENS.textSubtle } : {}),
+                ...(point?.quiet === true ? { dashArray: "3 3", weight: 2, color: TOKENS.ink } : {}),
               }}
               eventHandlers={{ click: () => onSelect(station.slug) }}
             >
               <Tooltip>{`${station.name}: ${describe(point)}`}</Tooltip>
             </CircleMarker>
             {isSelected && (
-              <CircleMarker center={at} radius={radius + 4} interactive={false} pathOptions={{ color: TOKENS.text, weight: 2.5, fill: false }} />
+              <CircleMarker center={at} radius={radius + 4} interactive={false} pathOptions={{ color: TOKENS.ink, weight: 2.5, fill: false }} />
             )}
             {severe && labelled.has(station.slug) && point.p50 !== null && (
               <Label at={at} text={String(Math.round(point.p50))} kind="value" offset={radius + 7} side={labelSide(station.longitude, span)} />

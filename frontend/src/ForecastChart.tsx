@@ -36,7 +36,7 @@ export function ForecastChart({ rows, categories, hour }: Props) {
     <ResponsiveContainer width="100%" height={210}>
       <ComposedChart data={[...rows]} margin={{ top: 8, right: 12, bottom: 18, left: 0 }}>
         {categoryBands(categories, top)}
-        <CartesianGrid stroke={TOKENS.ink800} strokeDasharray="3 3" />
+        <CartesianGrid stroke={TOKENS.rule} strokeDasharray="3 3" />
         <XAxis
           dataKey="horizon"
           type="number"
@@ -44,21 +44,21 @@ export function ForecastChart({ rows, categories, hour }: Props) {
           ticks={axisTicks(rows)}
           interval={0}
           tickFormatter={tickLabel}
-          label={{ value: "hours ahead", position: "insideBottom", offset: -14, fill: TOKENS.textSubtle, fontSize: 12 }}
-          stroke={TOKENS.textSubtle}
+          label={{ value: "hours ahead", position: "insideBottom", offset: -14, fill: TOKENS.ink3, fontSize: 12 }}
+          stroke={TOKENS.ink3}
           fontSize={12}
         />
-        <YAxis domain={[0, top]} stroke={TOKENS.textSubtle} fontSize={12} width={44} />
-        <ReferenceLine x={hour} stroke={TOKENS.text} strokeOpacity={0.7} strokeDasharray="4 3" />
+        <YAxis domain={[0, top]} stroke={TOKENS.ink3} fontSize={12} width={44} />
+        <ReferenceLine x={hour} stroke={TOKENS.accent} strokeWidth={1.5} strokeDasharray="4 3" />
         <Tooltip
           labelFormatter={(label) => hoursLabel(Number(label))}
           formatter={(value) => valueLabel(value)}
-          contentStyle={{ background: TOKENS.ink850, border: `1px solid ${TOKENS.ink800}`, borderRadius: 8 }}
-          labelStyle={{ color: TOKENS.text }}
+          contentStyle={{ background: TOKENS.paperHi, border: `1px solid ${TOKENS.ink}`, borderRadius: 0 }}
+          labelStyle={{ color: TOKENS.ink }}
         />
         <Area dataKey="band" name="80% band" stroke="none" fill={TOKENS.band} isAnimationActive={false} connectNulls />
-        <Line dataKey="median" name="Forecast (median)" stroke={TOKENS.violet300} strokeWidth={2.5} dot={{ r: 3, fill: TOKENS.violet300 }} isAnimationActive={false} connectNulls />
-        <Line dataKey="measured" name="Measured" stroke="none" dot={{ r: 4, fill: TOKENS.measured }} isAnimationActive={false} />
+        <Line dataKey="median" name="Forecast (median)" stroke={TOKENS.ink} strokeWidth={2.5} dot={{ r: 3, fill: TOKENS.ink }} isAnimationActive={false} connectNulls />
+        <Line dataKey="measured" name="Measured" stroke="none" dot={{ r: 4, fill: TOKENS.paperHi, stroke: TOKENS.ink, strokeWidth: 1.5 }} isAnimationActive={false} />
       </ComposedChart>
     </ResponsiveContainer>
   );

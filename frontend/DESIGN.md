@@ -1,248 +1,196 @@
 # Delhi PM2.5 Forecast — Design System
 
-Design read: a public-interest data dashboard for recruiters and interviewers. Serious,
-trustworthy and data-dense; honest about uncertainty; accessible. The six CPCB category colours
-carry the meaning, so the interface around them stays quiet. Layer A: `taste-skill`
-(operational UI). Layer B: `sentry` (dark, data-dense dashboard): its aubergine surfaces, violet
-interaction colour and pink focus ring are kept; its lime accent is dropped because it would
-collide with CPCB's "Satisfactory" green.
+Design read: a public-interest data page, read like the weather page of a city newspaper.
+Serious, honest about uncertainty, accessible, quick on a mid-range phone. The six CPCB category
+colours are the only loud colours on the page, because they carry the meaning; everything around
+them is paper, ink and hairline rules.
+
+References (redesign of 26 Nov 2026, after the owner found the dark violet version "AI
+generated"): Layer A `redesign-skill` (audit-first upgrade of existing UI); Layer B `wired`
+(broadsheet density, square corners, hairline rules, mono kickers, one ink-blue accent). Purple,
+glows, gradients, pills and drop shadows are removed on purpose.
 
 ## 1. Atmosphere & Identity
 
-- Night-time dashboard: deep aubergine page with a soft violet glow at the top-left (layered
-  radial gradient), raised panels with a 1px border, a faint top highlight and a soft shadow.
-- The map is the hero; the selected station's 48-hour chart is the second focus. Base map:
-  OpenStreetMap's free tiles (attribution kept), inverted by a CSS filter into a dark map;
-  CARTO's dark tiles were tried first but now need an API key, which breaks "free tools only".
+- **Newsprint, not a dashboard.** A warm paper page (`--paper`, with a faint printed grain), ink
+  type, hairline rules between columns instead of cards, square corners, a heavy double rule under
+  the masthead, and an inverted ink footer, the only dark region.
+- **The map is the hero.** Nothing is laid over it: the time bar sits above it and the colour key
+  below it, so every station stays visible. Base map: OpenStreetMap's free tiles in warm
+  greyscale, so the category colours read first.
+- **A Delhi signature:** the masthead and the big numbers are set in Rozha One, a display face
+  that Indian Type Foundry designed for Hindi newspaper headlines.
 - Copy says "PM2.5", "µg/m³" and "PM2.5-based category". Never "AQI".
-- Every screen states that this is a replay of 2025, not a live forecast.
 
 ## 2. Color
 
 ### Palette
 
-| Token | Value | Source | Use |
-|---|---|---|---|
-| `--ink-950` | `#150f23` | sentry | page background |
-| `--ink-900` | `#1f1633` | sentry | panels |
-| `--ink-850` | `#261c3d` | derived (between 900 and 800) | raised controls, chart card |
-| `--ink-800` | `#362d59` | sentry | borders, dividers, grid lines |
-| `--ink-600` | `#79628c` | sentry | muted marks, markers without data |
-| `--violet-500` | `#6a5fc1` | sentry | interactive: selected segment, links |
-| `--violet-300` | `#a99cf0` | derived (lighter step of 500) | forecast median line |
-| `--violet-700` | `#422082` | sentry | active / pressed |
-| `--focus` | `#fa7faa` | sentry | focus-visible ring |
-| `--text` | `#ffffff` | sentry | primary text |
-| `--text-muted` | `#e5e7eb` | sentry | secondary text |
-| `--text-subtle` | `#b9b1cc` | derived (muted on ink) | captions, footnotes |
-| `--band` | `rgba(106, 95, 193, 0.35)` | violet-500 at 35% | 80% uncertainty band |
-| `--measured` | `#ffffff` | text | measured dots |
+- `--paper` `#f4f0e6`: page (warm newsprint; a hazy-sky tone, not pure white).
+- `--paper-hi` `#fbf9f3`: the station card, inputs, map labels.
+- `--paper-lo` `#e9e3d5`: sunken wells (heavy-smog note, map loading background).
+- `--ink` `#1c1a16`: text, 2px rules, buttons, dot outlines, the selected-station ring.
+- `--ink-2` `#4a453d`: secondary text (8.4:1 on paper).
+- `--ink-3` `#6a6359`: captions and footnotes (5.2:1 on paper).
+- `--rule` `#d5cdbd`: hairline dividers and chart grid.
+- `--accent` `#0b5cad`: the single interactive accent (5.9:1 on paper). Focus ring, links,
+  the scrubber, the chart's map-hour line, the hovered 3D column. Never used on data.
+- `--smog` `#8e1b12`: the heavy-smog note's rule. Kin to the Severe maroon, and used only there.
+- `--severe-ring` `#d40d12`: the pulsing ring around stations above 250 µg/m³.
+- `--band`: ink at 13%, the 80% uncertainty band.
 
 Data colours (CPCB PM2.5 bands, served by `/api/meta`): Good `#00b050`, Satisfactory `#92d050`,
 Moderate `#ffff00`, Poor `#ff9900`, Very Poor `#ff0000`, Severe `#c00000`.
 
 ### Rules
 
-- Data colours appear only on data (markers, legend swatches, category chips). UI chrome
-  never uses them.
+- Data colours appear only on data (dots, columns, legend swatches, category chips).
+- Every data colour sits inside a 1px ink outline: yellow and light green are otherwise lost on
+  paper.
 - Colour is never the only cue: every coloured value also shows its number and category name.
-- Text contrast meets WCAG AA on `--ink-900` and `--ink-950`.
+- One gray family (warm). No gradients and no shadows; depth comes from rules and the paper tones.
 
 ## 3. Typography
 
-### Faces (self-hosted, Latin subset only, about 57 KB in total, `font-display: swap`)
+### Faces (self-hosted, Latin subset only, about 68 KB in total, `font-display: swap`)
 
-- Display: **Bricolage Grotesque 700**. Headline, panel headings, the forecast number, and the
-  accuracy figures: a grotesque with character in its numerals.
-- Text: **Atkinson Hyperlegible 400 and 700** (designed by the Braille Institute for legibility:
-  distinct 0/O, 1/l/I). Everything else. Its slashed zero is intended.
+- Display: **Rozha One 400** (18 KB). The masthead title, station name, forecast number, hour
+  label and accuracy figures. Shouts, never reads.
+- Labels: **IBM Plex Mono 500** (15 KB). Kickers, tags, field labels and timestamps, always
+  uppercase with 0.08em tracking; tick numbers stay as they are.
+- Text: **Atkinson Hyperlegible 400 and 700** (35 KB). Everything people read.
 
-### Scale (about 1.25 from the 15px body)
+### Scale
 
-| Token | Size / line height | Face | Use |
-|---|---|---|---|
-| focal | 64px / 0.95, -0.035em | display | the station's forecast number (52px below 768px) |
-| title | 30px / 1.1 | display | page title (22px below 768px) |
-| heading | 19px / 1.25 | display | panel headings, station name |
-| fact | 19px | display | figures inside the accuracy panel |
-| lead | 17px / 1.45 | text | introductory sentences |
-| body | 15px / 1.5 | text | status line, body |
-| small | 13-14px / 1.45 | text | captions, caveats, legend |
-| overline | 11px, 700, uppercase, 0.09em | text | labels; never applied to units |
+- title: 36px / 0.95, −0.01em, display (28px on phones)
+- focal: 76px / 0.9, display (60px on phones)
+- headline: 24px / 1.1, display (station name)
+- figure: 26px / 1, display (accuracy figures, inline at the start of their sentence; the hour label)
+- body: 15px / 1.5, text
+- small: 13px / 1.45, text (captions, caveats, legend)
+- label: 11.5px / 1.3, mono, uppercase, 0.08em
 
 ### Rules
 
-- Numbers on screen are rounded to what the data supports: whole µg/m³ for forecasts and bands.
-- Units are never upper-cased: an upper-case micro sign reads as M (milligrams).
+- Units are never upper-cased (an upper-case micro sign reads as M) and never sit in mono caps.
+- Numbers are rounded to what the data supports: whole µg/m³ for forecasts and bands.
+- Tabular figures for every number that changes in place (hour label, ticks, ranges).
+- `text-wrap: pretty` on paragraphs; `balance` on headings.
 
 ## 4. Spacing & Layout
 
-### Base Unit
+### Base
 
-4px. Scale: 4, 8, 12, 16, 24, 32 (`--space-1` … `--space-6`). Radii: panels 12px, controls
-8px, chips and tags 999px.
+4px unit; scale 4, 8, 12, 16, 24, 32 (`--space-1` … `--space-6`). Radius 0 everywhere, except
+the play button and the map dots (circles).
 
 ### Grid
 
-- ≥ 1200px: header; a full-width **status line** (the forecast's time, stations reporting, last
-  update; or what the replay shows); then three columns: map `minmax(0, 1fr)` | station 336px |
-  context 340px. The map fills the window below the status line, with the colour key laid over
-  its bottom-left corner.
-- 768–1199px: one column (status line, map, station, context); the time bar and the legend
-  stay laid over the map, which is wide enough for them.
-- ≤ 767px (phones, design stage 5, `phone.css`): one stacked column and **nothing over the
-  map**: status line ("N of 37 stations") → time bar (its own row above the map, the scrubber
-  on a full-width line) → map (`min(62vh, 480px)`, at least 340px) → legend ("This is not the
-  AQI", directly under the map) → station → accuracy (the held-out-2025 paragraph and the
-  heavy-smog caveat). Every caveat stays in the normal scroll; none is collapsed. Checked at
-  360×800: no sideways scrolling, all 37 dots inside the map.
-- Touch screens (`pointer: coarse`): a 44px play button, a 24px scrubber thumb on a 32px-tall
-  track, and the numbers under it widened to match.
+- Page: at most 1440px wide, centred, 24px side padding (12px on phones).
+- ≥ 1200px: masthead; a full-width status line; then three columns separated by hairline rules:
+  map `minmax(0, 1fr)` | station 336px | context 340px.
+- The map column is one framed block: time bar → colour key → map (on phones: time bar → map → key). It is sticky and sized to
+  the window, so the legend's caveat stays in view.
+- 768–1199px: one column (status, map block, station, context).
+- ≤ 767px (phones, `phone.css`): the same single column with phone sizes (below).
 
-### Rules
+### The fold rule
 
-- **The fold rule:** on desktop (checked at 1366×768, the commonest laptop screen in India),
-  these stay visible without scrolling: the status line's "N of 37 stations", the "not a
-  measurement of this forecast" paragraph, the heavy-smog numbers, and "This is not the AQI".
-- One scroll container (the page).
+On desktop (checked at a 1366×657 viewport, a 1366×768 laptop), these stay visible without
+scrolling: the status line's "N of 37 stations", the "not a measurement of this forecast"
+paragraph, the heavy-smog numbers, and "This is not the AQI". On phones they stay in the normal
+scroll, never collapsed.
 
 ## 5. Components
 
-Three surface weights, so that the station panel leads:
-- **Primary** (the station's forecast card): lighter top gradient, `--ink-700` border, 24px
-  padding, deep shadow. One per view.
-- **Panel** (accuracy, controls): `--ink-900` with a 1px border.
-- **Quiet** (status line): no box; text only.
-
-### Focal value
-The forecast number in the focal style, the unit (µg/m³) at 17px, and a **category chip** (the
-CPCB colour swatch and its name), then when it is for and the 80% band.
-
-### Status line
-Full width under the header: a violet **tag** ("Live", "Replay of 2025"), then facts separated by
-middle dots. A stale forecast adds a Warning below it.
-
-### Map legend (overlay)
-232px, bottom-left of the map, near-opaque `--ink-950`: overline title with the unit in normal
-case, six swatches with ranges, and the "This is not the AQI" caption. On phones it leaves the
-map and sits directly under it, full width, separated by a 1px `--ink-800` rule.
-
-
-### Panel
-Surface `--ink-900`, 1px `--ink-800` border, 12px radius, inset top highlight
-`rgba(255,255,255,0.04)`, shadow `0 10px 30px rgba(0,0,0,0.35)`. States: default only.
-
-### Field (label + native control)
-Native `<select>` and `<input type="date">` on `--ink-850`, 1px `--ink-800` border, 8px
-radius. States: hover (border `--ink-600`), focus-visible (2px `--focus` ring), disabled
-(50% opacity).
-
-### Segmented control (Live / Accuracy)
-Row of buttons; the selected one is filled `--violet-500` with `aria-pressed="true"`. States:
-hover (`--ink-800` fill), focus-visible ring, active (`--violet-700`).
-
-### Time bar (map overlay)
-Over the top of the map (12px in, clear of the zoom buttons), near-opaque `--ink-950`, and the
-only way to choose the map's hour (the side column no longer has hour buttons). Left to right:
-- a 36px round `--violet-500` play/pause button (`aria-label` "Play through the forecast hours" /
-  "Pause");
-- the hour now shown, always visible: "+24 h" (display face, 22px) over its Delhi time
-  ("Mon 15 Dec 2025, 20:00"), at a fixed 158px width so the scrubber never shifts;
-- a native range scrubber with one stop per forecast hour (6 … 48; horizon 0 is a measurement,
-  so it is left out), numbered underneath, the current number in bold. `aria-valuetext` reads
-  "24 hours ahead, Mon 15 Dec 2025, 20:00".
-Playing shows each hour for 1s, starts from +6 h when pressed at the end, stops at +48 h (no
-loop), and waits for the shown hour's data, so the label never runs ahead of the dots. Dragging
-the scrubber or hiding the view pauses it. The replay fetches all 8 hours of a forecast at once
-(about 7 KB compressed) so stepping never waits on the network. The map's fit leaves 80px at the
-top so no station sits under the bar; the replay's loading notice sits below it. The scrubber
-needs at least 120px, so the bar stays on one row down to the 1200px desktop layout (checked:
-59px tall at 1200 and 1366 wide, no station under it). On phones the bar is a normal row above
-the map, not laid over it.
-
-### Station marker (map)
-Circle filled with the station's category colour (`--ink-600` when blank), 1.5px `--ink-950`
-outline. Size encodes the forecast: area ∝ µg/m³ (radius = 13 × √(value / 250)), clamped to
-4–21px (`markers.ts`); bigger dots are drawn first so small ones stay on top. Above 250 (Severe):
-a 2px `#ff5a5a` ring that pulses outward (1.8s; still under reduced motion); the three highest
-Severe stations also get their number written beside the dot. Selected: same size (size means
-value), a separate 2.5px white ring 4px outside the dot, the station's short name beside it, and
-drawn last. Labels of stations in the eastern third of the map go on the left of the dot, so
-Anand Vihar's name is not cut off by the map's edge on a phone. No current reading: dashed `--text-subtle` outline. Hover: tooltip with station name,
-forecast and band. Keyboard users choose stations with the station `<select>`. No interpolated
-field between stations (only a labelled mockup exists: `docs/design/stage2-interpolation-mockup.png`).
-
-### 3D columns (prototyped in design stage 4, not built)
-Brief: deck.gl extruded columns over Leaflet, behind a toggle that is off by default and loads
-lazily; skip it if it confuses more than it shows. Findings (25 Nov 2026):
-- Leaflet has no tilt, so deck.gl drawn over it looks straight down, and columns look like the
-  dots we already have. Showing height means replacing the map with deck.gl's own tilted view
-  and its own basemap tiles.
-- That prototype (deck.gl 9.4.2: core, ColumnLayer, TileLayer, TextLayer) adds a 1,021 KB
-  script, 234 KB at maximum brotli and 284 KB at gzip, about as much again as the whole site's
-  JavaScript. It also needs WebGL, which is heavy on a mid-range phone's battery.
-- On the 14 Dec 2025 Severe night (`docs/design/stage4-3d-prototype.png`):
-  - the clustered central stations hide one another, and the base of a column, which shows
-    where its station is, is hidden behind the columns in front;
-  - perspective makes equal values look different heights, so the highest value (466) does
-    not look tallest;
-  - floating labels are hard to tie to their columns.
-- Verdict: it confuses more than it shows. The 2D map (area-scaled dots, Severe ring, top
-  three numbered) stays. The prototype lived in a scratch folder; nothing was added to the site.
-
-### Forecast chart card
-Recharts: the 80% band as an area (`--band`), the median as a `--violet-300` line starting from
-the value measured now, measured values as white dots, faint horizontal CPCB bands behind, and
-a dashed white line (70% opacity) at the hour the map shows, which moves with playback.
-X axis: hours ahead ("now", +6 h … +48 h). States: loading (caption "Loading forecast…"),
-empty (station has no forecast: caption), error (message and Retry button).
-
-### Legend
-Six swatches with names and µg/m³ ranges, titled "PM2.5-based category (µg/m³)", a size key
-(outline circles for 50, 150, 300 with a note on the ring and the dashed outline), plus a
-one-line note on the 24-hour-average definition ending "This is not the AQI."
-
-### Notice
-A pill-shaped badge "Replay of 2025, not a live forecast" in the header.
-
-### Mode switch (Live / Accuracy)
-The segmented control, two options, at the right of the header ("Live", "Accuracy (2025 replay)"),
-600 weight, 16px side padding. Live is the default; the choice is kept in the URL (#live, #accuracy).
-
-### Accuracy panel
-A Panel with the evaluation model's held-out 2025 numbers (from `/api/accuracy`): the 48-hour
-average error with the two baselines for comparison, the band's coverage, and the heavy-smog caveat
-as a Warning. Titled "Expected accuracy" in the live view (with its source stated: held-out 2025
-testing, not a measurement of the live forecast) and "Accuracy in the held-out 2025 test year" in
-the replay. Never shown without the caveat.
-
-### Freshness panel (live)
-"Forecast from <Delhi time>, with readings from N of 37 stations", then "Last updated … (N hours
-ago)" as a caption. Older than 12 hours: a Warning that the last good forecast is shown.
-
-### Warning
-Body text with a 3px `--focus` left border and 12px padding: the reader must not miss it.
-
-### Footer
-Credits (from `/api/meta`) and the replay note, `--type-caption`, `--text-subtle`.
+- **Masthead:** a mono kicker ("Delhi · hourly PM2.5 · 37 CPCB monitoring stations"), the title
+  in display, then a 3px + 1px ink double rule across the page. The view tabs sit at its right.
+- **View tabs** ("Live", "Accuracy (2025 replay)"): text buttons in mono caps. The current one has
+  a 3px ink underline and ink text; the others are `--ink-3`, and hover to ink. `aria-pressed`
+  marks the current tab.
+- **Status line:** a square ink tag ("LIVE", "REPLAY OF 2025") in paper mono caps, then facts
+  separated by middle dots. A stale forecast adds a Warning below it.
+- **Column:** no card. A hairline rule on the left, 24px inside. A mono kicker heads each
+  column.
+- **Station card (primary):** `--paper-hi`, a 1px rule border and a 4px ink top rule; the one
+  raised surface on the page.
+- **Focal value:** the forecast number (focal), the unit at 18px in text, and a category chip:
+  a square swatch with an ink outline and the category name. Then when it is for, and the 80%
+  band.
+- **Field:** mono label above a native `<select>` or `<input type="date">` on `--paper-hi`, a 1px
+  ink border, square. Hover: 2px inner ink; focus-visible: 2px accent ring.
+- **Button:** square, 2px ink border, paper fill; hover inverts (ink fill, paper text); active
+  nudges 1px down. Disabled: 45% opacity.
+- **Time bar** (above the map, part of the map block):
+  - Left to right: a 38px round ink play/pause button (accent on hover); the hour now shown
+    ("+24 h" in figure size over its Delhi time, fixed 160px, so nothing shifts); a native range
+    scrubber with one stop per forecast hour (6 … 48).
+  - Horizon 0 is a measurement, so it is left out.
+  - The scrubber: an ink 2px track, the passed part in accent, a round accent thumb with a paper
+    ring, numbers underneath with the current one in ink bold.
+  - Playing shows each hour for 1s, starts from +6 h when pressed at the end, stops at +48 h, and
+    waits for the shown hour's data. Dragging pauses it.
+  - The replay fetches all 8 hours of a forecast at once.
+- **Map (2D):**
+  - Dots filled with the category colour (`--paper-lo` when blank) and a 1.5px ink outline.
+  - Area ∝ forecast: radius = 13·√(value/250), clamped to 4–21px; bigger dots drawn first.
+  - Above 250: a 2px `--severe-ring` ring that pulses outward (still under reduced motion), and
+    the three highest Severe stations numbered.
+  - Selected: same size, a 2.5px ink ring 4px outside the dot, the short name beside it in a
+    `--paper-hi` label. Labels in the map's eastern third go on the left of the dot.
+  - No current reading: a dashed ink outline.
+  - No interpolated field between stations (the labelled mockup in `docs/design/` stays a
+    mockup).
+- **Map (3D, optional):**
+  - Switched on with the "3D" segment in the legend strip. It loads deck.gl only then (a separate
+    file, about 0.23 MB with brotli); the page never loads it otherwise.
+  - Base map: the same OpenStreetMap tiles in warm greyscale, at a 45° tilt.
+  - Each station: a flat ground disc in its category colour with an ink outline, so its place
+    stays visible, and a column whose height is proportional to the forecast (40 m per
+    µg/m³). Columns are 9px wide and discs 12px, in screen pixels, so they read at any zoom.
+    No transitions between hours.
+  - The camera fits every station with headroom above for tall columns, tilts 45° and turns
+    −12°.
+  - The selected station gets an ink ring on the ground and a label with its name and value; the
+    three highest Severe values are labelled.
+  - Hover shows a tooltip with the value and band; a click selects the station. "Reset view"
+    returns the camera.
+  - If WebGL is unavailable, a message says so and 2D stays.
+- **Legend strip** (between the time bar and the map; below the map on phones):
+  - A mono kicker "PM2.5-based category (µg/m³, hourly)".
+  - Six equal segments, each a colour bar with an ink outline, the category name, and its range.
+  - Then a row: the encoding key (2D: outline circles for 50, 150, 300 with "dot area ∝
+    forecast · red ring: above 250 · dashed: no current reading"; 3D: "column height ∝
+    forecast"), the caveat "CPCB defines these bands on 24-hour averages; here they colour hourly
+    forecasts. This is not the AQI.", and the 2D/3D switch.
+- **Forecast chart:**
+  - Recharts. The 80% band as an area (`--band`); the median as a 2.5px ink line with dots,
+    starting from the value measured now; measured values as hollow circles (paper fill, ink
+    stroke).
+  - Faint CPCB bands behind; a dashed accent line at the hour the map shows; grid in `--rule`.
+  - X axis: "now", +6 h … +48 h.
+- **Accuracy column:** kicker title, the source sentence (held-out 2025 testing, not a measurement
+  of the live forecast), the figures in display size, then the heavy-smog Warning. Never shown
+  without the caveat.
+- **Warning:** `--paper-lo` well with a 4px `--smog` left rule; ink text.
+- **Footer:** the inverted ink band at the bottom: paper text, credits and the replay note.
 
 ## 6. Motion & Interaction
 
-### Timing
-
-- 120ms ease-out colour and border transitions on hover/focus of controls only.
-- No chart or map animation: values change instantly when the time or horizon changes, so
-  what is shown always matches the controls. `prefers-reduced-motion` removes the transitions.
-- Playback (the time bar) steps through the forecast hours, one per second; it never tweens
-  between them, because an in-between frame would show values that were never forecast. It only
-  runs when the reader presses Play, so it is not affected by `prefers-reduced-motion`.
+- 150ms colour/background transitions on hover and focus of controls only.
+- No chart or map animation: values change instantly when the hour or horizon changes, so what is
+  shown always matches the controls. Playback steps through the forecast hours and never tweens
+  between them (an in-between frame would show values never forecast).
 - One exception: the Severe ring's pulse (1.8s ease-out, looping), which carries no value.
-  `prefers-reduced-motion` stops it and leaves a still ring.
+  `prefers-reduced-motion` stops it and removes the transitions.
 
 ## 7. Accessibility & Accepted Debt
 
-- `lang="en"`, landmarks (header, main, footer), `aria-live="polite"` status line for loading
-  and errors, visible focus everywhere, every control labelled.
-- Accepted debt: no separate component showcase page (primitives are checked in the real
-  page at 375 / 768 / 1280px); no Lighthouse run yet (the audit script needs `uv`, which is
-  not installed on this machine).
+- `lang="en"`, landmarks (header, main, footer), an `aria-live="polite"` status line for loading
+  and errors, a 2px accent focus ring everywhere, every control labelled.
+- Touch screens (`pointer: coarse`): a 44px play button, a 24px scrubber thumb.
+- The 3D view is an extra, never the only way to read a value. The 2D map, the station chart and
+  the station list carry everything.
+- Accepted debt: no separate component showcase page (primitives are checked in the real page at
+  360, 768, 1200 and 1366px); no Lighthouse run yet (the audit script needs `uv`, which is not
+  installed on this machine).

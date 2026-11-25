@@ -5,10 +5,9 @@ import { chartRows } from "./chart";
 import { StationSelect, defaultStation } from "./controls";
 import { Focal, ug } from "./Focal";
 import { ForecastChart } from "./ForecastChart";
-import { Legend } from "./Legend";
+import { MapPanel } from "./MapPanel";
 import { mapHours } from "./playback";
-import { StationMap } from "./StationMap";
-import { TimeBar, usePlayback } from "./TimeBar";
+import { usePlayback } from "./TimeBar";
 import { addHours, delhiDate, delhiHour, delhiLabel, findIssueTime } from "./time";
 import { Status, useLoad } from "./useLoad";
 
@@ -46,19 +45,23 @@ export function ReplayView({ meta, accuracy, active }: { meta: Meta; accuracy: A
           measured later.
         </p>
       </section>
-      <section className="panel map-panel" aria-label="Map of monitoring stations">
-        <StationMap stations={meta.stations} points={bySlug} selected={selected} onSelect={setSelected} active={active} />
-        <Legend categories={meta.categories} />
-        <TimeBar
-          hours={mapTimes}
-          hour={horizon}
-          when={delhiLabel(addHours(issued, horizon))}
-          playing={playback.playing}
-          onToggle={playback.toggle}
-          onChoose={playback.choose}
-        />
-        {maps.state !== "ready" && <Status load={maps} what="the map" retry={retryMaps} />}
-      </section>
+      <MapPanel
+        stations={meta.stations}
+        categories={meta.categories}
+        points={bySlug}
+        selected={selected}
+        onSelect={setSelected}
+        active={active}
+        timeBar={{
+          hours: mapTimes,
+          hour: horizon,
+          when: delhiLabel(addHours(issued, horizon)),
+          playing: playback.playing,
+          onToggle: playback.toggle,
+          onChoose: playback.choose,
+        }}
+        status={maps.state !== "ready" ? <Status load={maps} what="the map" retry={retryMaps} /> : undefined}
+      />
       <div className="station-col">
         <section className="panel controls" aria-label="Forecast time and station">
           <label className="field">

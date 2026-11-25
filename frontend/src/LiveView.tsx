@@ -5,11 +5,10 @@ import { chartRows } from "./chart";
 import { StationSelect, defaultStation } from "./controls";
 import { Focal, ug } from "./Focal";
 import { ForecastChart } from "./ForecastChart";
-import { Legend } from "./Legend";
 import { STALE_AFTER_HOURS, ageLabel, hoursSince, nowText, pointsAt, stationPath, statusCounts } from "./live";
+import { MapPanel } from "./MapPanel";
 import { mapHours } from "./playback";
-import { StationMap } from "./StationMap";
-import { TimeBar, usePlayback } from "./TimeBar";
+import { usePlayback } from "./TimeBar";
 import { addHours, delhiLabel } from "./time";
 import { Status, useLoad } from "./useLoad";
 
@@ -68,7 +67,7 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
           {live.station_status.length > 0 && (
             <>
               <span className="sep">·</span>
-              {statusCounts(live.station_status)} (dashed outline on the map: no current PM2.5 reading)
+              {statusCounts(live.station_status)}
             </>
           )}
         </p>
@@ -79,18 +78,22 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
           </p>
         )}
       </section>
-      <section className="panel map-panel" aria-label="Map of monitoring stations">
-        <StationMap stations={meta.stations} points={points} selected={selected} onSelect={setSelected} active={active} />
-        <Legend categories={meta.categories} />
-        <TimeBar
-          hours={hours}
-          hour={horizon}
-          when={delhiLabel(addHours(live.issued_utc, horizon))}
-          playing={playback.playing}
-          onToggle={playback.toggle}
-          onChoose={playback.choose}
-        />
-      </section>
+      <MapPanel
+        stations={meta.stations}
+        categories={meta.categories}
+        points={points}
+        selected={selected}
+        onSelect={setSelected}
+        active={active}
+        timeBar={{
+          hours,
+          hour: horizon,
+          when: delhiLabel(addHours(live.issued_utc, horizon)),
+          playing: playback.playing,
+          onToggle: playback.toggle,
+          onChoose: playback.choose,
+        }}
+      />
       <div className="station-col">
         <section className="panel controls single" aria-label="Station">
           <StationSelect stations={meta.stations} value={selected} onChange={setSelected} />

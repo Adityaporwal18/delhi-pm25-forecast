@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { STEP_MS, nextHour, playFrom } from "./playback";
 
 /** Plays the map through the forecast hours, one step per STEP_MS, and stops at the last hour.
@@ -45,7 +45,7 @@ export function usePlayback({ hours, hour, setHour, ready, active }: PlaybackInp
   return { playing, toggle, choose };
 }
 
-interface Props {
+export interface TimeBarProps {
   hours: readonly number[];
   hour: number;
   /** The Delhi time the shown hour stands for, e.g. "Wed 25 Nov 2026, 02:00". */
@@ -56,8 +56,9 @@ interface Props {
 }
 
 /** Laid over the top of the map: play/pause, the hour now shown (always visible) and a scrubber. */
-export function TimeBar({ hours, hour, when, playing, onToggle, onChoose }: Props) {
+export function TimeBar({ hours, hour, when, playing, onToggle, onChoose }: TimeBarProps) {
   const index = Math.max(0, hours.indexOf(hour));
+  const progress = { "--pct": `${(index / Math.max(hours.length - 1, 1)) * 100}%` } as CSSProperties;
   return (
     <div className="time-bar" role="group" aria-label="Forecast hour shown on the map">
       <button
@@ -82,6 +83,7 @@ export function TimeBar({ hours, hour, when, playing, onToggle, onChoose }: Prop
           max={hours.length - 1}
           step={1}
           value={index}
+          style={progress}
           aria-label="Hours ahead"
           aria-valuetext={`${hour} hours ahead, ${when}`}
           onChange={(event) => onChoose(hours[Number(event.target.value)] ?? hour)}
