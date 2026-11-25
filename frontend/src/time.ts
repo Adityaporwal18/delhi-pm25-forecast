@@ -31,6 +31,10 @@ export function delhiDate(isoUtc: string): string {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
+export function addHours(isoUtc: string, hours: number): string {
+  return new Date(Date.parse(isoUtc) + hours * 3_600_000).toISOString();
+}
+
 export function delhiHour(isoUtc: string): number {
   return Number(parts(HOUR, isoUtc)("hour"));
 }

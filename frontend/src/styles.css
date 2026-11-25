@@ -268,7 +268,7 @@ body {
 
 .map-panel .status {
   position: absolute;
-  top: var(--space-3);
+  top: 80px;
   right: var(--space-3);
   z-index: 500;
   margin: 0;
@@ -560,6 +560,142 @@ select:hover,
 .map-label.value {
   color: #ff8a8a;
   font-variant-numeric: tabular-nums;
+}
+
+/* Time bar over the top of the map, clear of Leaflet's zoom buttons. */
+.time-bar {
+  position: absolute;
+  top: var(--space-3);
+  left: 58px;
+  right: var(--space-3);
+  z-index: 500;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(21, 15, 35, 0.9);
+  border: 1px solid var(--ink-800);
+  border-radius: var(--radius-control);
+}
+
+.time-bar .play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--violet-500);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.time-bar .play:hover {
+  filter: brightness(1.15);
+}
+
+.time-bar .play svg {
+  fill: currentColor;
+}
+
+.time-bar .play:focus-visible,
+.scrubber input[type="range"]:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Fixed width, so the scrubber does not shift while the label changes during playback. */
+.hour-label {
+  flex: none;
+  width: 158px;
+  margin: 0;
+  display: grid;
+  line-height: 1.15;
+}
+
+.hour-label strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hour-label span {
+  font-size: 12px;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+.scrubber {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+.scrubber input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.scrubber input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-700);
+}
+
+.scrubber input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-700);
+}
+
+.scrubber input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--violet-300);
+  border: 2px solid var(--ink-950);
+}
+
+.scrubber input[type="range"]::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--violet-300);
+  border: 2px solid var(--ink-950);
+}
+
+/* Each number is as wide as the thumb, so it sits under its stop. */
+.ticks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticks span {
+  width: 16px;
+  text-align: center;
+}
+
+.ticks .on {
+  color: var(--text);
+  font-weight: 700;
 }
 
 /* ---- Desktop: map | station | context, every caveat above the fold ---- */

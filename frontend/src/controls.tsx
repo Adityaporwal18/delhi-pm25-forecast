@@ -5,29 +5,6 @@ export function defaultStation(meta: Meta): string {
   return meta.stations.find((station) => station.slug === "anand_vihar_dpcc")?.slug ?? meta.stations[0]?.slug ?? "";
 }
 
-interface HorizonProps {
-  horizons: readonly number[];
-  value: number;
-  onChange: (hours: number) => void;
-}
-
-export function HorizonButtons({ horizons, value, onChange }: HorizonProps) {
-  return (
-    <div className="field">
-      <span id="horizon-label">Map shows hours ahead</span>
-      <div className="segmented" role="group" aria-labelledby="horizon-label">
-        {horizons
-          .filter((hoursAhead) => hoursAhead > 0)
-          .map((hoursAhead) => (
-            <button key={hoursAhead} type="button" aria-pressed={hoursAhead === value} onClick={() => onChange(hoursAhead)}>
-              {hoursAhead}
-            </button>
-          ))}
-      </div>
-    </div>
-  );
-}
-
 interface StationProps {
   stations: readonly Station[];
   value: string;

@@ -62,7 +62,7 @@ export function StationMap({ stations, points, selected, onSelect, active }: Pro
   const ordered = drawOrder(stations, valueOf, selected);
   const labelled = new Set(valueLabels(stations.map((station) => station.slug), valueOf, selected));
   return (
-    <MapContainer bounds={bounds} boundsOptions={{ padding: [28, 28] }} className="map" scrollWheelZoom>
+    <MapContainer bounds={bounds} boundsOptions={{ paddingTopLeft: [28, 80], paddingBottomRight: [28, 28] }} className="map" scrollWheelZoom>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution={ATTRIBUTION} maxZoom={19} />
       <KeepSized active={active} />
       {ordered.map((station) => {

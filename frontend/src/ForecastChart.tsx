@@ -1,4 +1,4 @@
-import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, CartesianGrid, ComposedChart, Line, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Category } from "./api";
 import { type ChartRow, axisTicks, tickLabel } from "./chart";
 import { TOKENS } from "./tokens";
@@ -22,7 +22,14 @@ function categoryBands(categories: readonly Category[], top: number) {
   });
 }
 
-export function ForecastChart({ rows, categories }: { rows: readonly ChartRow[]; categories: readonly Category[] }) {
+interface Props {
+  rows: readonly ChartRow[];
+  categories: readonly Category[];
+  /** The hour the map shows, marked with a dashed line so the chart follows the map while it plays. */
+  hour: number;
+}
+
+export function ForecastChart({ rows, categories, hour }: Props) {
   const highest = Math.max(100, ...rows.flatMap((row) => [row.band?.[1] ?? 0, row.measured ?? 0, row.median ?? 0]));
   const top = Math.ceil((highest * 1.1) / 50) * 50;
   return (
@@ -42,6 +49,7 @@ export function ForecastChart({ rows, categories }: { rows: readonly ChartRow[];
           fontSize={12}
         />
         <YAxis domain={[0, top]} stroke={TOKENS.textSubtle} fontSize={12} width={44} />
+        <ReferenceLine x={hour} stroke={TOKENS.text} strokeOpacity={0.7} strokeDasharray="4 3" />
         <Tooltip
           labelFormatter={(label) => hoursLabel(Number(label))}
           formatter={(value) => valueLabel(value)}

@@ -58,6 +58,13 @@ export function fetchMap(issued: string, horizon: number, signal: AbortSignal): 
   return getJson(`/api/map?${query.toString()}`, z.array(mapPointSchema), signal);
 }
 
+/** Every map hour of one forecast at once (8 small requests in parallel), so stepping or playing
+ * through the hours never waits on the network or flashes empty dots. */
+export async function fetchMaps(issued: string, horizons: readonly number[], signal: AbortSignal): Promise<Map<number, MapPoint[]>> {
+  const maps = await Promise.all(horizons.map((horizon) => fetchMap(issued, horizon, signal)));
+  return new Map(horizons.map((horizon, index) => [horizon, maps[index] ?? []]));
+}
+
 export function fetchForecast(slug: string, issued: string, signal: AbortSignal): Promise<ForecastPoint[]> {
   const query = new URLSearchParams({ issued });
   return getJson(`/api/stations/${encodeURIComponent(slug)}/forecast?${query.toString()}`, z.array(forecastPointSchema), signal);

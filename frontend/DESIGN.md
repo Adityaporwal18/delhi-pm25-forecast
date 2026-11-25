@@ -128,9 +128,25 @@ Native `<select>` and `<input type="date">` on `--ink-850`, 1px `--ink-800` bord
 radius. States: hover (border `--ink-600`), focus-visible (2px `--focus` ring), disabled
 (50% opacity).
 
-### Segmented control (horizon)
+### Segmented control (Live / Accuracy)
 Row of buttons; the selected one is filled `--violet-500` with `aria-pressed="true"`. States:
 hover (`--ink-800` fill), focus-visible ring, active (`--violet-700`).
+
+### Time bar (map overlay)
+Over the top of the map (12px in, clear of the zoom buttons), near-opaque `--ink-950`, and the
+only way to choose the map's hour (the side column no longer has hour buttons). Left to right:
+- a 36px round `--violet-500` play/pause button (`aria-label` "Play through the forecast hours" /
+  "Pause");
+- the hour now shown, always visible: "+24 h" (display face, 22px) over its Delhi time
+  ("Mon 15 Dec 2025, 20:00"), at a fixed 158px width so the scrubber never shifts;
+- a native range scrubber with one stop per forecast hour (6 … 48; horizon 0 is a measurement,
+  so it is left out), numbered underneath, the current number in bold. `aria-valuetext` reads
+  "24 hours ahead, Mon 15 Dec 2025, 20:00".
+Playing shows each hour for 1s, starts from +6 h when pressed at the end, stops at +48 h (no
+loop), and waits for the shown hour's data, so the label never runs ahead of the dots. Dragging
+the scrubber or hiding the view pauses it. The replay fetches all 8 hours of a forecast at once
+(about 7 KB compressed) so stepping never waits on the network. The map's fit leaves 80px at the
+top so no station sits under the bar; the replay's loading notice sits below it.
 
 ### Station marker (map)
 Circle filled with the station's category colour (`--ink-600` when blank), 1.5px `--ink-950`
@@ -145,7 +161,8 @@ field between stations (only a labelled mockup exists: `docs/design/stage2-inter
 
 ### Forecast chart card
 Recharts: the 80% band as an area (`--band`), the median as a `--violet-300` line starting from
-the value measured now, measured values as white dots, faint horizontal CPCB bands behind.
+the value measured now, measured values as white dots, faint horizontal CPCB bands behind, and
+a dashed white line (70% opacity) at the hour the map shows, which moves with playback.
 X axis: hours ahead ("now", +6 h … +48 h). States: loading (caption "Loading forecast…"),
 empty (station has no forecast: caption), error (message and Retry button).
 
@@ -185,6 +202,9 @@ Credits (from `/api/meta`) and the replay note, `--type-caption`, `--text-subtle
 - 120ms ease-out colour and border transitions on hover/focus of controls only.
 - No chart or map animation: values change instantly when the time or horizon changes, so
   what is shown always matches the controls. `prefers-reduced-motion` removes the transitions.
+- Playback (the time bar) steps through the forecast hours, one per second; it never tweens
+  between them, because an in-between frame would show values that were never forecast. It only
+  runs when the reader presses Play, so it is not affected by `prefers-reduced-motion`.
 - One exception: the Severe ring's pulse (1.8s ease-out, looping), which carries no value.
   `prefers-reduced-motion` stops it and leaves a still ring.
 

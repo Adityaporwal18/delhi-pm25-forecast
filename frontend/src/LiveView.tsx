@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { type Accuracy, type Live, type Meta, fetchLive } from "./api";
 import { AccuracyPanel } from "./AccuracyPanel";
 import { chartRows } from "./chart";
-import { HorizonButtons, StationSelect, defaultStation } from "./controls";
+import { StationSelect, defaultStation } from "./controls";
 import { Focal, ug } from "./Focal";
 import { ForecastChart } from "./ForecastChart";
 import { Legend } from "./Legend";
 import { STALE_AFTER_HOURS, ageLabel, hoursSince, nowText, pointsAt, stationPath, statusCounts } from "./live";
+import { mapHours } from "./playback";
 import { StationMap } from "./StationMap";
-import { delhiLabel } from "./time";
+import { TimeBar, usePlayback } from "./TimeBar";
+import { addHours, delhiLabel } from "./time";
 import { Status, useLoad } from "./useLoad";
 
 interface Props {
@@ -35,7 +37,9 @@ export function LiveView({ meta, accuracy, active }: Props) {
 }
 
 function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live }) {
+  const hours = useMemo(() => mapHours(meta.horizons_h), [meta.horizons_h]);
   const [horizon, setHorizon] = useState(48);
+  const playback = usePlayback(hours, horizon, setHorizon, true, active);
   const [selected, setSelected] = useState(defaultStation(meta));
   const points = useMemo(() => pointsAt(live.rows, horizon, live.station_status), [live.rows, horizon, live.station_status]);
   const state = live.station_status.find((candidate) => candidate.slug === selected);
@@ -78,10 +82,17 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
       <section className="panel map-panel" aria-label="Map of monitoring stations">
         <StationMap stations={meta.stations} points={points} selected={selected} onSelect={setSelected} active={active} />
         <Legend categories={meta.categories} />
+        <TimeBar
+          hours={hours}
+          hour={horizon}
+          when={delhiLabel(addHours(live.issued_utc, horizon))}
+          playing={playback.playing}
+          onToggle={playback.toggle}
+          onChoose={playback.choose}
+        />
       </section>
       <div className="station-col">
-        <section className="panel controls single" aria-label="Hours ahead and station">
-          <HorizonButtons horizons={meta.horizons_h} value={horizon} onChange={setHorizon} />
+        <section className="panel controls single" aria-label="Station">
           <StationSelect stations={meta.stations} value={selected} onChange={setSelected} />
         </section>
         <section className="panel primary" aria-labelledby="live-chart-title">
@@ -107,10 +118,10 @@ function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live })
               limitation), so this station may be worse than its neighbours.
             </p>
           )}
-          {path.length > 0 && <ForecastChart rows={chartRows(path)} categories={meta.categories} />}
+          {path.length > 0 && <ForecastChart rows={chartRows(path)} categories={meta.categories} hour={horizon} />}
           <p className="caption">
             Line: median forecast · shaded: 80% band (8 in 10 measured values should fall inside) · dot at “now”: the
-            latest reading, when the station has one.
+            latest reading, when the station has one · dashed line: the hour the map shows.
           </p>
         </section>
       </div>

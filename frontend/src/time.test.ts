@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { delhiDate, delhiHour, delhiLabel, findIssueTime } from "./time";
+import { addHours, delhiDate, delhiHour, delhiLabel, findIssueTime } from "./time";
 
 // Given: 02:30 UTC on 1 Nov 2025 is 08:00 in Delhi (UTC+5:30)
 const ISSUED = "2025-11-01T02:30:00Z";
@@ -15,6 +15,11 @@ describe("Delhi time helpers", () => {
 
   it("give the Delhi clock hour", () => {
     expect(delhiHour(ISSUED)).toBe(8);
+  });
+
+  it("give the moment a forecast hour stands for, crossing midnight in Delhi", () => {
+    // When: 18 hours after the 08:00 issue; Then: 02:00 the next day
+    expect(delhiLabel(addHours(ISSUED, 18))).toBe("Sun 2 Nov 2025, 02:00");
   });
 
   it("find the issue time for a Delhi date and hour, or nothing", () => {
