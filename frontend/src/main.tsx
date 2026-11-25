@@ -6,6 +6,7 @@ import "@fontsource/bricolage-grotesque/latin-700.css";
 import "@fontsource/atkinson-hyperlegible/latin-400.css";
 import "@fontsource/atkinson-hyperlegible/latin-700.css";
 import "./styles.css";
+import "./phone.css";
 
 if (import.meta.env.DEV) {
   void import("react-grab");

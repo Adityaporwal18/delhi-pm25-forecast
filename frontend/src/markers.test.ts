@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_RADIUS, MIN_RADIUS, RADIUS_AT_250, drawOrder, markerRadius, valueLabels } from "./markers";
+import { MAX_RADIUS, MIN_RADIUS, RADIUS_AT_250, drawOrder, labelSide, markerRadius, valueLabels } from "./markers";
 
 describe("map dot sizes", () => {
   it("make the dot's area, not its radius, proportional to the forecast", () => {
@@ -22,6 +22,13 @@ it("writes numbers only beside the highest few Severe forecasts, so a city-wide 
   const values = new Map<string, number | null>([["a", 260], ["b", 400], ["c", 300], ["d", 120], ["e", 500], ["f", 350], ["g", 280]]);
   // When / Then: the top three, excluding the selected station, highest first
   expect(valueLabels([...values.keys()], (slug) => values.get(slug) ?? null, "e")).toEqual(["b", "f", "c"]);
+});
+
+it("puts a station's label on the left when the station is in the eastern third of the map", () => {
+  // Given: stations spread from 76.9 to 77.3 degrees east
+  const span = { west: 76.9, east: 77.3 };
+  // When / Then: Anand Vihar (77.315, the eastern edge) gets its name on the left; a western station on the right
+  expect([labelSide(77.315, span), labelSide(77.0, span)]).toEqual(["left", "right"]);
 });
 
 it("draws big dots first so small ones stay visible, and the selected station last", () => {

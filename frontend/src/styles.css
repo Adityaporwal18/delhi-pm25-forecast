@@ -562,6 +562,11 @@ select:hover,
   font-variant-numeric: tabular-nums;
 }
 
+.map-label.left {
+  left: auto;
+  right: var(--offset);
+}
+
 /* Time bar over the top of the map, clear of Leaflet's zoom buttons. */
 .time-bar {
   position: absolute;
@@ -629,7 +634,7 @@ select:hover,
 }
 
 .scrubber {
-  flex: 1 1 140px;
+  flex: 1 1 120px;
   min-width: 0;
 }
 
@@ -711,20 +716,6 @@ select:hover,
     position: sticky;
     top: var(--space-4);
     height: max(460px, calc(100vh - 168px));
-  }
-}
-
-@media (max-width: 767px) {
-  .title {
-    font-size: 22px;
-  }
-
-  .page {
-    padding: var(--space-3);
-  }
-
-  .focal-value {
-    font-size: 52px;
   }
 }
 

@@ -3,7 +3,7 @@ import { divIcon, latLngBounds } from "leaflet";
 import { useEffect, useMemo } from "react";
 import { CircleMarker, MapContainer, Marker, TileLayer, Tooltip, useMap } from "react-leaflet";
 import type { MapPoint, Station } from "./api";
-import { drawOrder, markerRadius, valueLabels } from "./markers";
+import { drawOrder, labelSide, markerRadius, valueLabels } from "./markers";
 import { TOKENS } from "./tokens";
 
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
@@ -39,17 +39,24 @@ function describe(point: Dot | undefined): string {
   return `${Math.round(point.p50)} µg/m³ (80% band ${Math.round(point.p10 ?? 0)}–${Math.round(point.p90 ?? 0)}), ${point.category ?? ""}${quiet}`;
 }
 
+interface LabelSpec {
+  text: string;
+  kind: "value" | "name";
+  offset: number;
+  side: "left" | "right";
+}
+
 /** A text label beside a dot, as a DOM element (textContent, so names can never inject HTML). */
-function textIcon(text: string, kind: "value" | "name", offset: number) {
+function textIcon({ text, kind, offset, side }: LabelSpec) {
   const span = document.createElement("span");
-  span.className = `map-label ${kind}`;
+  span.className = `map-label ${kind} ${side}`;
   span.textContent = text;
   span.style.setProperty("--offset", `${offset}px`);
   return divIcon({ html: span, className: "map-label-anchor", iconSize: [0, 0], iconAnchor: [0, 0] });
 }
 
-function Label({ at, text, kind, offset }: { at: [number, number]; text: string; kind: "value" | "name"; offset: number }) {
-  const icon = useMemo(() => textIcon(text, kind, offset), [text, kind, offset]);
+function Label({ at, text, kind, offset, side }: LabelSpec & { at: [number, number] }) {
+  const icon = useMemo(() => textIcon({ text, kind, offset, side }), [text, kind, offset, side]);
   return <Marker position={at} icon={icon} interactive={false} keyboard={false} />;
 }
 
@@ -61,6 +68,7 @@ export function StationMap({ stations, points, selected, onSelect, active }: Pro
   const valueOf = (slug: string) => points.get(slug)?.p50 ?? null;
   const ordered = drawOrder(stations, valueOf, selected);
   const labelled = new Set(valueLabels(stations.map((station) => station.slug), valueOf, selected));
+  const span = { west: bounds.getWest(), east: bounds.getEast() };
   return (
     <MapContainer bounds={bounds} boundsOptions={{ paddingTopLeft: [28, 80], paddingBottomRight: [28, 28] }} className="map" scrollWheelZoom>
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution={ATTRIBUTION} maxZoom={19} />
@@ -99,8 +107,12 @@ export function StationMap({ stations, points, selected, onSelect, active }: Pro
             {isSelected && (
               <CircleMarker center={at} radius={radius + 4} interactive={false} pathOptions={{ color: TOKENS.text, weight: 2.5, fill: false }} />
             )}
-            {severe && labelled.has(station.slug) && point.p50 !== null && <Label at={at} text={String(Math.round(point.p50))} kind="value" offset={radius + 7} />}
-            {isSelected && <Label at={at} text={station.name.split(",")[0] ?? station.name} kind="name" offset={radius + 8} />}
+            {severe && labelled.has(station.slug) && point.p50 !== null && (
+              <Label at={at} text={String(Math.round(point.p50))} kind="value" offset={radius + 7} side={labelSide(station.longitude, span)} />
+            )}
+            {isSelected && (
+              <Label at={at} text={station.name.split(",")[0] ?? station.name} kind="name" offset={radius + 8} side={labelSide(station.longitude, span)} />
+            )}
           </span>
         );
       })}

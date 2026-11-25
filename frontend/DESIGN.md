@@ -88,8 +88,16 @@ Moderate `#ffff00`, Poor `#ff9900`, Very Poor `#ff0000`, Severe `#c00000`.
   update; or what the replay shows); then three columns: map `minmax(0, 1fr)` | station 336px |
   context 340px. The map fills the window below the status line, with the colour key laid over
   its bottom-left corner.
-- < 1200px: one column (status line, map, station, context). Phones are revisited in stage 5 of
-  the design pass.
+- 768–1199px: one column (status line, map, station, context); the time bar and the legend
+  stay laid over the map, which is wide enough for them.
+- ≤ 767px (phones, design stage 5, `phone.css`): one stacked column and **nothing over the
+  map**: status line ("N of 37 stations") → time bar (its own row above the map, the scrubber
+  on a full-width line) → map (`min(62vh, 480px)`, at least 340px) → legend ("This is not the
+  AQI", directly under the map) → station → accuracy (the held-out-2025 paragraph and the
+  heavy-smog caveat). Every caveat stays in the normal scroll; none is collapsed. Checked at
+  360×800: no sideways scrolling, all 37 dots inside the map.
+- Touch screens (`pointer: coarse`): a 44px play button, a 24px scrubber thumb on a 32px-tall
+  track, and the numbers under it widened to match.
 
 ### Rules
 
@@ -116,7 +124,8 @@ middle dots. A stale forecast adds a Warning below it.
 
 ### Map legend (overlay)
 232px, bottom-left of the map, near-opaque `--ink-950`: overline title with the unit in normal
-case, six swatches with ranges, and the "This is not the AQI" caption.
+case, six swatches with ranges, and the "This is not the AQI" caption. On phones it leaves the
+map and sits directly under it, full width, separated by a 1px `--ink-800` rule.
 
 
 ### Panel
@@ -146,7 +155,10 @@ Playing shows each hour for 1s, starts from +6 h when pressed at the end, stops 
 loop), and waits for the shown hour's data, so the label never runs ahead of the dots. Dragging
 the scrubber or hiding the view pauses it. The replay fetches all 8 hours of a forecast at once
 (about 7 KB compressed) so stepping never waits on the network. The map's fit leaves 80px at the
-top so no station sits under the bar; the replay's loading notice sits below it.
+top so no station sits under the bar; the replay's loading notice sits below it. The scrubber
+needs at least 120px, so the bar stays on one row down to the 1200px desktop layout (checked:
+59px tall at 1200 and 1366 wide, no station under it). On phones the bar is a normal row above
+the map, not laid over it.
 
 ### Station marker (map)
 Circle filled with the station's category colour (`--ink-600` when blank), 1.5px `--ink-950`
@@ -155,9 +167,28 @@ outline. Size encodes the forecast: area ∝ µg/m³ (radius = 13 × √(value /
 a 2px `#ff5a5a` ring that pulses outward (1.8s; still under reduced motion); the three highest
 Severe stations also get their number written beside the dot. Selected: same size (size means
 value), a separate 2.5px white ring 4px outside the dot, the station's short name beside it, and
-drawn last. No current reading: dashed `--text-subtle` outline. Hover: tooltip with station name,
+drawn last. Labels of stations in the eastern third of the map go on the left of the dot, so
+Anand Vihar's name is not cut off by the map's edge on a phone. No current reading: dashed `--text-subtle` outline. Hover: tooltip with station name,
 forecast and band. Keyboard users choose stations with the station `<select>`. No interpolated
 field between stations (only a labelled mockup exists: `docs/design/stage2-interpolation-mockup.png`).
+
+### 3D columns (prototyped in design stage 4, not built)
+Brief: deck.gl extruded columns over Leaflet, behind a toggle that is off by default and loads
+lazily; skip it if it confuses more than it shows. Findings (25 Nov 2026):
+- Leaflet has no tilt, so deck.gl drawn over it looks straight down, and columns look like the
+  dots we already have. Showing height means replacing the map with deck.gl's own tilted view
+  and its own basemap tiles.
+- That prototype (deck.gl 9.4.2: core, ColumnLayer, TileLayer, TextLayer) adds a 1,021 KB
+  script, 234 KB at maximum brotli and 284 KB at gzip, about as much again as the whole site's
+  JavaScript. It also needs WebGL, which is heavy on a mid-range phone's battery.
+- On the 14 Dec 2025 Severe night (`docs/design/stage4-3d-prototype.png`):
+  - the clustered central stations hide one another, and the base of a column, which shows
+    where its station is, is hidden behind the columns in front;
+  - perspective makes equal values look different heights, so the highest value (466) does
+    not look tallest;
+  - floating labels are hard to tie to their columns.
+- Verdict: it confuses more than it shows. The 2D map (area-scaled dots, Severe ring, top
+  three numbered) stays. The prototype lived in a scratch folder; nothing was added to the site.
 
 ### Forecast chart card
 Recharts: the 80% band as an area (`--band`), the median as a `--violet-300` line starting from

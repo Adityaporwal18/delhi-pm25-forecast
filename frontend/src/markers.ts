@@ -24,6 +24,12 @@ export function valueLabels(slugs: readonly string[], value: (slug: string) => n
     .slice(0, MAX_VALUE_LABELS);
 }
 
+/** Labels of stations in the eastern third of the map go on the left of the dot, so a name beside
+ * an eastern station (Anand Vihar, on the city's edge) is not cut off by the map's edge. */
+export function labelSide(longitude: number, span: { west: number; east: number }): "left" | "right" {
+  return longitude > span.east - (span.east - span.west) / 3 ? "left" : "right";
+}
+
 /** Largest forecast first, so smaller dots are drawn on top and stay visible; the selected station
  * last of all, so its ring is never hidden. */
 export function drawOrder<T extends { slug: string }>(stations: readonly T[], value: (slug: string) => number | null, selected: string): T[] {
