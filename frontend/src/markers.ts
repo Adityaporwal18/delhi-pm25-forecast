@@ -17,11 +17,11 @@ export const MAX_VALUE_LABELS = 3;
 
 /** Which Severe stations get their number written on the map: the highest few, skipping the
  * selected station (it already carries its name label). Every Severe dot still gets the ring. */
-export function valueLabels(slugs: readonly string[], value: (slug: string) => number | null, selected: string, limit = MAX_VALUE_LABELS): string[] {
+export function valueLabels(slugs: readonly string[], value: (slug: string) => number | null, selected: string): string[] {
   return slugs
     .filter((slug) => slug !== selected && (value(slug) ?? 0) > SEVERE_LINE)
     .sort((a, b) => (value(b) ?? 0) - (value(a) ?? 0))
-    .slice(0, limit);
+    .slice(0, MAX_VALUE_LABELS);
 }
 
 /** Largest forecast first, so smaller dots are drawn on top and stay visible; the selected station

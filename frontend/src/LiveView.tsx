@@ -39,7 +39,7 @@ export function LiveView({ meta, accuracy, active }: Props) {
 function LiveDashboard({ meta, accuracy, active, live }: Props & { live: Live }) {
   const hours = useMemo(() => mapHours(meta.horizons_h), [meta.horizons_h]);
   const [horizon, setHorizon] = useState(48);
-  const playback = usePlayback(hours, horizon, setHorizon, true, active);
+  const playback = usePlayback({ hours, hour: horizon, setHour: setHorizon, ready: true, active });
   const [selected, setSelected] = useState(defaultStation(meta));
   const points = useMemo(() => pointsAt(live.rows, horizon, live.station_status), [live.rows, horizon, live.station_status]);
   const state = live.station_status.find((candidate) => candidate.slug === selected);

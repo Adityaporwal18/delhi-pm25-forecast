@@ -20,7 +20,7 @@ export function ReplayView({ meta, accuracy, active }: { meta: Meta; accuracy: A
   const [horizon, setHorizon] = useState(48);
   const [selected, setSelected] = useState(defaultStation(meta));
   const [maps, retryMaps] = useLoad((signal) => fetchMaps(issued, mapTimes, signal), issued);
-  const playback = usePlayback(mapTimes, horizon, setHorizon, maps.state === "ready", active);
+  const playback = usePlayback({ hours: mapTimes, hour: horizon, setHour: setHorizon, ready: maps.state === "ready", active });
   const [forecast, retryForecast] = useLoad((signal) => fetchForecast(selected, issued, signal), `${selected}|${issued}`);
   const bySlug = useMemo(
     () => new Map((maps.state === "ready" ? (maps.data.get(horizon) ?? []) : []).map((point) => [point.slug, point])),

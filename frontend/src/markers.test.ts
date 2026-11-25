@@ -21,7 +21,7 @@ it("writes numbers only beside the highest few Severe forecasts, so a city-wide 
   // Given: seven stations, six above 250, one of them selected (its name label takes that spot)
   const values = new Map<string, number | null>([["a", 260], ["b", 400], ["c", 300], ["d", 120], ["e", 500], ["f", 350], ["g", 280]]);
   // When / Then: the top three, excluding the selected station, highest first
-  expect(valueLabels([...values.keys()], (slug) => values.get(slug) ?? null, "e", 3)).toEqual(["b", "f", "c"]);
+  expect(valueLabels([...values.keys()], (slug) => values.get(slug) ?? null, "e")).toEqual(["b", "f", "c"]);
 });
 
 it("draws big dots first so small ones stay visible, and the selected station last", () => {

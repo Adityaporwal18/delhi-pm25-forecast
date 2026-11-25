@@ -5,7 +5,15 @@ import { STEP_MS, nextHour, playFrom } from "./playback";
  * A step waits until the shown hour's data is `ready`, so the label never runs ahead of the dots;
  * playback stops when the view is hidden. Values jump between hours: nothing is tweened, because
  * an in-between frame would show values that were never forecast. */
-export function usePlayback(hours: readonly number[], hour: number, setHour: (hour: number) => void, ready: boolean, active: boolean) {
+interface PlaybackInput {
+  hours: readonly number[];
+  hour: number;
+  setHour: (hour: number) => void;
+  ready: boolean;
+  active: boolean;
+}
+
+export function usePlayback({ hours, hour, setHour, ready, active }: PlaybackInput) {
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
     if (!playing || !ready) {
